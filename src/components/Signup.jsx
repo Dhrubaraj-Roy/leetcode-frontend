@@ -1,11 +1,14 @@
 import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { User, Mail, Lock, Eye, EyeOff, CheckCircle2, AlertCircle, Code2 } from "lucide-react";
 import { signupSchema } from "../schemas/authSchema";
-import { registerUser } from "../lib/api";
+import { registerUser, clearError } from "../store/authSlice";
 
 export default function Signup({ onSwitchToLogin }) {
+  const dispatch = useDispatch();
+  const { isLoading, error: reduxError } = useSelector((state) => state.auth);
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -25,24 +28,27 @@ export default function Signup({ onSwitchToLogin }) {
     },
   });
 
-  // Handle form submission
+  // Handle form submission via Redux dispatch
   const onSubmit = async (data) => {
     try {
       setServerError("");
       setSuccessMessage("");
+      dispatch(clearError());
 
-      // Send signup data to backend
-      const response = await registerUser(data);
+      const result = await dispatch(registerUser(data));
 
-      setSuccessMessage(response.message || "Account created successfully! You can now log in.");
-      reset(); // Clear form inputs on success
+      if (registerUser.fulfilled.match(result)) {
+        reset();
+      } else {
+        const errorMsg = result.payload || "Registration failed. Please try again.";
+        setServerError(errorMsg);
+      }
     } catch (err) {
-      // Extract error message from backend response if available
-      const errorMessage =
-        err.response?.data?.message || err.message || "Something went wrong. Please try again.";
-      setServerError(errorMessage);
+      setServerError(err.message || "Something went wrong. Please try again.");
     }
   };
+
+  const displayError = serverError || reduxError;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-base-200 px-4 py-8">
@@ -67,11 +73,11 @@ export default function Signup({ onSwitchToLogin }) {
             </div>
           )}
 
-          {/* Server Error Alert */}
-          {serverError && (
+          {/* Error Alert */}
+          {displayError && (
             <div role="alert" className="alert alert-error text-sm py-2 px-3 mb-4 flex items-center gap-2">
               <AlertCircle className="w-5 h-5 shrink-0" />
-              <span>{serverError}</span>
+              <span>{displayError}</span>
             </div>
           )}
 
@@ -163,10 +169,10 @@ export default function Signup({ onSwitchToLogin }) {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isLoading}
               className="btn btn-primary w-full mt-2"
             >
-              {isSubmitting ? (
+              {isSubmitting || isLoading ? (
                 <>
                   <span className="loading loading-spinner loading-sm"></span>
                   Creating Account...

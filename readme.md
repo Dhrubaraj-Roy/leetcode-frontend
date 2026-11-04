@@ -1,7 +1,8 @@
 # LeetCode Clone - Frontend
 
-
+[![LeetCode](https://img.shields.io/badge/LeetCode-FFA116?style=for-the-badge&logo=LeetCode&logoColor=black)](https://leetcode.com/)
 [![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-764ABC?style=for-the-badge&logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![daisyUI](https://img.shields.io/badge/daisyUI_5-5A0EF8?style=for-the-badge&logo=daisyui&logoColor=white)](https://daisyui.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
@@ -56,6 +57,22 @@ I am documenting my progress with dates as I build each part of the frontend ste
   5. Built an authenticated dashboard preview displaying the logged-in user's name, email, role badge, and a functional logout trigger that calls the backend logout endpoint.
   6. Verified complete production build with `npm run build` with 0 warnings or errors.
 
+### Milestone 4: Redux Toolkit State Management, Axios Thunks & Auto-Redirect on Signup
+- Date: November 4, 2026
+- What I completed:
+  1. Integrated `@reduxjs/toolkit` and `react-redux` for centralized, predictable authentication state management.
+  2. Configured the global Redux store in `src/store/index.js` and wrapped the application tree with `<Provider store={store}>` in `src/main.jsx`.
+  3. Created `src/store/authSlice.js` with 4 asynchronous Axios thunks configured with `{ withCredentials: true }`:
+     - `registerUser`: Sends registration payload to `POST /register`, automatically storing user info and setting `isAuthenticated = true` on success.
+     - `loginUser`: Authenticates credentials against `POST /login` and handles rejection with backend error message forwarding.
+     - `checkAuth`: Hits `GET /check` on startup to detect active sessions cleanly without throwing client-side console errors.
+     - `logoutUser`: Hits `POST /logout` to trigger server-side Redis token blacklisting and resets client auth state.
+  4. Dispatched `checkAuth()` in `src/App.jsx` on mount to maintain persistent user sessions across browser refreshes.
+  5. Enhanced signup workflow: newly registered users now automatically redirect to the home page upon account creation with zero manual login required.
+  6. Resolved component unmounting on submission by separating `isCheckingAuth` from action `isLoading`, keeping forms mounted and displaying inline "Invalid credentials" error alerts seamlessly.
+  7. Configured auto-clearing for error alerts when the user edits email or password inputs.
+  8. Embedded SVG favicon in `index.html` to eliminate 404 console errors.
+
 ---
 
 ## What I Built So Far
@@ -70,44 +87,61 @@ Created reusable Zod schemas that validate user inputs on the client before trig
   - `email`: `z.string().trim().min(1, "Email is required").email("Please enter a valid email address")`
   - `password`: `z.string().min(1, "Password is required")`
 
-### 2. API Service Layer (`src/lib/api.js`)
-Created a centralized Axios instance pre-configured for backend integration:
+### 2. Redux Toolkit Auth Store (`src/store/authSlice.js` & `src/store/index.js`)
+Global state management handling all user authentication operations:
+- **State Properties**:
+  - `user`: Holds the authenticated user object (`id`, `firstName`, `lastName`, `emailId`, `role`) or `null`.
+  - `isAuthenticated`: Boolean flag indicating whether the user is logged in.
+  - `isCheckingAuth`: Boolean flag active only during the initial session check on app boot.
+  - `isLoading`: Boolean flag active during active login or registration form submissions.
+  - `error`: Stores backend or network error messages (e.g., `"Invalid credentials"`).
+- **Async Thunks**:
+  - `registerUser`: Calls `POST /register`, registers user, and auto-authenticates.
+  - `loginUser`: Calls `POST /login`, receives session cookie, and updates state.
+  - `checkAuth`: Calls `GET /check`, checks cookie validity, and restores session without console errors.
+  - `logoutUser`: Calls `POST /logout`, invalidates JWT, and clears auth state.
+- **Reducers**:
+  - `clearError`: Resets error state when user modifies input fields.
+
+### 3. API Service Layer (`src/lib/api.js`)
+Centralized Axios instance pre-configured for backend communication:
 - **`withCredentials: true`**: Automatically sends and receives HTTP-only cookies (`token`) issued by the backend JWT authentication system.
 - **`baseURL`**: Points to `/api` (proxied by Vite to `http://localhost:3000` in development) or `VITE_API_URL` in production.
-- Exported helper functions:
-  - `registerUser({ firstName, email, password })`: Calls `POST /register`.
-  - `loginUser({ email, password })`: Calls `POST /login` sending `{ emailId: email, password }`.
-  - `logoutUser()`: Calls `POST /logout` to trigger Redis token blacklisting.
-  - `getProfile()`: Calls `GET /profile` to fetch authenticated user profile data.
+- Exported helper functions for standalone API operations.
 
-### 3. Signup Component (`src/components/Signup.jsx`)
-A clean, minimal, production-grade signup card built with daisyUI and React Hook Form:
+### 4. Signup Component (`src/components/Signup.jsx`)
+A clean, minimal, production-grade signup card built with daisyUI, React Hook Form, and Redux:
 - Strictly contains three inputs:
   1. **First Name**: Input with User icon.
   2. **Email Address**: Input with Mail icon.
   3. **Password**: Input with Lock icon and Show/Hide toggle.
 - Uses `zodResolver(signupSchema)` for instantaneous client-side validation.
-- Handles backend errors gracefully (e.g., displaying "User with this email already exists" in a daisyUI `alert-error`).
+- Dispatches `registerUser` via Redux Toolkit and auto-redirects to home upon completion.
+- Handles backend errors gracefully with responsive error alerts.
 - Displays a daisyUI `loading-spinner` on the submit button while the request is in flight.
 - Provides a switch link to navigate to the Login page.
 
-### 4. Login Component (`src/components/Login.jsx`)
+### 5. Login Component (`src/components/Login.jsx`)
 A companion authentication component matching the styling of the Signup page:
 - Form fields: Email Address and Password.
 - Show/Hide password toggle button.
 - Built-in validation via `zodResolver(loginSchema)`.
-- Server feedback handling (displays "Invalid credentials" upon incorrect password/email).
+- Dispatches `loginUser` via Redux Toolkit.
+- Displays real-time error feedback (e.g. `"Invalid credentials"`) in a red daisyUI alert banner.
+- Auto-clears error alerts on input change.
 - Provides a switch link to navigate to the Signup page.
 
-### 5. Application Shell & State Management (`src/App.jsx`)
+### 6. Application Shell & Routing View (`src/App.jsx`)
 The main application container featuring:
-- **Navigation Bar**: Clean brand header with logo, title, and responsive toggle buttons for Sign In / Sign Up.
+- **Initial Auth Check**: Dispatches `checkAuth()` on mount to restore user session from HTTP-only cookies.
+- **Navigation Bar**: Clean brand header with logo, title, user name, and responsive toggle buttons for Sign In / Sign Up.
 - **Auth State View Switcher**: Smoothly switches between Login and Signup forms without requiring routing boilerplate.
 - **Authenticated Profile Card**: Displays user details (`firstName`, `emailId`, `role` badge) and an interactive Logout button upon successful login.
 
-### 6. Styling & Theme Configuration (`src/index.css` & `index.html`)
+### 7. Styling & Theme Configuration (`src/index.css` & `index.html`)
 - Configured daisyUI 5 with Tailwind CSS 4 using direct CSS imports (`@import "tailwindcss";` and `@plugin "daisyui";`).
-- Applied dark theme (`data-theme="dark"`) out of the box for a professional LeetCode aesthetic.
+- Applied dark theme (`data-theme="dark"`) out of the box for a sleek LeetCode aesthetic.
+- Embedded SVG favicon to eliminate 404 console errors.
 
 ---
 
@@ -117,18 +151,21 @@ The main application container featuring:
 leetcode-frontend/
 ├── src/
 │   ├── components/
-│   │   ├── Login.jsx         # Login form component with validation
-│   │   └── Signup.jsx        # 3-input signup form component
+│   │   ├── Login.jsx         # Login form component with validation & Redux dispatch
+│   │   └── Signup.jsx        # 3-input signup form component with auto-redirect
 │   ├── lib/
 │   │   └── api.js            # Axios client configured with credentials & base URL
 │   ├── schemas/
 │   │   └── authSchema.js     # Zod validation schemas for signup & login
+│   ├── store/
+│   │   ├── authSlice.js      # Redux slice with Axios thunks (register, login, check, logout)
+│   │   └── index.js          # Redux store configuration
 │   ├── App.jsx               # Navigation bar & authentication flow view
 │   ├── index.css             # Tailwind CSS & daisyUI 5 imports
-│   └── main.jsx              # React DOM mounting entrypoint
+│   └── main.jsx              # React DOM mounting entrypoint with Redux Provider
 ├── .env.example              # Example environment variable file
 ├── .gitignore                # Production git ignore configuration
-├── index.html                # HTML entrypoint with dark theme attribute
+├── index.html                # HTML entrypoint with dark theme & SVG favicon
 ├── package.json              # Dependencies and build scripts
 ├── readme.md                 # Project documentation and progress log
 └── vite.config.js            # Vite configuration with /api backend proxy
@@ -151,12 +188,13 @@ VITE_API_URL=/api
 
 The frontend is specifically tailored to interact with the [LeetCode Clone Backend](https://github.com/Dhrubaraj-Roy/leetcode-clone):
 
-| Action | Frontend Trigger | Backend Endpoint | Request Body | Headers / Cookies |
-| :--- | :--- | :--- | :--- | :--- |
-| **Register** | `registerUser()` | `POST /register` | `{ firstName, emailId, password }` | Public |
-| **Login** | `loginUser()` | `POST /login` | `{ emailId, password }` | Sets `token` HTTP-only cookie |
-| **Profile** | `getProfile()` | `GET /profile` | None | `Cookie: token=...` |
-| **Logout** | `logoutUser()` | `POST /logout` | None | `Cookie: token=...` (clears cookie & blacklists in Redis) |
+| Action | Frontend Trigger | Backend Endpoint | Request Body | Headers / Cookies | Result |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Register** | `dispatch(registerUser())` | `POST /register` | `{ firstName, emailId, password }` | Sets `token` HTTP-only cookie | Creates user, authenticates session, auto-redirects to home |
+| **Login** | `dispatch(loginUser())` | `POST /login` | `{ emailId, password }` | Sets `token` HTTP-only cookie | Validates credentials, sets user in Redux |
+| **Check Auth** | `dispatch(checkAuth())` | `GET /check` | None | `Cookie: token=...` | Verifies active session on reload (no 401 console error) |
+| **Profile** | `getProfile()` | `GET /profile` | None | `Cookie: token=...` | Fetches full authenticated user profile data |
+| **Logout** | `dispatch(logoutUser())` | `POST /logout` | None | `Cookie: token=...` | Clears cookie & blacklists JWT in Redis |
 
 ---
 

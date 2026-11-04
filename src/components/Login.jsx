@@ -1,11 +1,14 @@
 import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Lock, Eye, EyeOff, CheckCircle2, AlertCircle, Code2 } from "lucide-react";
 import { loginSchema } from "../schemas/authSchema";
-import { loginUser } from "../lib/api";
+import { loginUser, clearError } from "../store/authSlice";
 
-export default function Login({ onSwitchToSignup, onLoginSuccess }) {
+export default function Login({ onSwitchToSignup }) {
+  const dispatch = useDispatch();
+  const { isLoading, error: reduxError } = useSelector((state) => state.auth);
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -24,27 +27,28 @@ export default function Login({ onSwitchToSignup, onLoginSuccess }) {
     },
   });
 
-  // Handle login submission
+  // Handle login submission via Redux dispatch
   const onSubmit = async (data) => {
     try {
       setServerError("");
       setSuccessMessage("");
+      dispatch(clearError());
 
-      // Call backend login endpoint
-      const response = await loginUser(data);
+      const result = await dispatch(loginUser(data));
 
-      setSuccessMessage(response.message || "Login successful! Welcome back.");
-      reset();
-
-      if (onLoginSuccess) {
-        onLoginSuccess(response.user);
+      if (loginUser.fulfilled.match(result)) {
+        setSuccessMessage(result.payload?.message || "Login successful! Welcome back.");
+        reset();
+      } else {
+        const errorMsg = result.payload || "Invalid credentials. Please try again.";
+        setServerError(errorMsg);
       }
     } catch (err) {
-      const errorMessage =
-        err.response?.data?.message || err.message || "Invalid credentials. Please try again.";
-      setServerError(errorMessage);
+      setServerError(err.message || "Invalid credentials. Please try again.");
     }
   };
+
+  const displayError = serverError || reduxError;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-base-200 px-4 py-8">
@@ -69,11 +73,11 @@ export default function Login({ onSwitchToSignup, onLoginSuccess }) {
             </div>
           )}
 
-          {/* Server Error Alert */}
-          {serverError && (
+          {/* Error Alert (Displays when credentials are wrong) */}
+          {displayError && (
             <div role="alert" className="alert alert-error text-sm py-2 px-3 mb-4 flex items-center gap-2">
               <AlertCircle className="w-5 h-5 shrink-0" />
-              <span>{serverError}</span>
+              <span>{displayError}</span>
             </div>
           )}
 
@@ -94,7 +98,14 @@ export default function Login({ onSwitchToSignup, onLoginSuccess }) {
                   placeholder="name@example.com"
                   autoComplete="email"
                   className={`input input-bordered w-full pl-9 ${errors.email ? "input-error" : ""}`}
-                  {...register("email")}
+                  {...register("email", {
+                    onChange: () => {
+                      if (displayError) {
+                        setServerError("");
+                        dispatch(clearError());
+                      }
+                    },
+                  })}
                 />
               </div>
               {errors.email && (
@@ -119,7 +130,14 @@ export default function Login({ onSwitchToSignup, onLoginSuccess }) {
                   placeholder="Enter your password"
                   autoComplete="current-password"
                   className={`input input-bordered w-full pl-9 pr-10 ${errors.password ? "input-error" : ""}`}
-                  {...register("password")}
+                  {...register("password", {
+                    onChange: () => {
+                      if (displayError) {
+                        setServerError("");
+                        dispatch(clearError());
+                      }
+                    },
+                  })}
                 />
                 <button
                   type="button"
@@ -140,10 +158,10 @@ export default function Login({ onSwitchToSignup, onLoginSuccess }) {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isLoading}
               className="btn btn-primary w-full mt-2"
             >
-              {isSubmitting ? (
+              {isSubmitting || isLoading ? (
                 <>
                   <span className="loading loading-spinner loading-sm"></span>
                   Signing In...
@@ -170,4 +188,3 @@ export default function Login({ onSwitchToSignup, onLoginSuccess }) {
     </div>
   );
 }
-

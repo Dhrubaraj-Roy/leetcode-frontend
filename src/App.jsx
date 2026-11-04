@@ -1,23 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Signup from "./components/Signup";
 import Login from "./components/Login";
-import { logoutUser } from "./lib/api";
+import { checkAuth, logoutUser } from "./store/authSlice";
 import { Code2, LogOut, User as UserIcon } from "lucide-react";
 
 export default function App() {
+  const dispatch = useDispatch();
+  const { user, isAuthenticated, isCheckingAuth } = useSelector((state) => state.auth);
   const [currentView, setCurrentView] = useState("signup"); // "signup" | "login"
-  const [user, setUser] = useState(null);
 
-  const handleLogout = async () => {
-    try {
-      await logoutUser();
-    } catch (err) {
-      console.error("Logout failed:", err);
-    } finally {
-      setUser(null);
-      setCurrentView("login");
-    }
+  // Dispatch check authentication on mount
+  useEffect(() => {
+    dispatch(checkAuth());
+  }, [dispatch]);
+
+  const handleLogout = () => {
+    dispatch(logoutUser());
+    setCurrentView("login");
   };
+
+  // Show loading spinner ONLY while checking existing auth session on startup
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-base-200 flex items-center justify-center">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-base-200 text-base-content flex flex-col">
@@ -29,7 +39,7 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-2">
-          {user ? (
+          {isAuthenticated && user ? (
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium flex items-center gap-1.5">
                 <UserIcon className="w-4 h-4 text-base-content/70" />
@@ -67,7 +77,7 @@ export default function App() {
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center">
-        {user ? (
+        {isAuthenticated && user ? (
           <div className="card w-full max-w-md bg-base-100 shadow-xl border border-base-300 p-6 text-center">
             <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
               <UserIcon className="w-8 h-8" />
@@ -90,10 +100,7 @@ export default function App() {
         ) : currentView === "signup" ? (
           <Signup onSwitchToLogin={() => setCurrentView("login")} />
         ) : (
-          <Login
-            onSwitchToSignup={() => setCurrentView("signup")}
-            onLoginSuccess={(loggedInUser) => setUser(loggedInUser)}
-          />
+          <Login onSwitchToSignup={() => setCurrentView("signup")} />
         )}
       </main>
     </div>

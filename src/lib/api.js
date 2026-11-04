@@ -45,6 +45,15 @@ export const logoutUser = async () => {
 };
 
 /**
+ * Check if the user is authenticated (GET /check)
+ * Returns { authenticated: true, user: { id, firstName, emailId, role } }
+ */
+export const checkAuth = async () => {
+  const response = await api.get("/check");
+  return response.data;
+};
+
+/**
  * Fetch current user profile (GET /profile)
  */
 export const getProfile = async () => {
