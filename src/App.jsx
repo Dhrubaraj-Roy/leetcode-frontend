@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import Home from "./components/Home";
 import Signup from "./components/Signup";
 import Login from "./components/Login";
 import { checkAuth, logoutUser } from "./store/authSlice";
@@ -8,7 +9,7 @@ import { Code2, LogOut, User as UserIcon } from "lucide-react";
 export default function App() {
   const dispatch = useDispatch();
   const { user, isAuthenticated, isCheckingAuth } = useSelector((state) => state.auth);
-  const [currentView, setCurrentView] = useState("signup"); // "signup" | "login"
+  const [currentView, setCurrentView] = useState("home"); // "home" | "signup" | "login"
 
   // Dispatch check authentication on mount
   useEffect(() => {
@@ -32,8 +33,11 @@ export default function App() {
   return (
     <div className="min-h-screen bg-base-200 text-base-content flex flex-col">
       {/* Top Navbar */}
-      <header className="navbar bg-base-100 border-b border-base-300 px-4 sm:px-8">
-        <div className="flex-1 flex items-center gap-2">
+      <header className="navbar bg-base-100 border-b border-base-300 px-4 sm:px-8 sticky top-0 z-50">
+        <div
+          className="flex-1 flex items-center gap-2 cursor-pointer select-none"
+          onClick={() => setCurrentView("home")}
+        >
           <Code2 className="w-6 h-6 text-primary" />
           <span className="font-bold text-lg tracking-tight">LeetCode Clone</span>
         </div>
@@ -58,6 +62,13 @@ export default function App() {
             <div className="join">
               <button
                 type="button"
+                onClick={() => setCurrentView("home")}
+                className={`join-item btn btn-sm ${currentView === "home" ? "btn-primary" : "btn-ghost"}`}
+              >
+                Problems
+              </button>
+              <button
+                type="button"
                 onClick={() => setCurrentView("signup")}
                 className={`join-item btn btn-sm ${currentView === "signup" ? "btn-primary" : "btn-ghost"}`}
               >
@@ -76,31 +87,17 @@ export default function App() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center">
-        {isAuthenticated && user ? (
-          <div className="card w-full max-w-md bg-base-100 shadow-xl border border-base-300 p-6 text-center">
-            <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
-              <UserIcon className="w-8 h-8" />
-            </div>
-            <h2 className="text-xl font-bold">Hello, {user.firstName || "Coder"}!</h2>
-            <p className="text-sm text-base-content/70 mt-1">{user.emailId}</p>
-            <div className="badge badge-accent badge-outline mx-auto mt-3 capitalize">
-              Role: {user.role || "user"}
-            </div>
-            <div className="mt-6">
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="btn btn-error btn-outline btn-sm w-full"
-              >
-                Log Out
-              </button>
-            </div>
-          </div>
+      <main className="flex-1 w-full">
+        {isAuthenticated || currentView === "home" ? (
+          <Home />
         ) : currentView === "signup" ? (
-          <Signup onSwitchToLogin={() => setCurrentView("login")} />
+          <div className="min-h-[calc(100vh-65px)] flex items-center justify-center">
+            <Signup onSwitchToLogin={() => setCurrentView("login")} />
+          </div>
         ) : (
-          <Login onSwitchToSignup={() => setCurrentView("signup")} />
+          <div className="min-h-[calc(100vh-65px)] flex items-center justify-center">
+            <Login onSwitchToSignup={() => setCurrentView("signup")} />
+          </div>
         )}
       </main>
     </div>

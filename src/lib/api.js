@@ -54,6 +54,22 @@ export const checkAuth = async () => {
 };
 
 /**
+ * Fetch all problems (GET /problem/all)
+ */
+export const fetchAllProblems = async (params = {}) => {
+  const response = await api.get("/problem/all", { params });
+  return response.data;
+};
+
+/**
+ * Fetch all solved problems for logged-in user (GET /problem/solved)
+ */
+export const fetchSolvedProblems = async () => {
+  const response = await api.get("/problem/solved");
+  return response.data;
+};
+
+/**
  * Fetch current user profile (GET /profile)
  */
 export const getProfile = async () => {
