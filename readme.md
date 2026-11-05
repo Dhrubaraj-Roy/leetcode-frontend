@@ -73,6 +73,23 @@ I am documenting my progress with dates as I build each part of the frontend ste
   7. Configured auto-clearing for error alerts when the user edits email or password inputs.
   8. Embedded SVG favicon in `index.html` to eliminate 404 console errors.
 
+### Milestone 5: Problem Browsing Homepage, Dynamic Multi-Filtering & Solved Tracking
+- Date: November 5, 2026
+- What I completed:
+  1. Built the `problems` Redux slice (`src/store/problemSlice.js`) with two asynchronous Axios thunks:
+     - `getAllProblems`: Calls `GET /problem/all` to fetch the complete coding problem collection with limit support.
+     - `getSolvedProblems`: Calls `GET /problem/solved` with `{ withCredentials: true }` to retrieve unique problems solved by the logged-in user.
+  2. Configured dynamic filtering state: status (`"all"` / `"solved"`), difficulty (`"all"` / `"easy"` / `"medium"` / `"hard"`), tag (`"all"` / dynamic string), and search query.
+  3. Created the comprehensive Homepage component (`src/components/Home.jsx`):
+     - **Filter 1 (Status)**: Toggle between "All Problems" and "Solved Problems", leveraging an $O(1)$ `useMemo` hash Set of solved problem IDs to instantly detect solved status.
+     - **Filter 2 (Difficulty)**: Dropdown filter for All Difficulties, Easy, Medium, and Hard with color-coded daisyUI badges.
+     - **Filter 3 (Tags)**: Dynamically extracts all unique tags from the problem database (e.g. `#array`, `#string`, `#hash-table`) and populates both the filter dropdown and interactive clickable tag pills in the problem table.
+     - **Real-Time Search Bar**: Live filtering across problem titles and tags.
+     - **Stats Progress Widget**: Displays total solved count and an animated radial progress bar (`solvedCount / totalCount`).
+     - **Problem Table**: Responsive zebra table showing status checkmarks (green `CheckCircle2` for solved vs gray `Circle` for unsolved), difficulty badges, tag pills, and "Solve" action buttons.
+  4. Integrated the Homepage into `src/App.jsx` as the primary dashboard view while keeping problem exploration accessible to public visitors.
+  5. Added `fetchAllProblems` and `fetchSolvedProblems` helper functions to `src/lib/api.js`.
+
 ---
 
 ## What I Built So Far
@@ -131,14 +148,42 @@ A companion authentication component matching the styling of the Signup page:
 - Auto-clears error alerts on input change.
 - Provides a switch link to navigate to the Signup page.
 
-### 6. Application Shell & Routing View (`src/App.jsx`)
-The main application container featuring:
-- **Initial Auth Check**: Dispatches `checkAuth()` on mount to restore user session from HTTP-only cookies.
-- **Navigation Bar**: Clean brand header with logo, title, user name, and responsive toggle buttons for Sign In / Sign Up.
-- **Auth State View Switcher**: Smoothly switches between Login and Signup forms without requiring routing boilerplate.
-- **Authenticated Profile Card**: Displays user details (`firstName`, `emailId`, `role` badge) and an interactive Logout button upon successful login.
+### 6. Problem Slice & Redux Store (`src/store/problemSlice.js` & `src/store/index.js`)
+Dedicated state management module for coding problems:
+- **State Properties**:
+  - `problems`: Array of all available coding problem objects.
+  - `solvedProblems`: Array of problems solved by the authenticated user.
+  - `filters`: Object tracking active filters (`status`, `difficulty`, `tag`, and `search`).
+  - `isLoading`: Boolean loading flag during API data fetches.
+  - `error`: Error message string if requests fail.
+- **Async Thunks**:
+  - `getAllProblems`: Calls `GET /problem/all` to fetch the problem collection.
+  - `getSolvedProblems`: Calls `GET /problem/solved` to fetch solved problem records.
+- **Filter Actions**:
+  - `setStatusFilter`: Switches between `"all"` and `"solved"`.
+  - `setDifficultyFilter`: Filters by `"all"`, `"easy"`, `"medium"`, or `"hard"`.
+  - `setTagFilter`: Filters by dynamically extracted problem tags.
+  - `setSearchQuery`: Filters by problem title or keyword.
+  - `resetFilters`: Resets all filters back to default.
 
-### 7. Styling & Theme Configuration (`src/index.css` & `index.html`)
+### 7. Homepage Component (`src/components/Home.jsx`)
+The main problem exploration dashboard featuring:
+- **3 Dynamic Filters**:
+  1. **Status Filter**: Tab toggle for "All Problems" vs "Solved Problems". Utilizes an $O(1)$ `useMemo` hash Set of solved problem IDs for instant checkmark evaluation.
+  2. **Difficulty Filter**: Dropdown filter for Easy, Medium, and Hard with color-coded daisyUI badges.
+  3. **Tag Filter**: Dynamically extracts all unique tags from MongoDB (e.g. `#array`, `#string`) for both dropdown selection and interactive row tag pills.
+- **Live Search Bar**: Real-time filtering across problem titles and tags.
+- **Solved Stats Progress Bar**: Radial progress indicator displaying `solvedCount / totalCount` with percentage.
+- **Problems Table**: Responsive table showing status icons (green `CheckCircle2` for solved vs gray `Circle` for unsolved), difficulty badges, tag badges, and "Solve" action buttons.
+
+### 8. Application Shell & Routing View (`src/App.jsx`)
+The main application container featuring:
+- **Initial Auth Check**: Dispatches `checkAuth()` on mount to restore user session from HTTP-only cookies without throwing console errors.
+- **Navigation Bar**: Sticky brand header with logo, title, user name, and responsive toggle buttons for Problems / Sign In / Sign Up.
+- **Auth State View Switcher**: Smoothly switches between Homepage, Login, and Signup forms without requiring routing boilerplate.
+- **Authenticated Dashboard Preview**: Directly mounts the Homepage when authenticated, allowing immediate problem browsing and filtering.
+
+### 9. Styling & Theme Configuration (`src/index.css` & `index.html`)
 - Configured daisyUI 5 with Tailwind CSS 4 using direct CSS imports (`@import "tailwindcss";` and `@plugin "daisyui";`).
 - Applied dark theme (`data-theme="dark"`) out of the box for a sleek LeetCode aesthetic.
 - Embedded SVG favicon to eliminate 404 console errors.
@@ -151,6 +196,7 @@ The main application container featuring:
 leetcode-frontend/
 ├── src/
 │   ├── components/
+│   │   ├── Home.jsx          # Homepage with 3 filters, stats, and problem table
 │   │   ├── Login.jsx         # Login form component with validation & Redux dispatch
 │   │   └── Signup.jsx        # 3-input signup form component with auto-redirect
 │   ├── lib/
@@ -159,8 +205,9 @@ leetcode-frontend/
 │   │   └── authSchema.js     # Zod validation schemas for signup & login
 │   ├── store/
 │   │   ├── authSlice.js      # Redux slice with Axios thunks (register, login, check, logout)
-│   │   └── index.js          # Redux store configuration
-│   ├── App.jsx               # Navigation bar & authentication flow view
+│   │   ├── problemSlice.js   # Redux slice with problem fetching & 3-filter management
+│   │   └── index.js          # Redux store configuration combining auth & problem reducers
+│   ├── App.jsx               # Navigation bar & application view router
 │   ├── index.css             # Tailwind CSS & daisyUI 5 imports
 │   └── main.jsx              # React DOM mounting entrypoint with Redux Provider
 ├── .env.example              # Example environment variable file
@@ -193,6 +240,8 @@ The frontend is specifically tailored to interact with the [LeetCode Clone Backe
 | **Register** | `dispatch(registerUser())` | `POST /register` | `{ firstName, emailId, password }` | Sets `token` HTTP-only cookie | Creates user, authenticates session, auto-redirects to home |
 | **Login** | `dispatch(loginUser())` | `POST /login` | `{ emailId, password }` | Sets `token` HTTP-only cookie | Validates credentials, sets user in Redux |
 | **Check Auth** | `dispatch(checkAuth())` | `GET /check` | None | `Cookie: token=...` | Verifies active session on reload (no 401 console error) |
+| **Get All Problems** | `dispatch(getAllProblems())` | `GET /problem/all` | None | Optional `Cookie: token=...` | Fetches coding problems with allowlisted public fields |
+| **Get Solved Problems** | `dispatch(getSolvedProblems())` | `GET /problem/solved` | None | `Cookie: token=...` | Fetches unique solved problems for logged-in user |
 | **Profile** | `getProfile()` | `GET /profile` | None | `Cookie: token=...` | Fetches full authenticated user profile data |
 | **Logout** | `dispatch(logoutUser())` | `POST /logout` | None | `Cookie: token=...` | Clears cookie & blacklists JWT in Redis |
 
