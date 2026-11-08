@@ -53,6 +53,78 @@ export const getSolvedProblems = createAsyncThunk(
   }
 );
 
+/**
+ * 3. Delete Problem Thunk (DELETE /problem/delete/:id)
+ * Admin only
+ */
+export const deleteProblem = createAsyncThunk(
+  "problems/deleteProblem",
+  async (problemId, { rejectWithValue }) => {
+    try {
+      const response = await axios.delete(
+        `${API_URL}/problem/delete/${problemId}`,
+        { withCredentials: true }
+      );
+      return { id: problemId, message: response.data.message };
+    } catch (err) {
+      const message =
+        err.response?.data?.message || err.message || "Failed to delete problem";
+      return rejectWithValue(message);
+    }
+  }
+);
+
+/**
+ * 4. Create Problem Thunk (POST /problem/create)
+ * Admin only
+ */
+export const createProblem = createAsyncThunk(
+  "problems/createProblem",
+  async (problemData, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/problem/create`,
+        problemData,
+        { withCredentials: true }
+      );
+      return response.data.problem;
+    } catch (err) {
+      const message =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        "Failed to create problem";
+      return rejectWithValue(message);
+    }
+  }
+);
+
+/**
+ * 5. Update Problem Thunk (PUT /problem/update/:id)
+ * Admin only
+ */
+export const updateProblem = createAsyncThunk(
+  "problems/updateProblem",
+  async ({ id, problemData }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(
+        `${API_URL}/problem/update/${id}`,
+        problemData,
+        { withCredentials: true }
+      );
+      return response.data.problem;
+    } catch (err) {
+      const message =
+        err.response?.data?.message ||
+        err.response?.data?.["here is the error"] ||
+        err.response?.data?.error ||
+        err.message ||
+        "Failed to update problem";
+      return rejectWithValue(message);
+    }
+  }
+);
+
 // Initial State
 const initialState = {
   problems: [],
@@ -115,6 +187,32 @@ const problemSlice = createSlice({
       })
       .addCase(getSolvedProblems.rejected, (state) => {
         state.solvedProblems = [];
+      })
+
+      // Delete Problem Cases
+      .addCase(deleteProblem.fulfilled, (state, action) => {
+        state.problems = state.problems.filter(
+          (p) => p._id !== action.payload.id
+        );
+      })
+
+      // Create Problem Cases
+      .addCase(createProblem.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.problems.unshift(action.payload);
+        }
+      })
+
+      // Update Problem Cases
+      .addCase(updateProblem.fulfilled, (state, action) => {
+        if (action.payload) {
+          const index = state.problems.findIndex(
+            (p) => p._id === action.payload._id
+          );
+          if (index !== -1) {
+            state.problems[index] = action.payload;
+          }
+        }
       });
   },
 });

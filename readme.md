@@ -90,6 +90,37 @@ I am documenting my progress with dates as I build each part of the frontend ste
   4. Integrated the Homepage into `src/App.jsx` as the primary dashboard view while keeping problem exploration accessible to public visitors.
   5. Added `fetchAllProblems` and `fetchSolvedProblems` helper functions to `src/lib/api.js`.
 
+### Milestone 6: Role-Based Admin Panel Routing, Problem Management & Security Safeguards
+- Date: November 7, 2026
+- What I completed:
+  1. Enforced strict role-based routing rules in `src/App.jsx`:
+     - **Admin Routing**: If the user is authenticated (`isAuthenticated === true`) and their role is admin (`user?.role === "admin"`), they automatically land on the **Admin Panel** (`currentView = "admin"`).
+     - **Fallback / Home Routing**: If unauthenticated or authenticated as a standard user (`user?.role !== "admin"`), any attempt to access the Admin Panel redirects to the **Home page** (`currentView = "home"`).
+     - **Post-Logout Routing**: Logging out resets the view safely back to the Home page.
+  2. Created the Admin Panel component (`src/components/AdminPanel.jsx`):
+     - **Security Guard**: Client-side privilege verification that immediately prevents unauthorized access and offers a return-to-home trigger.
+     - **Live Platform Metrics**: Metric cards showing real-time counts for Total Challenges, Easy, Medium, and Hard problems.
+     - **Problem Management Table**: Responsive table with live searching, difficulty filtering, problem descriptions, tags, and administrative Update / Delete triggers.
+     - **Three Core Admin Actions**: "Create Problem" (navigates to `/problem/create`), "Update Problem" (opens modal with pre-filled fields), and "Delete Problem" (deletes challenge with confirmation).
+  3. Extended Redux `problemSlice` (`src/store/problemSlice.js`) with admin actions:
+     - `deleteProblem`: Dispatches `DELETE /problem/delete/:id` with `{ withCredentials: true }` and optimistic removal from state.
+     - `createProblem`: Dispatches `POST /problem/create` with verified test cases and solution code.
+     - `updateProblem`: Dispatches `PUT /problem/update/:id` with modified problem fields.
+  4. Updated the top navigation bar to render an **ADMIN** badge, an Admin Panel / Problems switcher for administrators, and instant logout handling.
+
+### Milestone 7: Dedicated Problem Creation Route, Multi-Test-Case Architecture & JSON Importer
+- Date: November 8, 2026
+- What I completed:
+  1. Implemented dedicated route at `/problem/create` in `src/App.jsx` with browser History API URL synchronization (`pushState` and `popstate`) and admin-only access guards.
+  2. Built the Problem Creation page (`src/components/CreateProblem.jsx`):
+     - **Clean Inputs with Placeholders**: Form fields start completely blank so admins can type a new problem without deleting dummy values, while comprehensive formatting examples are placed strictly in input placeholders.
+     - **Two Test Cases Requirement & Dynamic Controls**: Both visual (visible) and written (hidden) test case sections explicitly instruct: *"You have to upload two test cases."* By default, each section displays only one input with an option to add another one (`+ Add Visible Test Case` / `+ Add Hidden Test Case`).
+     - **Form Validation**: Enforces that at least two visible test cases and two hidden test cases are filled before submission.
+     - **Dual-Language Code (Python & C++)**: Configured tabbed interface allowing admins to provide complete reference solution code and starter templates for both Python and C++.
+     - **Import / Paste JSON**: Built a modal enabling admins to paste raw challenge JSON to instantly auto-populate all form fields, test cases, and code solutions in one click.
+     - **Alert Notification on Success**: Dispatches `POST /problem/create`, triggers `alert("Problem was created successfully!")`, renders an in-app DaisyUI alert banner, and redirects back to the Admin Panel.
+  3. Verified complete production build with `npm run build` (0 warnings or errors).
+
 ---
 
 ## What I Built So Far
@@ -159,6 +190,8 @@ Dedicated state management module for coding problems:
 - **Async Thunks**:
   - `getAllProblems`: Calls `GET /problem/all` to fetch the problem collection.
   - `getSolvedProblems`: Calls `GET /problem/solved` to fetch solved problem records.
+  - `deleteProblem`: Calls `DELETE /problem/delete/:id` (Admin only) to remove a problem.
+  - `createProblem`: Calls `POST /problem/create` (Admin only) to create a verified problem.
 - **Filter Actions**:
   - `setStatusFilter`: Switches between `"all"` and `"solved"`.
   - `setDifficultyFilter`: Filters by `"all"`, `"easy"`, `"medium"`, or `"hard"`.
@@ -166,7 +199,24 @@ Dedicated state management module for coding problems:
   - `setSearchQuery`: Filters by problem title or keyword.
   - `resetFilters`: Resets all filters back to default.
 
-### 7. Homepage Component (`src/components/Home.jsx`)
+### 7. Admin Panel Component (`src/components/AdminPanel.jsx`)
+Administrative management console restricted to users with `role: "admin"` providing 3 core problem operations:
+- **1. Create Problem**: Navigates to the dedicated `/problem/create` route to publish a new challenge.
+- **2. Update Problem**: Each problem row contains an "Update Problem" button. When clicked, the modal opens with all current values already pre-filled (title, difficulty, description, tags, test cases, solution code) so the admin can simply edit the desired value and save.
+- **3. Delete Problem**: Each problem row contains a "Delete Problem" button that prompts for confirmation and removes the challenge from the database.
+- **Access Guard**: Instant verification preventing unauthorized regular users or unauthenticated visitors from accessing administrative tools.
+- **Platform Analytics**: Real-time summary cards displaying Total Challenges, Easy, Medium, and Hard problem counts.
+- **Problem Directory**: Searchable, filterable table listing challenges with tag badges, difficulty ratings, and action controls.
+
+### 8. Problem Creation Page (`src/components/CreateProblem.jsx`)
+Dedicated creation interface mounted at route `/problem/create`:
+- **Clean Inputs with Helpful Placeholders**: Form fields start completely blank so users can author new problems without deleting placeholder data, while comprehensive syntax examples are placed strictly in input placeholders.
+- **Two Test Cases Requirement & Dynamic Controls**: Explicitly instructs *"You have to upload two test cases."* in both visual and written test case sections. Displays 1 test case by default with `+ Add Test Case` controls to add the required second case.
+- **Dual-Language Code (Python & C++)**: Tabbed editor supporting complete reference solutions and user starter templates for both Python and C++.
+- **Import / Paste JSON**: Modal enabling admins to paste raw challenge JSON to instantly auto-populate all form fields, test cases, and code solutions in one click.
+- **Alert Notification**: Triggers `alert("Problem was created successfully!")` and an in-app DaisyUI alert banner upon creation, automatically redirecting back to the Admin Panel.
+
+### 9. Homepage Component (`src/components/Home.jsx`)
 The main problem exploration dashboard featuring:
 - **3 Dynamic Filters**:
   1. **Status Filter**: Tab toggle for "All Problems" vs "Solved Problems". Utilizes an $O(1)$ `useMemo` hash Set of solved problem IDs for instant checkmark evaluation.
@@ -176,14 +226,16 @@ The main problem exploration dashboard featuring:
 - **Solved Stats Progress Bar**: Radial progress indicator displaying `solvedCount / totalCount` with percentage.
 - **Problems Table**: Responsive table showing status icons (green `CheckCircle2` for solved vs gray `Circle` for unsolved), difficulty badges, tag badges, and "Solve" action buttons.
 
-### 8. Application Shell & Routing View (`src/App.jsx`)
+### 10. Application Shell & Role-Based Routing (`src/App.jsx`)
 The main application container featuring:
+- **Role-Based Routing**:
+  - If authenticated user has `role === "admin"`, routes to the **Admin Panel** (`currentView = "admin"`).
+  - Otherwise (guests, regular users with `role === "user"`), routes to the **Home page** (`currentView = "home"`).
 - **Initial Auth Check**: Dispatches `checkAuth()` on mount to restore user session from HTTP-only cookies without throwing console errors.
-- **Navigation Bar**: Sticky brand header with logo, title, user name, and responsive toggle buttons for Problems / Sign In / Sign Up.
-- **Auth State View Switcher**: Smoothly switches between Homepage, Login, and Signup forms without requiring routing boilerplate.
-- **Authenticated Dashboard Preview**: Directly mounts the Homepage when authenticated, allowing immediate problem browsing and filtering.
+- **Navigation Bar**: Sticky brand header with logo, title, user info, admin badge, and responsive switcher for Admin Panel / Problems / Sign In / Sign Up.
+- **Secure View Switcher**: Smoothly handles authenticated and public states with zero unauthorized leaks.
 
-### 9. Styling & Theme Configuration (`src/index.css` & `index.html`)
+### 11. Styling & Theme Configuration (`src/index.css` & index.html)
 - Configured daisyUI 5 with Tailwind CSS 4 using direct CSS imports (`@import "tailwindcss";` and `@plugin "daisyui";`).
 - Applied dark theme (`data-theme="dark"`) out of the box for a sleek LeetCode aesthetic.
 - Embedded SVG favicon to eliminate 404 console errors.
@@ -196,6 +248,8 @@ The main application container featuring:
 leetcode-frontend/
 ├── src/
 │   ├── components/
+│   │   ├── AdminPanel.jsx    # Admin dashboard for problem management & catalog stats
+│   │   ├── CreateProblem.jsx # Dedicated page/route for /problem/create with alert confirmation
 │   │   ├── Home.jsx          # Homepage with 3 filters, stats, and problem table
 │   │   ├── Login.jsx         # Login form component with validation & Redux dispatch
 │   │   └── Signup.jsx        # 3-input signup form component with auto-redirect
@@ -205,9 +259,9 @@ leetcode-frontend/
 │   │   └── authSchema.js     # Zod validation schemas for signup & login
 │   ├── store/
 │   │   ├── authSlice.js      # Redux slice with Axios thunks (register, login, check, logout)
-│   │   ├── problemSlice.js   # Redux slice with problem fetching & 3-filter management
+│   │   ├── problemSlice.js   # Redux slice with problem fetching, admin actions & filters
 │   │   └── index.js          # Redux store configuration combining auth & problem reducers
-│   ├── App.jsx               # Navigation bar & application view router
+│   ├── App.jsx               # Navigation bar & role-based view router
 │   ├── index.css             # Tailwind CSS & daisyUI 5 imports
 │   └── main.jsx              # React DOM mounting entrypoint with Redux Provider
 ├── .env.example              # Example environment variable file
@@ -242,8 +296,11 @@ The frontend is specifically tailored to interact with the [LeetCode Clone Backe
 | **Check Auth** | `dispatch(checkAuth())` | `GET /check` | None | `Cookie: token=...` | Verifies active session on reload (no 401 console error) |
 | **Get All Problems** | `dispatch(getAllProblems())` | `GET /problem/all` | None | Optional `Cookie: token=...` | Fetches coding problems with allowlisted public fields |
 | **Get Solved Problems** | `dispatch(getSolvedProblems())` | `GET /problem/solved` | None | `Cookie: token=...` | Fetches unique solved problems for logged-in user |
+| **Create Problem** | `dispatch(createProblem())` | `POST /problem/create` | `{ title, description, difficulty, tags, ... }` | `Cookie: token=...` (Admin) | Verifies solution via Judge0 & creates new challenge |
+| **Update Problem** | `dispatch(updateProblem({ id, problemData }))` | `PUT /problem/update/:id` | `{ title, description, difficulty, tags, ... }` | `Cookie: token=...` (Admin) | Updates fields of existing challenge in database |
+| **Delete Problem** | `dispatch(deleteProblem(id))` | `DELETE /problem/delete/:id` | None | `Cookie: token=...` | Deletes problem from database (Admin only) |
 | **Profile** | `getProfile()` | `GET /profile` | None | `Cookie: token=...` | Fetches full authenticated user profile data |
-| **Logout** | `dispatch(logoutUser())` | `POST /logout` | None | `Cookie: token=...` | Clears cookie & blacklists JWT in Redis |
+| **Logout** | `dispatch(logoutUser())` | `POST /logout` | None | `Cookie: token=...` | Clears cookie & blacklists JWT in Redis, routes to home |
 
 ---
 

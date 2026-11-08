@@ -70,6 +70,14 @@ export const fetchSolvedProblems = async () => {
 };
 
 /**
+ * Fetch a single problem by ID (GET /problem/get/:id)
+ */
+export const fetchProblemById = async (id) => {
+  const response = await api.get(`/problem/get/${id}`);
+  return response.data.problem;
+};
+
+/**
  * Fetch current user profile (GET /profile)
  */
 export const getProfile = async () => {
