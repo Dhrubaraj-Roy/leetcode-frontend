@@ -74,7 +74,37 @@ export const fetchSolvedProblems = async () => {
  */
 export const fetchProblemById = async (id) => {
   const response = await api.get(`/problem/get/${id}`);
-  return response.data.problem;
+  return response.data?.problem || response.data;
+};
+
+/**
+ * Run code against visible test cases (POST /problem/run/:problemId)
+ */
+export const runCodeApi = async ({ problemId, language, code }) => {
+  const response = await api.post(`/problem/run/${problemId}`, {
+    language,
+    code,
+  });
+  return response.data;
+};
+
+/**
+ * Submit code for evaluation against all test cases (POST /problem/solve/:problemId)
+ */
+export const submitCodeApi = async ({ problemId, language, code }) => {
+  const response = await api.post(`/problem/solve/${problemId}`, {
+    language,
+    code,
+  });
+  return response.data;
+};
+
+/**
+ * Fetch user submissions for a specific problem (GET /submit/:problemId)
+ */
+export const fetchProblemSubmissionsApi = async (problemId) => {
+  const response = await api.get(`/submit/${problemId}`);
+  return response.data;
 };
 
 /**

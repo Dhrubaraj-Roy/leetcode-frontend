@@ -21,7 +21,7 @@ import {
   Check,
 } from "lucide-react";
 
-export default function Home() {
+export default function Home({ onSelectProblem }) {
   const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state) => state.auth);
   const { problems, solvedProblems, isLoading, filters } = useSelector(
@@ -323,7 +323,21 @@ export default function Home() {
 
                       {/* Column 2: Problem Title */}
                       <td>
-                        <div className="font-medium text-base hover:text-primary transition-colors cursor-pointer">
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onClick={() =>
+                            onSelectProblem &&
+                            onSelectProblem(prob._id || prob.id)
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              onSelectProblem &&
+                                onSelectProblem(prob._id || prob.id);
+                            }
+                          }}
+                          className="font-medium text-base hover:text-primary transition-colors cursor-pointer"
+                        >
                           {prob.title}
                         </div>
                       </td>
@@ -364,6 +378,10 @@ export default function Home() {
                       <td className="text-right">
                         <button
                           type="button"
+                          onClick={() =>
+                            onSelectProblem &&
+                            onSelectProblem(prob._id || prob.id)
+                          }
                           className="btn btn-xs sm:btn-sm btn-outline btn-primary"
                         >
                           Solve

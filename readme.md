@@ -9,6 +9,7 @@
 [![React Hook Form](https://img.shields.io/badge/React_Hook_Form-EC5990?style=for-the-badge&logo=reacthookform&logoColor=white)](https://react-hook-form.com/)
 [![Zod](https://img.shields.io/badge/Zod-3E67B1?style=for-the-badge&logo=zod&logoColor=white)](https://zod.dev/)
 [![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)](https://axios-http.com/)
+[![Monaco Editor](https://img.shields.io/badge/Monaco_Editor-1E1E1E?style=for-the-badge&logo=visualstudiocode&logoColor=007ACC)](https://microsoft.github.io/monaco-editor/)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ESM-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 
 This is the frontend for the full-stack LeetCode Clone project, built step by step using **React**, **Vite**, **daisyUI**, **Tailwind CSS**, and **React Hook Form with Zod**. It connects seamlessly with the LeetCode clone backend for authentication, coding problem solving, and real-time code evaluation.
@@ -120,6 +121,29 @@ I am documenting my progress with dates as I build each part of the frontend ste
      - **Import / Paste JSON**: Built a modal enabling admins to paste raw challenge JSON to instantly auto-populate all form fields, test cases, and code solutions in one click.
      - **Alert Notification on Success**: Dispatches `POST /problem/create`, triggers `alert("Problem was created successfully!")`, renders an in-app DaisyUI alert banner, and redirects back to the Admin Panel.
   3. Verified complete production build with `npm run build` (0 warnings or errors).
+
+### Milestone 8: Monaco Code Editor Integration, Problem Route & Split Workspace UI
+- Date: November 8, 2026
+- What I completed:
+  1. Integrated `@monaco-editor/react` (v4.7.0) with dark theme (`vs-dark`), syntax highlighting, automatic responsive layout, custom tab sizing, and line numbering.
+  2. Implemented dedicated problem route at `/problem/:id` in `src/App.jsx` with History API URL synchronization (`pushState` / `popstate`) so clicking any problem from the problem list routes straight to the code editor.
+  3. Built the Problem Detail and Code Workspace component (`src/components/ProblemDetail.jsx`):
+     - **Top Action Header**: Unified sleek bar with LeetCode logo, `< Problem List` back link, `Run` button, and green `Submit` button (strictly no extraneous settings or notification buttons).
+     - **Split Workspace Layout**: Full-height responsive layout with independent scrolling for description and code execution.
+     - **Left Panel (Problem Information)**:
+       - **Description Tab**: Renders challenge title, difficulty badge, tags, problem description, and formatted example test cases with Input, Output, and Explanation.
+       - **Editorial Tab**: Algorithmic intuition, step-by-step logic, time/space complexity analysis, and complete reference solution walkthrough.
+       - **Submissions Tab**: Real-time table fetching the user's historical submissions from `GET /submit/:problemId` (status badge, language, runtime, memory, and date).
+     - **Right Panel (Monaco Code Editor & Console Drawer)**:
+       - **Language Switcher**: Toggle between Python 3 and C++ with automatic starter code population from backend `startCode` templates.
+       - **Reset Code**: Restores initial starter template for the active language with confirmation guard.
+       - **Bottom Drawer - Testcase Tab**: Case pill selectors (`Case 1`, `Case 2`, etc.) showing input and expected output.
+       - **Bottom Drawer - Test Result Tab**: Live evaluation results from Judge0 displaying verdict (`Accepted`, `Wrong Answer`, `Runtime Error`), execution time, memory usage, and per-case output vs. expected output comparisons.
+  4. Added API execution functions in `src/lib/api.js`:
+     - `runCodeApi`: Calls `POST /problem/run/:problemId` to test against visible example test cases without database writes.
+     - `submitCodeApi`: Calls `POST /problem/solve/:problemId` to evaluate against all test cases (visible + hidden) via Judge0 and record submission.
+     - `fetchProblemSubmissionsApi`: Calls `GET /submit/:problemId` to retrieve submission history.
+  5. Verified complete production build with `npm run build` (0 errors or warnings).
 
 ---
 
@@ -299,6 +323,10 @@ The frontend is specifically tailored to interact with the [LeetCode Clone Backe
 | **Create Problem** | `dispatch(createProblem())` | `POST /problem/create` | `{ title, description, difficulty, tags, ... }` | `Cookie: token=...` (Admin) | Verifies solution via Judge0 & creates new challenge |
 | **Update Problem** | `dispatch(updateProblem({ id, problemData }))` | `PUT /problem/update/:id` | `{ title, description, difficulty, tags, ... }` | `Cookie: token=...` (Admin) | Updates fields of existing challenge in database |
 | **Delete Problem** | `dispatch(deleteProblem(id))` | `DELETE /problem/delete/:id` | None | `Cookie: token=...` | Deletes problem from database (Admin only) |
+| **Get Problem by ID** | `fetchProblemById(id)` | `GET /problem/get/:id` | None | Optional `Cookie: token=...` | Fetches full challenge details, starter code, and test cases |
+| **Run Code** | `runCodeApi({ problemId, language, code })` | `POST /problem/run/:problemId` | `{ language, code }` | `Cookie: token=...` | Runs code against visible example test cases via Judge0 |
+| **Submit Code** | `submitCodeApi({ problemId, language, code })` | `POST /problem/solve/:problemId` | `{ language, code }` | `Cookie: token=...` | Evaluates code against visible + hidden test cases via Judge0 |
+| **Get Submissions** | `fetchProblemSubmissionsApi(problemId)` | `GET /submit/:problemId` | None | `Cookie: token=...` | Fetches user's past submission history for problem |
 | **Profile** | `getProfile()` | `GET /profile` | None | `Cookie: token=...` | Fetches full authenticated user profile data |
 | **Logout** | `dispatch(logoutUser())` | `POST /logout` | None | `Cookie: token=...` | Clears cookie & blacklists JWT in Redis, routes to home |
 

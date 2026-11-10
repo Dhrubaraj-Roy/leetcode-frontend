@@ -21,9 +21,14 @@ import {
   AlertCircle,
   Sparkles,
   FileEdit,
+  Play,
 } from "lucide-react";
 
-export default function AdminPanel({ onNavigateToHome, onNavigateToCreateProblem }) {
+export default function AdminPanel({
+  onNavigateToHome,
+  onNavigateToCreateProblem,
+  onSelectProblem,
+}) {
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { problems, isLoading } = useSelector((state) => state.problems);
@@ -606,10 +611,25 @@ export default function AdminPanel({ onNavigateToHome, onNavigateToCreateProblem
                         {index + 1}
                       </td>
                       <td>
-                        <div className="font-medium text-sm text-base-content">
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onClick={() =>
+                            onSelectProblem &&
+                            onSelectProblem(prob._id || prob.id)
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              onSelectProblem &&
+                                onSelectProblem(prob._id || prob.id);
+                            }
+                          }}
+                          className="font-medium text-sm text-base-content hover:text-primary transition-colors cursor-pointer"
+                          title="Click to view problem details and code editor"
+                        >
                           {prob.title}
                         </div>
-                        <div className="text-xs text-base-content/50 line-clamp-1 max-w-md">
+                        <div className="text-xs text-base-content/50 line-clamp-1 max-w-md mt-0.5">
                           {prob.description}
                         </div>
                       </td>
@@ -634,6 +654,20 @@ export default function AdminPanel({ onNavigateToHome, onNavigateToCreateProblem
                       </td>
                       <td className="text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {/* Button: SOLVE / VIEW PROBLEM */}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onSelectProblem &&
+                              onSelectProblem(prob._id || prob.id)
+                            }
+                            className="btn btn-outline btn-primary btn-xs gap-1"
+                            title="View Problem & Code Editor"
+                          >
+                            <Play className="w-3.5 h-3.5 fill-primary" />
+                            Solve
+                          </button>
+
                           {/* Button 2: UPDATE PROBLEM */}
                           <button
                             type="button"
