@@ -6,8 +6,9 @@ import Login from "./components/Login";
 import AdminPanel from "./components/AdminPanel";
 import CreateProblem from "./components/CreateProblem";
 import ProblemDetail from "./components/ProblemDetail";
+import ChatInterface from "./components/ChatInterface";
 import { checkAuth, logoutUser } from "./store/authSlice";
-import { Code2, LogOut, User as UserIcon, LayoutDashboard } from "lucide-react";
+import { Code2, LogOut, User as UserIcon, LayoutDashboard, Bot } from "lucide-react";
 
 export default function App() {
   const dispatch = useDispatch();
@@ -17,6 +18,7 @@ export default function App() {
   // Routes: "home" | "admin" | "problem/create" | "problem" | "signup" | "login"
   const [currentView, setCurrentView] = useState("home");
   const [activeProblemId, setActiveProblemId] = useState(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const hasHandledInitialAuthRef = useRef(false);
 
   // Helper to change view and synchronize the browser URL pathname
@@ -268,6 +270,32 @@ export default function App() {
           <Home onSelectProblem={(id) => navigate("problem", id)} />
         )}
       </main>
+
+      {/* Floating DSA Teacher Chat Assistant Widget */}
+      {currentView !== "problem" && (
+        <div className="fixed bottom-5 right-5 z-50">
+          {isChatOpen ? (
+            <div className="w-[360px] sm:w-[400px] h-[520px] max-w-[calc(100vw-2.5rem)] max-h-[calc(100vh-6rem)] shadow-2xl rounded-2xl border border-base-300 overflow-hidden flex flex-col bg-base-100">
+              <ChatInterface
+                onClose={() => setIsChatOpen(false)}
+                onNavigateToLogin={() => {
+                  setIsChatOpen(false);
+                  navigate("login");
+                }}
+              />
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsChatOpen(true)}
+              className="btn btn-primary btn-circle shadow-xl h-14 w-14 hover:scale-105 transition-transform"
+              title="Chat with DSA Teacher"
+            >
+              <Bot className="w-7 h-7" />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

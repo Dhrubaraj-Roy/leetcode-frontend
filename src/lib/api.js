@@ -114,3 +114,29 @@ export const getProfile = async () => {
   const response = await api.get("/profile");
   return response.data;
 };
+
+/**
+ * Send message to chat endpoint (POST /chat)
+ * Sends student message, previous history, problem context (title, description),
+ * and student's current code from Monaco editor.
+ */
+export const sendChatMessageApi = async ({
+  message,
+  history = [],
+  problemId = null,
+  problemTitle = null,
+  problemDescription = null,
+  currentCode = null,
+  language = null,
+}) => {
+  const response = await api.post("/chat", {
+    message,
+    history,
+    problemId,
+    problemTitle,
+    problemDescription,
+    currentCode,
+    language,
+  });
+  return response.data;
+};

@@ -8,6 +8,7 @@ import {
   fetchProblemSubmissionsApi,
 } from "../lib/api";
 import { getSolvedProblems } from "../store/problemSlice";
+import ChatInterface from "./ChatInterface";
 import {
   ArrowLeft,
   Play,
@@ -24,6 +25,7 @@ import {
   Cpu,
   Sparkles,
   ChevronRight,
+  Bot,
 } from "lucide-react";
 
 export default function ProblemDetail({
@@ -39,12 +41,35 @@ export default function ProblemDetail({
   const [isLoadingProblem, setIsLoadingProblem] = useState(true);
   const [problemError, setProblemError] = useState(null);
 
-  // Left panel active tab: "description" | "editorial" | "submissions"
+  // Left panel active tab: "description" | "editorial" | "submissions" | "teacher"
   const [leftTab, setLeftTab] = useState("description");
 
-  // Code editor state
+  // Code editor state per language with persistence
   const [selectedLanguage, setSelectedLanguage] = useState("python"); // "python" | "cpp"
   const [code, setCode] = useState("");
+  const [codeByLanguage, setCodeByLanguage] = useState({});
+
+  // Default starter code templates for supported languages
+  const getDefaultTemplate = (lang) => {
+    if (lang === "cpp") {
+      return `#include <iostream>\n#include <vector>\n#include <string>\n\nusing namespace std;\n\n// Write your solution here\n`;
+    }
+    return `# Write your solution here\n`;
+  };
+
+  // Helper to extract starter code from problem definition
+  const getStarterCodeForLang = (problemObj, lang) => {
+    if (problemObj && Array.isArray(problemObj.startCode)) {
+      const targetLang = lang === "cpp" ? ["cpp", "c++"] : [lang];
+      const match = problemObj.startCode.find((sc) =>
+        targetLang.includes(sc.language?.toLowerCase())
+      );
+      if (match && match.initialCode) {
+        return match.initialCode;
+      }
+    }
+    return getDefaultTemplate(lang);
+  };
 
   // Bottom console state: "testcase" | "result"
   const [consoleTab, setConsoleTab] = useState("testcase");
@@ -76,22 +101,45 @@ export default function ProblemDetail({
         if (data) {
           setProblem(data);
 
-          // Find starter code matching default language (Python) or fallback to first available
-          const defaultLang = "python";
-          const startCodeObj = data.startCode?.find(
-            (sc) => sc.language?.toLowerCase() === defaultLang
-          );
+          // Build code map across languages: load user's previously saved code or fallback to problem starter code
+          const initialMap = {};
+          const supportedLangs = ["python", "cpp"];
 
-          if (startCodeObj && startCodeObj.initialCode) {
-            setSelectedLanguage(defaultLang);
-            setCode(startCodeObj.initialCode);
-          } else if (data.startCode && data.startCode.length > 0) {
-            const firstLang = data.startCode[0].language?.toLowerCase();
-            setSelectedLanguage(firstLang === "c++" ? "cpp" : firstLang);
-            setCode(data.startCode[0].initialCode || "");
-          } else {
-            setCode("# Write your code here\n");
+          supportedLangs.forEach((lang) => {
+            try {
+              const saved = localStorage.getItem(`code_${problemId}_${lang}`);
+              if (saved !== null && saved !== "") {
+                initialMap[lang] = saved;
+                return;
+              }
+            } catch (_) {}
+            initialMap[lang] = getStarterCodeForLang(data, lang);
+          });
+
+          // Also scan any additional languages in problem.startCode
+          if (Array.isArray(data.startCode)) {
+            data.startCode.forEach((sc) => {
+              const langKey =
+                sc.language?.toLowerCase() === "c++"
+                  ? "cpp"
+                  : sc.language?.toLowerCase();
+              if (langKey && !initialMap[langKey]) {
+                try {
+                  const saved = localStorage.getItem(`code_${problemId}_${langKey}`);
+                  if (saved !== null && saved !== "") {
+                    initialMap[langKey] = saved;
+                    return;
+                  }
+                } catch (_) {}
+                initialMap[langKey] = sc.initialCode || getDefaultTemplate(langKey);
+              }
+            });
           }
+
+          const defaultLang = "python";
+          setSelectedLanguage(defaultLang);
+          setCode(initialMap[defaultLang] || getDefaultTemplate(defaultLang));
+          setCodeByLanguage(initialMap);
         } else {
           setProblemError("Problem not found.");
         }
@@ -133,42 +181,71 @@ export default function ProblemDetail({
     }
   }, [leftTab, isAuthenticated, problemId]);
 
-  // Handle switching language in editor
-  const handleLanguageChange = (newLang) => {
-    setSelectedLanguage(newLang);
-
-    // Look for matching starter code
-    if (problem && Array.isArray(problem.startCode)) {
-      const targetLang = newLang === "cpp" ? ["cpp", "c++"] : [newLang];
-      const match = problem.startCode.find((sc) =>
-        targetLang.includes(sc.language?.toLowerCase())
-      );
-
-      if (match && match.initialCode) {
-        setCode(match.initialCode);
-        return;
-      }
-    }
-
-    // Default template fallback if no starter code defined
-    if (newLang === "cpp") {
-      setCode(
-        `#include <iostream>\n#include <vector>\n#include <string>\n\nusing namespace std;\n\n// Write your solution here\n`
-      );
-    } else {
-      setCode(`import sys\n\n# Write your solution here\n`);
-    }
+  // Handle editor code modifications: updates active code, per-language map, and localStorage
+  const handleCodeChange = (newVal) => {
+    const val = newVal ?? "";
+    setCode(val);
+    setCodeByLanguage((prev) => ({
+      ...prev,
+      [selectedLanguage]: val,
+    }));
+    try {
+      localStorage.setItem(`code_${problemId}_${selectedLanguage}`, val);
+    } catch (_) {}
   };
 
-  // Reset current code to starter code template
+  // Handle switching language in editor without losing edits in any language
+  const handleLanguageChange = (newLang) => {
+    if (newLang === selectedLanguage) return;
+
+    // 1. Save current language's edited code
+    const currentEdited = code;
+    const updatedMap = {
+      ...codeByLanguage,
+      [selectedLanguage]: currentEdited,
+    };
+    try {
+      localStorage.setItem(`code_${problemId}_${selectedLanguage}`, currentEdited);
+    } catch (_) {}
+
+    // 2. Load target code for new language from state, localStorage, or starter code
+    let targetCode = updatedMap[newLang];
+    if (targetCode === undefined) {
+      try {
+        const saved = localStorage.getItem(`code_${problemId}_${newLang}`);
+        if (saved !== null && saved !== "") {
+          targetCode = saved;
+        }
+      } catch (_) {}
+    }
+
+    if (targetCode === undefined) {
+      targetCode = getStarterCodeForLang(problem, newLang);
+    }
+
+    updatedMap[newLang] = targetCode;
+    setCodeByLanguage(updatedMap);
+    setSelectedLanguage(newLang);
+    setCode(targetCode);
+  };
+
+  // Reset only current language code to starter template
   const handleResetCode = () => {
     if (!problem) return;
     const confirmReset = window.confirm(
-      "Reset your code to the default starter template? Current changes will be discarded."
+      `Reset your ${selectedLanguage.toUpperCase()} code to the default starter template? Current edits in ${selectedLanguage.toUpperCase()} will be discarded.`
     );
     if (!confirmReset) return;
 
-    handleLanguageChange(selectedLanguage);
+    const starter = getStarterCodeForLang(problem, selectedLanguage);
+    setCode(starter);
+    setCodeByLanguage((prev) => ({
+      ...prev,
+      [selectedLanguage]: starter,
+    }));
+    try {
+      localStorage.removeItem(`code_${problemId}_${selectedLanguage}`);
+    } catch (_) {}
   };
 
   // Execute "Run Code" against visible test cases
@@ -430,12 +507,43 @@ export default function ProblemDetail({
               <History className="w-3.5 h-3.5" />
               Submissions
             </button>
+
+            <button
+              type="button"
+              onClick={() => setLeftTab("teacher")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-colors ${
+                leftTab === "teacher"
+                  ? "bg-base-100 text-primary border-t-2 border-primary"
+                  : "text-base-content/60 hover:text-base-content"
+              }`}
+            >
+              <Bot className="w-3.5 h-3.5 text-primary" />
+              DSA Teacher
+            </button>
           </div>
 
-          {/* Left Panel Body */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-6">
-            {/* 1. DESCRIPTION TAB */}
-            {leftTab === "description" && (
+          {/* Left Panel Body: DSA Teacher Chat (stays mounted, preserves conversation & scroll) */}
+          <div
+            className={`flex-1 h-full overflow-hidden ${
+              leftTab === "teacher" ? "flex flex-col" : "hidden"
+            }`}
+          >
+            <ChatInterface
+              problem={problem}
+              currentCode={code}
+              language={selectedLanguage}
+              onNavigateToLogin={onNavigateToLogin}
+            />
+          </div>
+
+          {/* Left Panel Body: Description, Editorial, and Submissions */}
+          <div
+            className={`flex-1 overflow-y-auto p-5 space-y-6 ${
+              leftTab !== "teacher" ? "block" : "hidden"
+            }`}
+          >
+              {/* 1. DESCRIPTION TAB */}
+              {leftTab === "description" && (
               <div className="space-y-6">
                 <div>
                   <h1 className="text-2xl font-bold tracking-tight text-base-content">
@@ -703,7 +811,7 @@ export default function ProblemDetail({
               language={selectedLanguage === "cpp" ? "cpp" : "python"}
               theme="vs-dark"
               value={code}
-              onChange={(newVal) => setCode(newVal || "")}
+              onChange={handleCodeChange}
               loading={
                 <div className="flex items-center justify-center h-full bg-[#1e1e1e] text-base-content/60 text-xs font-mono">
                   <span className="loading loading-spinner loading-sm mr-2 text-primary"></span>

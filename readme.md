@@ -145,6 +145,73 @@ I am documenting my progress with dates as I build each part of the frontend ste
      - `fetchProblemSubmissionsApi`: Calls `GET /submit/:problemId` to retrieve submission history.
   5. Verified complete production build with `npm run build` (0 errors or warnings).
 
+### Milestone 9: Universal Problem Selection, Admin Panel Solve Action & Route Guard Refinements
+- Date: November 10, 2026
+- What I completed:
+  1. Resolved problem selection routing issue:
+     - Connected `onSelectProblem` handler to problem titles in `src/components/AdminPanel.jsx` with hover styling and accessible pointer controls.
+     - Added a dedicated "Solve" button with a play icon in the Admin Panel problem table actions column, allowing administrators to open problem details and the code editor directly from `/admin`.
+     - Forwarded `onSelectProblem={(id) => navigate("problem", id)}` to `<AdminPanel />` in `src/App.jsx`.
+  2. Refined role-based routing in `src/App.jsx`:
+     - Introduced `hasHandledInitialAuthRef` to ensure administrators are routed to `/admin` upon initial login/boot without being locked out of the public problem catalog or problem details view.
+     - Admins can now freely toggle between the Admin Panel, the Home problem list, and the code editor at `/problem/:id`.
+  3. Identifier normalization & resilience:
+     - Standardized problem identifier passing (`prob._id || prob.id`) in `src/components/Home.jsx` and `src/components/AdminPanel.jsx` to prevent silent navigation failures.
+     - Updated `fetchProblemById` in `src/lib/api.js` to return `response.data?.problem || response.data` for seamless backend compatibility.
+     - Added a custom dark-themed loading spinner fallback (`<Editor loading={...} />`) inside `src/components/ProblemDetail.jsx` while the Monaco Editor environment initializes.
+  4. Verified full production build with `npm run build` with 0 errors.
+
+### Milestone 10: DSA Teacher Chat Interface (daisyUI & useRef Hook)
+- Date: November 12, 2026
+- What I completed:
+  1. Built the dedicated **DSA Teacher** (Data Structures and Algorithms) chat interface (`src/components/ChatInterface.jsx`):
+     - **daisyUI Chat Component Architecture**: Utilizes official daisyUI `chat`, `chat-start`, `chat-end`, `chat-image avatar`, `chat-header`, `chat-footer`, and responsive `chat-bubble` (`chat-bubble-primary` for the DSA Teacher and `chat-bubble-neutral` for the student).
+     - **useRef Hook for Latest Chat**: Implemented the React `useRef` hook (`latestChatRef`) attached to a scroll anchor that automatically scrolls the chat down to the newest message whenever new replies arrive or when the typing indicator renders.
+     - **Interactive UI Elements**: Quick prompt chips for common DSA topics (time complexity, binary search, stacks & queues, dynamic programming), a real-time typing indicator (`loading loading-dots`), and a clear chat trigger.
+     - **Backend-Ready Architecture**: Omitted system instructions on the frontend per architectural specifications (the backend will inject system instructions directly). Calls `sendChatMessageApi({ message, history, problemId })` in `src/lib/api.js`.
+  2. Integrated the chat interface in two accessible locations:
+     - **In Problem Workspace (`ProblemDetail.jsx`)**: Available as a dedicated "DSA Teacher" tab alongside Description, Editorial, and Submissions for side-by-side IDE assistance.
+     - **Global Floating Widget (`App.jsx`)**: Toggleable floating button in the bottom right corner with smooth popover card.
+  3. Verified complete production build with `npm run build` (0 errors or warnings).
+
+### Milestone 11: Rude DSA Teacher AI Chatbot Context Injection & Strict Authentication
+- Date: November 12, 2026
+- What I completed:
+  1. **Strict User Authentication on Backend (`/chat`)**:
+     - Protected `POST /chat` with `userAuth` middleware in `leetcode-clone/routes/chat.js`.
+     - Rejects unauthenticated requests with `401 Unauthorized` (`Authentication required. Please login.`).
+     - Only authenticated users with active database accounts and valid JWT sessions can communicate with the AI.
+  2. **Dynamic Context-Aware System Prompt**:
+     - Implemented `buildSystemPrompt` in `leetcode-clone/controllers/chat.controller.js`.
+     - Injects active problem context: `problemTitle`, `problemDescription`, and student's current code (`currentCode`) directly from the Monaco Editor.
+     - Enforces the **Rude DSA Teacher** persona: sarcastic, demanding, uncompromising, calling out lazy thinking or unoptimized $O(N^2)$ approaches, while delivering 100% technically accurate Big-O analysis and algorithmic instruction.
+     - Addresses student by name (`user.firstName`) from database records.
+  3. **Frontend Context & Auth Enhancements**:
+     - Updated `sendChatMessageApi` in `src/lib/api.js` to transmit `{ message, history, problemId, problemTitle, problemDescription, currentCode, language }`.
+     - Updated `ChatInterface.jsx` with real-time auth status awareness, showing a locked state and clear sign-in warnings when unauthenticated.
+     - Passed `currentCode={code}` and `language={selectedLanguage}` from Monaco editor into `ChatInterface` within `ProblemDetail.jsx`.
+  4. Verified full production build with `npm run build` with 0 errors.
+
+### Milestone 12: One-Click Code/Quote Copy, Global AI Chat State & Language Code Persistence
+- Date: November 12, 2026
+- What I completed:
+  1. **One-Click Code & Quote Copy Formatting (`FormattedMessage.jsx`)**:
+     - Built `FormattedMessage` parser component that extracts triple-backtick code blocks and blockquotes.
+     - **Code Blocks**: Formatted with IDE-style dark theme (`bg-[#18181b]`), language badge (`PYTHON`, `C++`, etc.), and a dedicated one-click "Copy code" button that toggles to a green checkmark and "Copied!" for 2 seconds.
+     - **Quotes**: Formatted with a left accent bar (`border-l-4 border-warning`) and a one-click "Copy quote" button.
+     - Added one-click copy button in the message header to copy full message text.
+     - Created bulletproof `copyToClipboard` utility with `navigator.clipboard` and `execCommand` fallback.
+  2. **Global Redux Chat State (`src/store/chatSlice.js`)**:
+     - Created `chatSlice` storing conversation history per channel ID (problem-specific or global).
+     - Persists conversations to `localStorage` (`dsa_chat_conversations`) so discussions with the DSA Teacher survive tab switches, page reloads, and route transitions.
+     - Updated `ProblemDetail.jsx` left panel tabs to toggle via CSS visibility (`hidden` vs visible) rather than conditionally unmounting, ensuring DOM state, scroll position, and active inputs never reset.
+  3. **Multi-Language Code Persistence Across Switches**:
+     - Upgraded `ProblemDetail.jsx` with a per-language code mapping (`codeByLanguage`) and `localStorage` caching (`code_${problemId}_${language}`).
+     - When switching from Python to C++, the user's edited Python code is preserved.
+     - Switching back to Python restores the exact edited code rather than resetting to default starter templates.
+     - Reset Code only resets the starter template for the active language.
+  4. Verified production build with `npm run build` with 0 errors.
+
 ---
 
 ## What I Built So Far
@@ -224,10 +291,11 @@ Dedicated state management module for coding problems:
   - `resetFilters`: Resets all filters back to default.
 
 ### 7. Admin Panel Component (`src/components/AdminPanel.jsx`)
-Administrative management console restricted to users with `role: "admin"` providing 3 core problem operations:
+Administrative management console restricted to users with `role: "admin"` providing core problem operations:
 - **1. Create Problem**: Navigates to the dedicated `/problem/create` route to publish a new challenge.
 - **2. Update Problem**: Each problem row contains an "Update Problem" button. When clicked, the modal opens with all current values already pre-filled (title, difficulty, description, tags, test cases, solution code) so the admin can simply edit the desired value and save.
 - **3. Delete Problem**: Each problem row contains a "Delete Problem" button that prompts for confirmation and removes the challenge from the database.
+- **4. Direct Solve / View Access**: Administrators can click on any problem title or the dedicated "Solve" button in the problem table to open the `/problem/:id` Monaco code editor workspace immediately.
 - **Access Guard**: Instant verification preventing unauthorized regular users or unauthenticated visitors from accessing administrative tools.
 - **Platform Analytics**: Real-time summary cards displaying Total Challenges, Easy, Medium, and Hard problem counts.
 - **Problem Directory**: Searchable, filterable table listing challenges with tag badges, difficulty ratings, and action controls.
@@ -248,18 +316,49 @@ The main problem exploration dashboard featuring:
   3. **Tag Filter**: Dynamically extracts all unique tags from MongoDB (e.g. `#array`, `#string`) for both dropdown selection and interactive row tag pills.
 - **Live Search Bar**: Real-time filtering across problem titles and tags.
 - **Solved Stats Progress Bar**: Radial progress indicator displaying `solvedCount / totalCount` with percentage.
-- **Problems Table**: Responsive table showing status icons (green `CheckCircle2` for solved vs gray `Circle` for unsolved), difficulty badges, tag badges, and "Solve" action buttons.
+- **Problems Table**: Responsive table showing status icons (green `CheckCircle2` for solved vs gray `Circle` for unsolved), difficulty badges, tag badges, and "Solve" action buttons. Clicking on any problem title or the Solve button opens the `/problem/:id` code editor.
 
 ### 10. Application Shell & Role-Based Routing (`src/App.jsx`)
 The main application container featuring:
 - **Role-Based Routing**:
-  - If authenticated user has `role === "admin"`, routes to the **Admin Panel** (`currentView = "admin"`).
-  - Otherwise (guests, regular users with `role === "user"`), routes to the **Home page** (`currentView = "home"`).
+  - If authenticated user has `role === "admin"`, automatically routes to the **Admin Panel** (`currentView = "admin"`) on login or initial boot.
+  - Allows administrators to freely navigate between the Admin Panel, the public Problems catalog, and any `/problem/:id` code workspace without route bouncing.
+  - Standard users and guests route to the **Home page** (`currentView = "home"`).
+- **History API URL Synchronization**: Custom synchronization connecting `pushState` and `popstate` to views (`/`, `/admin`, `/problem/create`, `/problem/:id`, `/login`, `/signup`).
 - **Initial Auth Check**: Dispatches `checkAuth()` on mount to restore user session from HTTP-only cookies without throwing console errors.
-- **Navigation Bar**: Sticky brand header with logo, title, user info, admin badge, and responsive switcher for Admin Panel / Problems / Sign In / Sign Up.
+- **Navigation Bar**: Sticky brand header with logo, title, user info, admin badge, and responsive switcher for Admin Panel / Problems / Sign In / Sign Up. Automatically hides on `/problem/:id` to give full viewport space to the code editor.
 - **Secure View Switcher**: Smoothly handles authenticated and public states with zero unauthorized leaks.
 
-### 11. Styling & Theme Configuration (`src/index.css` & index.html)
+### 11. Problem Detail & Monaco Code Workspace (`src/components/ProblemDetail.jsx`)
+Full-screen split workspace replicating the LeetCode IDE interface:
+- **Top Header Bar**: Clean bar with LeetCode logo, `< Problem List` back link, `Run` button, green `Submit` button, and user authentication badge (strictly zero extraneous settings or notification buttons).
+- **Left Panel (Problem Information & Chat)**:
+  - **Description Tab**: Challenge title, difficulty badge, tags, problem statement, and formatted example test cases with input, output, and explanation.
+  - **Editorial Tab**: Algorithmic intuition, step-by-step logic, complexity analysis, and complete reference solution walkthrough.
+  - **Submissions Tab**: Real-time table fetching the user's historical submissions from `GET /submit/:problemId` (status badge, language, runtime, memory, and date).
+  - **DSA Teacher Tab**: Embedded full-featured AI tutoring assistant with live problem context and Monaco editor code synchronization.
+  - **Tab Switching State Preservation**: Panels toggle via CSS visibility (`hidden` vs active) rather than conditional unmounting, keeping DOM elements, scroll positions, and inputs active.
+- **Right Panel (Monaco Code Editor & Console Drawer)**:
+  - Monaco Editor configured with `vs-dark` theme, line numbers, responsive sizing, and a loading spinner fallback.
+  - **Multi-Language Code Persistence**: Per-language code state (`codeByLanguage`) and `localStorage` caching (`code_${problemId}_${language}`). Switching between Python and C++ preserves all user edits in both languages without reverting to default starter templates.
+  - "Reset Code" button with confirmation prompt, reverting only the active language's starter template.
+  - **Testcase Drawer**: Pill toggles for example test cases showing input and expected output.
+  - **Test Result Drawer**: Live execution results from Judge0 displaying status, runtime, memory, and per-case output comparisons.
+
+### 12. DSA Teacher Chat Interface & Global Redux State (`src/components/ChatInterface.jsx` & `src/store/chatSlice.js`)
+Dedicated interactive chat interface for algorithmic guidance and code critique:
+- **Global Redux State (`chatSlice`)**: All conversation messages are managed centrally in Redux and synchronized with `localStorage` (`dsa_chat_conversations`). Switching tabs between Description, Editorial, and Submissions never destroys or resets the chat.
+- **daisyUI Chat Architecture**: Utilizes `chat`, `chat-start`, `chat-end`, `chat-image avatar`, `chat-header`, `chat-footer`, and responsive `chat-bubble` (`chat-bubble-neutral` for user and card-styled `bg-base-200 border` for the teacher).
+- **One-Click Code & Quote Copy (`FormattedMessage.jsx`)**:
+  - Automatically parses markdown triple-backtick code blocks and renders them in IDE-styled dark containers with language badges and a dedicated **"Copy code"** button (toggles to a green checkmark and "Copied!" for 2 seconds).
+  - Parses blockquotes (`> ...`) into callouts with an amber accent bar and a **"Copy quote"** button.
+  - Header-level one-click copy button to copy the entire message text to clipboard.
+  - Cross-browser clipboard utility with `navigator.clipboard` and `execCommand` fallback (`src/lib/clipboard.js`).
+- **useRef Hook Auto-Scroll**: Implemented the `useRef` hook (`latestChatRef`) attached to a scroll anchor that automatically scrolls the chat down to the newest message smoothly.
+- **Context Injection**: Transmits problem title, description, and the user's Monaco editor code to the backend so the AI can analyze and critique student code directly.
+- **Strict Authentication Guard**: Visual badge displays "Online" vs "Sign In Required", locking input with warnings if unauthenticated.
+
+### 13. Styling & Theme Configuration (`src/index.css` & index.html)
 - Configured daisyUI 5 with Tailwind CSS 4 using direct CSS imports (`@import "tailwindcss";` and `@plugin "daisyui";`).
 - Applied dark theme (`data-theme="dark"`) out of the box for a sleek LeetCode aesthetic.
 - Embedded SVG favicon to eliminate 404 console errors.
@@ -272,28 +371,33 @@ The main application container featuring:
 leetcode-frontend/
 ├── src/
 │   ├── components/
-│   │   ├── AdminPanel.jsx    # Admin dashboard for problem management & catalog stats
-│   │   ├── CreateProblem.jsx # Dedicated page/route for /problem/create with alert confirmation
-│   │   ├── Home.jsx          # Homepage with 3 filters, stats, and problem table
-│   │   ├── Login.jsx         # Login form component with validation & Redux dispatch
-│   │   └── Signup.jsx        # 3-input signup form component with auto-redirect
+│   │   ├── AdminPanel.jsx        # Admin dashboard for problem management & catalog stats
+│   │   ├── ChatInterface.jsx     # DSA Teacher chat interface using daisyUI & useRef
+│   │   ├── CreateProblem.jsx     # Dedicated page for /problem/create with quick JSON import
+│   │   ├── FormattedMessage.jsx  # Markdown parser with one-click code/quote copy buttons
+│   │   ├── Home.jsx              # Homepage with 3 filters, stats, and problem table
+│   │   ├── Login.jsx             # Login form component with validation & Redux dispatch
+│   │   ├── ProblemDetail.jsx     # Monaco Editor split workspace with multi-language persistence
+│   │   └── Signup.jsx            # 3-input signup form component with auto-redirect
 │   ├── lib/
-│   │   └── api.js            # Axios client configured with credentials & base URL
+│   │   ├── api.js                # Axios client configured with credentials & base URL
+│   │   └── clipboard.js          # Cross-browser clipboard copy utility with fallback
 │   ├── schemas/
-│   │   └── authSchema.js     # Zod validation schemas for signup & login
+│   │   └── authSchema.js         # Zod validation schemas for signup & login
 │   ├── store/
-│   │   ├── authSlice.js      # Redux slice with Axios thunks (register, login, check, logout)
-│   │   ├── problemSlice.js   # Redux slice with problem fetching, admin actions & filters
-│   │   └── index.js          # Redux store configuration combining auth & problem reducers
-│   ├── App.jsx               # Navigation bar & role-based view router
-│   ├── index.css             # Tailwind CSS & daisyUI 5 imports
-│   └── main.jsx              # React DOM mounting entrypoint with Redux Provider
-├── .env.example              # Example environment variable file
-├── .gitignore                # Production git ignore configuration
-├── index.html                # HTML entrypoint with dark theme & SVG favicon
-├── package.json              # Dependencies and build scripts
-├── readme.md                 # Project documentation and progress log
-└── vite.config.js            # Vite configuration with /api backend proxy
+│   │   ├── authSlice.js          # Redux slice with Axios thunks (register, login, check, logout)
+│   │   ├── chatSlice.js          # Redux slice for persistent AI chat conversations
+│   │   ├── problemSlice.js       # Redux slice with problem fetching, admin actions & filters
+│   │   └── index.js              # Redux store configuration combining all reducers
+│   ├── App.jsx                   # Navigation bar & role-based view router
+│   ├── index.css                 # Tailwind CSS & daisyUI 5 imports
+│   └── main.jsx                  # React DOM mounting entrypoint with Redux Provider
+├── .env.example                  # Example environment variable file
+├── .gitignore                    # Production git ignore configuration
+├── index.html                    # HTML entrypoint with dark theme & SVG favicon
+├── package.json                  # Dependencies and build scripts
+├── readme.md                     # Project documentation and progress log
+└── vite.config.js                # Vite configuration with /api backend proxy
 ```
 
 ---
@@ -327,8 +431,10 @@ The frontend is specifically tailored to interact with the [LeetCode Clone Backe
 | **Run Code** | `runCodeApi({ problemId, language, code })` | `POST /problem/run/:problemId` | `{ language, code }` | `Cookie: token=...` | Runs code against visible example test cases via Judge0 |
 | **Submit Code** | `submitCodeApi({ problemId, language, code })` | `POST /problem/solve/:problemId` | `{ language, code }` | `Cookie: token=...` | Evaluates code against visible + hidden test cases via Judge0 |
 | **Get Submissions** | `fetchProblemSubmissionsApi(problemId)` | `GET /submit/:problemId` | None | `Cookie: token=...` | Fetches user's past submission history for problem |
+| **DSA Teacher Chat** | `sendChatMessageApi({ message, history, problemId, problemTitle, problemDescription, currentCode, language })` | `POST /chat` | `{ message, history, problemId, problemTitle, problemDescription, currentCode, language }` | `Cookie: token=...` (Authenticated) | Evaluates query with dynamic system prompt containing problem context & Monaco editor code |
 | **Profile** | `getProfile()` | `GET /profile` | None | `Cookie: token=...` | Fetches full authenticated user profile data |
 | **Logout** | `dispatch(logoutUser())` | `POST /logout` | None | `Cookie: token=...` | Clears cookie & blacklists JWT in Redis, routes to home |
+
 
 ---
 
