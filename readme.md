@@ -234,9 +234,12 @@ I am documenting my progress with dates as I build each part of the frontend ste
   3. **Admin Panel Integration (`src/components/AdminPanel.jsx`)**:
      - Added a dedicated "Video" action button on each problem in the management table.
      - Opens `VideoUploadModal` with problem context, refreshing catalog on video changes.
-  4. **Problem Detail Solution Walkthrough (`src/components/ProblemDetail.jsx`)**:
-     - Integrated `fetchVideoByProblemId` into `ProblemDetail.jsx`.
-     - Displays solution video player with poster thumbnail inside the Editorial walkthrough tab.
+  4. **Problem Detail Editorial Video Walkthrough (`src/components/ProblemDetail.jsx`)**:
+     - Integrated `fetchVideoByProblemId` into `ProblemDetail.jsx` with automatic data loading on problem mount.
+     - Added conditional `VIDEO` pill badge on the Editorial tab header button whenever a solution video exists for the problem.
+     - Built embedded video player card featuring HTML5 streaming, dynamic Cloudinary poster thumbnail, `HD Video` badge, formatted runtime (`MM:SS`), file size in MB, format tag, and author attribution (`Explained by {firstName}`).
+     - Added loading state with DaisyUI spinner and an empty fallback card when no video has been uploaded yet, guiding users to the written editorial.
+     - Added direct "Open in New Tab" external link for full-screen viewing.
   5. Verified production build with `npm run build` with 0 errors.
 
 ---
@@ -361,7 +364,12 @@ Full-screen split workspace replicating the LeetCode IDE interface:
 - **Top Header Bar**: Clean bar with LeetCode logo, `< Problem List` back link, `Run` button, green `Submit` button, and user authentication badge (strictly zero extraneous settings or notification buttons).
 - **Left Panel (Problem Information & Chat)**:
   - **Description Tab**: Challenge title, difficulty badge, tags, problem statement, and formatted example test cases with input, output, and explanation.
-  - **Editorial Tab**: Algorithmic intuition, step-by-step logic, complexity analysis, and complete reference solution walkthrough.
+  - **Editorial Tab & Video Walkthrough**:
+    - **Header Notification**: Dynamically displays a prominent `VIDEO` badge on the Editorial tab button when a solution video is uploaded for the problem.
+    - **Embedded Video Player**: Native HTML5 player with Cloudinary thumbnail poster (`poster={solutionVideo.thumbnailUrl}`), responsive aspect ratio (`aspect-video`), format badge (`MP4`), duration indicator (e.g. `3:05`), byte size in MB, and author credit (`Explained by {firstName}`).
+    - **Loading & Fallback**: Loading spinner while fetching video data, and an empty state card encouraging users to refer to the written editorial when no video has been uploaded yet.
+    - **New Tab Link**: Convenient "Open in New Tab" link with external icon for distraction-free watching.
+    - **Algorithmic Breakdown**: Problem overview, intuition, step-by-step logic, complexity analysis, and complete reference solution in C++ or Python.
   - **Submissions Tab**: Real-time table fetching the user's historical submissions from `GET /submit/:problemId` (status badge, language, runtime, memory, and date).
   - **DSA Teacher Tab**: Embedded full-featured AI tutoring assistant with live problem context and Monaco editor code synchronization.
   - **Tab Switching State Preservation**: Panels toggle via CSS visibility (`hidden` vs active) rather than conditional unmounting, keeping DOM elements, scroll positions, and inputs active.
@@ -397,6 +405,14 @@ Full-featured solution video management system for administrators:
 - **Real-Time Progress Bar**: Tracks upload completion percentage during large video transfers.
 - **Embedded Player**: Allows reviewing uploaded solutions with native video controls and Cloudinary thumbnail posters.
 - **Lifecycle Management**: Supports deletion via Cloudinary's `destroy` API.
+
+### 15. Problem Editorial Video Walkthrough Player (`src/components/ProblemDetail.jsx`)
+In-depth video explanation embedded seamlessly within the problem interface:
+- **Editorial Tab Header Badge**: Displays a vibrant `VIDEO` indicator badge on the Editorial tab button when a solution walkthrough is present.
+- **Interactive HTML5 Player**: Streams the uploaded Cloudinary video (`videoUrl`) with `poster` thumbnail preview, `aspect-video` responsive scaling, and full playback controls (`controlsList="nodownload"`).
+- **Video Metadata Header**: Highlights `HD Video` badge, formatted duration (e.g. `3:05`), video format (`MP4`), file size in MB, and author credit (`Explained by {firstName}`).
+- **Loading & Empty Fallbacks**: Displays a DaisyUI loading spinner while resolving metadata, and an informative fallback card when no video has been uploaded yet, guiding users to the written editorial.
+- **New Tab Viewer**: Provides an "Open in New Tab" link for distraction-free full-screen viewing.
 
 ---
 

@@ -28,6 +28,7 @@ import {
   ChevronRight,
   Bot,
   Video,
+  ExternalLink,
 } from "lucide-react";
 
 export default function ProblemDetail({
@@ -43,6 +44,15 @@ export default function ProblemDetail({
   const [isLoadingProblem, setIsLoadingProblem] = useState(true);
   const [problemError, setProblemError] = useState(null);
   const [solutionVideo, setSolutionVideo] = useState(null);
+  const [isLoadingVideo, setIsLoadingVideo] = useState(false);
+
+  // Helper to format video duration (e.g. 185s -> "3:05")
+  const formatDuration = (seconds) => {
+    if (!seconds || isNaN(seconds)) return null;
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);   
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
 
   // Left panel active tab: "description" | "editorial" | "submissions" | "teacher"
   const [leftTab, setLeftTab] = useState("description");
@@ -145,11 +155,14 @@ export default function ProblemDetail({
           setCodeByLanguage(initialMap);
 
           // Fetch solution video if available
+          setIsLoadingVideo(true);
           try {
             const vData = await fetchVideoByProblemId(problemId);
             if (isMounted) setSolutionVideo(vData?.video || null);
           } catch (_) {
             if (isMounted) setSolutionVideo(null);
+          } finally {
+            if (isMounted) setIsLoadingVideo(false);
           }
         } else {
           setProblemError("Problem not found.");
@@ -504,6 +517,11 @@ export default function ProblemDetail({
             >
               <BookOpen className="w-3.5 h-3.5" />
               Editorial
+              {solutionVideo && (
+                <span className="badge badge-primary badge-xs py-0 px-1 text-[9px] font-bold">
+                  VIDEO
+                </span>
+              )}
             </button>
 
             <button
@@ -638,6 +656,100 @@ export default function ProblemDetail({
                     Algorithmic breakdown and complexity analysis for{" "}
                     <strong>{problem.title}</strong>.
                   </p>
+                </div>
+
+                {/* Video Solution Walkthrough Card */}
+                <div className="bg-base-200/50 p-4 rounded-2xl border border-base-300 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                        <Video className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-sm text-base-content">
+                          Video Solution Walkthrough
+                        </h3>
+                        <p className="text-[11px] text-base-content/60">
+                          Official in-depth video explanation & code walk
+                        </p>
+                      </div>
+                    </div>
+
+                    {solutionVideo && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="badge badge-primary badge-sm font-semibold gap-1 text-[11px]">
+                          <Play className="w-2.5 h-2.5 fill-current" />
+                          HD Video
+                        </span>
+                        {solutionVideo.duration > 0 && (
+                          <span className="badge badge-ghost badge-sm text-[11px] gap-1 font-mono">
+                            <Clock className="w-3 h-3" />
+                            {formatDuration(solutionVideo.duration)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {isLoadingVideo ? (
+                    <div className="py-12 flex flex-col items-center justify-center gap-2 text-xs text-base-content/60">
+                      <span className="loading loading-spinner loading-md text-primary"></span>
+                      <p>Loading solution video walkthrough...</p>
+                    </div>
+                  ) : solutionVideo?.videoUrl ? (
+                    <div className="space-y-2.5">
+                      <div className="relative rounded-xl overflow-hidden bg-black aspect-video border border-base-300 shadow-md">
+                        <video
+                          key={solutionVideo.videoUrl}
+                          controls
+                          controlsList="nodownload"
+                          poster={solutionVideo.thumbnailUrl}
+                          src={solutionVideo.videoUrl}
+                          className="w-full h-full object-contain"
+                          preload="metadata"
+                        >
+                          Your browser does not support HTML5 video streaming.
+                        </video>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] text-base-content/60 px-1 pt-0.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="badge badge-outline badge-xs text-[10px] uppercase font-mono">
+                            {solutionVideo.format || "MP4"}
+                          </span>
+                          {solutionVideo.bytes > 0 && (
+                            <span>
+                              {(solutionVideo.bytes / (1024 * 1024)).toFixed(1)} MB
+                            </span>
+                          )}
+                          {solutionVideo.userId?.firstName && (
+                            <span>
+                              • Explained by {solutionVideo.userId.firstName}
+                            </span>
+                          )}
+                        </div>
+                        <a
+                          href={solutionVideo.videoUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary hover:underline font-medium flex items-center gap-1"
+                        >
+                          Open in New Tab <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="py-8 px-4 rounded-xl border border-dashed border-base-300 text-center bg-base-100/50 space-y-1.5">
+                      <div className="w-10 h-10 rounded-full bg-base-200 text-base-content/40 flex items-center justify-center mx-auto mb-2">
+                        <Video className="w-5 h-5" />
+                      </div>
+                      <p className="text-xs font-semibold text-base-content/80">
+                        No Solution Video Available Yet
+                      </p>
+                      <p className="text-[11px] text-base-content/50 max-w-sm mx-auto">
+                        A video walkthrough for this problem has not been uploaded yet. Refer to the written editorial and code breakdown below.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="bg-base-200/40 p-4 rounded-xl border border-base-300 space-y-3 text-sm">
