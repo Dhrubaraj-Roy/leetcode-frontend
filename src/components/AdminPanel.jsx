@@ -22,7 +22,9 @@ import {
   Sparkles,
   FileEdit,
   Play,
+  Video,
 } from "lucide-react";
+import VideoUploadModal from "./VideoUploadModal";
 
 export default function AdminPanel({
   onNavigateToHome,
@@ -41,6 +43,15 @@ export default function AdminPanel({
   const [modalMode, setModalMode] = useState("update");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProblemId, setEditingProblemId] = useState(null);
+
+  // Video Solution Modal state
+  const [videoModalProblem, setVideoModalProblem] = useState(null);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+
+  const handleOpenVideoModal = (problem) => {
+    setVideoModalProblem(problem);
+    setIsVideoModalOpen(true);
+  };
 
   // Form loading & alert states
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -679,6 +690,17 @@ export default function AdminPanel({
                             Update Problem
                           </button>
 
+                          {/* Button: SOLUTION VIDEO */}
+                          <button
+                            type="button"
+                            onClick={() => handleOpenVideoModal(prob)}
+                            className="btn btn-outline btn-secondary btn-xs gap-1"
+                            title="Manage Solution Video (Upload / Delete)"
+                          >
+                            <Video className="w-3.5 h-3.5" />
+                            Video
+                          </button>
+
                           {/* Button 3: DELETE PROBLEM */}
                           <button
                             type="button"
@@ -1035,6 +1057,19 @@ export default function AdminPanel({
           </div>
         </div>
       )}
+
+      {/* Modal for Solution Video Upload & Management (Cloudinary direct upload) */}
+      <VideoUploadModal
+        problem={videoModalProblem}
+        isOpen={isVideoModalOpen}
+        onClose={() => {
+          setIsVideoModalOpen(false);
+          setVideoModalProblem(null);
+        }}
+        onVideoUpdated={() => {
+          dispatch(getAllProblems());
+        }}
+      />
     </div>
   );
 }

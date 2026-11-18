@@ -10,6 +10,7 @@
 [![Zod](https://img.shields.io/badge/Zod-3E67B1?style=for-the-badge&logo=zod&logoColor=white)](https://zod.dev/)
 [![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)](https://axios-http.com/)
 [![Monaco Editor](https://img.shields.io/badge/Monaco_Editor-1E1E1E?style=for-the-badge&logo=visualstudiocode&logoColor=007ACC)](https://microsoft.github.io/monaco-editor/)
+[![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)](https://cloudinary.com/)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ESM-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 
 This is the frontend for the full-stack LeetCode Clone project, built step by step using **React**, **Vite**, **daisyUI**, **Tailwind CSS**, and **React Hook Form with Zod**. It connects seamlessly with the LeetCode clone backend for authentication, coding problem solving, and real-time code evaluation.
@@ -212,6 +213,32 @@ I am documenting my progress with dates as I build each part of the frontend ste
      - Reset Code only resets the starter template for the active language.
   4. Verified production build with `npm run build` with 0 errors.
 
+### Milestone 13: Solution Video Upload & Management System (Cloudinary Direct Upload, 100MB Max Limit)
+- Date: November 18, 2026
+- What I completed:
+  1. **API Integration (`src/lib/api.js`)**:
+     - `getVideoUploadSignature({ problemId })`: Requests cryptographic digital signature from backend (`POST /video/create`).
+     - `saveVideoMetadataApi`: Persists video metadata and triggers on-the-fly thumbnail generation (`POST /video/save`).
+     - `deleteVideoApi(id)`: Purges Cloudinary video assets via `destroy` command and deletes database record (`DELETE /video/delete/:id`).
+     - `fetchVideoByProblemId(problemId)`: Fetches single solution video per problem (`GET /video/problem/:problemId`).
+  2. **Video Upload Modal Component (`src/components/VideoUploadModal.jsx`)**:
+     - Built a comprehensive modal for administrators to manage problem solution videos.
+     - **100 MB Max File Size**: Enforces client-side size validation with immediate warning alerts if exceeded.
+     - **4-Step Direct Cloudinary Upload Workflow**:
+       - **Step 1**: Obtains cryptographic digital signature from backend.
+       - **Step 2**: Prepares `FormData` with API key, timestamp, signature, folder, and file.
+       - **Step 3**: Streams video directly to Cloudinary (`uploadUrl`) with real-time percentage progress bar.
+       - **Step 4**: Calls backend to save metadata and generate dynamic thumbnail.
+     - **Active Video Player & Metadata**: Displays embedded HTML5 video player, duration, format, file size, and direct link.
+     - **Safe Deletion**: Offers double-confirmation video deletion using Cloudinary `destroy`.
+  3. **Admin Panel Integration (`src/components/AdminPanel.jsx`)**:
+     - Added a dedicated "Video" action button on each problem in the management table.
+     - Opens `VideoUploadModal` with problem context, refreshing catalog on video changes.
+  4. **Problem Detail Solution Walkthrough (`src/components/ProblemDetail.jsx`)**:
+     - Integrated `fetchVideoByProblemId` into `ProblemDetail.jsx`.
+     - Displays solution video player with poster thumbnail inside the Editorial walkthrough tab.
+  5. Verified production build with `npm run build` with 0 errors.
+
 ---
 
 ## What I Built So Far
@@ -363,6 +390,14 @@ Dedicated interactive chat interface for algorithmic guidance and code critique:
 - Applied dark theme (`data-theme="dark"`) out of the box for a sleek LeetCode aesthetic.
 - Embedded SVG favicon to eliminate 404 console errors.
 
+### 14. Solution Video Upload Modal (`src/components/VideoUploadModal.jsx`)
+Full-featured solution video management system for administrators:
+- **Direct-to-Cloud Upload**: Uploads video files directly from browser to Cloudinary via signed multipart/form-data, eliminating backend memory overhead.
+- **100 MB Limit**: Rejects files larger than 100 MB prior to network transfer with user alerts.
+- **Real-Time Progress Bar**: Tracks upload completion percentage during large video transfers.
+- **Embedded Player**: Allows reviewing uploaded solutions with native video controls and Cloudinary thumbnail posters.
+- **Lifecycle Management**: Supports deletion via Cloudinary's `destroy` API.
+
 ---
 
 ## Folder Structure
@@ -378,7 +413,8 @@ leetcode-frontend/
 │   │   ├── Home.jsx              # Homepage with 3 filters, stats, and problem table
 │   │   ├── Login.jsx             # Login form component with validation & Redux dispatch
 │   │   ├── ProblemDetail.jsx     # Monaco Editor split workspace with multi-language persistence
-│   │   └── Signup.jsx            # 3-input signup form component with auto-redirect
+│   │   ├── Signup.jsx            # 3-input signup form component with auto-redirect
+│   │   └── VideoUploadModal.jsx  # 4-step direct Cloudinary video upload modal (100MB limit)
 │   ├── lib/
 │   │   ├── api.js                # Axios client configured with credentials & base URL
 │   │   └── clipboard.js          # Cross-browser clipboard copy utility with fallback

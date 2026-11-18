@@ -140,3 +140,54 @@ export const sendChatMessageApi = async ({
   });
   return response.data;
 };
+
+/**
+ * Step 1: Request a secure Cloudinary digital upload signature from backend (POST /video/create)
+ */
+export const getVideoUploadSignature = async ({ problemId }) => {
+  const response = await api.post("/video/create", { problemId });
+  return response.data;
+};
+
+/**
+ * Step 4: Save uploaded video metadata to backend (POST /video/save)
+ * Backend verifies problem existence and generates thumbnail on the go
+ */
+export const saveVideoMetadataApi = async ({
+  problemId,
+  videoUrl,
+  publicId,
+  thumbnailUrl,
+  duration,
+  format,
+  bytes,
+}) => {
+  const response = await api.post("/video/save", {
+    problemId,
+    videoUrl,
+    publicId,
+    thumbnailUrl,
+    duration,
+    format,
+    bytes,
+  });
+  return response.data;
+};
+
+/**
+ * Delete a solution video by videoId or problemId (DELETE /video/delete/:id)
+ * Destroys Cloudinary asset using destroy command and removes from database
+ */
+export const deleteVideoApi = async (id) => {
+  const response = await api.delete(`/video/delete/${id}`);
+  return response.data;
+};
+
+/**
+ * Fetch solution video by Problem ID (GET /video/problem/:problemId)
+ * One problem, one solution video
+ */
+export const fetchVideoByProblemId = async (problemId) => {
+  const response = await api.get(`/video/problem/${problemId}`);
+  return response.data;
+};

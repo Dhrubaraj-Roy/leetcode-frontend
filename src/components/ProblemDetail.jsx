@@ -6,6 +6,7 @@ import {
   runCodeApi,
   submitCodeApi,
   fetchProblemSubmissionsApi,
+  fetchVideoByProblemId,
 } from "../lib/api";
 import { getSolvedProblems } from "../store/problemSlice";
 import ChatInterface from "./ChatInterface";
@@ -26,6 +27,7 @@ import {
   Sparkles,
   ChevronRight,
   Bot,
+  Video,
 } from "lucide-react";
 
 export default function ProblemDetail({
@@ -40,6 +42,7 @@ export default function ProblemDetail({
   const [problem, setProblem] = useState(null);
   const [isLoadingProblem, setIsLoadingProblem] = useState(true);
   const [problemError, setProblemError] = useState(null);
+  const [solutionVideo, setSolutionVideo] = useState(null);
 
   // Left panel active tab: "description" | "editorial" | "submissions" | "teacher"
   const [leftTab, setLeftTab] = useState("description");
@@ -140,6 +143,14 @@ export default function ProblemDetail({
           setSelectedLanguage(defaultLang);
           setCode(initialMap[defaultLang] || getDefaultTemplate(defaultLang));
           setCodeByLanguage(initialMap);
+
+          // Fetch solution video if available
+          try {
+            const vData = await fetchVideoByProblemId(problemId);
+            if (isMounted) setSolutionVideo(vData?.video || null);
+          } catch (_) {
+            if (isMounted) setSolutionVideo(null);
+          }
         } else {
           setProblemError("Problem not found.");
         }
