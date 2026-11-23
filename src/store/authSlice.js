@@ -1,8 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-
-// Base API URL (defaults to /api which proxies to backend in Vite dev)
-const API_URL = import.meta.env.VITE_API_URL || "/api";
+import { api } from "../lib/api";
 
 /**
  * 1. Register User Thunk (POST /register)
@@ -11,20 +8,19 @@ export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/register`,
-        {
-          firstName: userData.firstName,
-          emailId: userData.email,
-          email: userData.email,
-          password: userData.password,
-        },
-        { withCredentials: true }
-      );
+      const response = await api.post("/register", {
+        firstName: userData.firstName,
+        emailId: userData.email,
+        email: userData.email,
+        password: userData.password,
+      });
       return response.data;
     } catch (err) {
       const message =
-        err.response?.data?.message || err.message || "Registration failed";
+        err.userMessage ||
+        err.response?.data?.message ||
+        err.message ||
+        "Registration failed";
       return rejectWithValue(message);
     }
   }
@@ -37,18 +33,17 @@ export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/login`,
-        {
-          emailId: credentials.email,
-          password: credentials.password,
-        },
-        { withCredentials: true }
-      );
+      const response = await api.post("/login", {
+        emailId: credentials.email,
+        password: credentials.password,
+      });
       return response.data;
     } catch (err) {
       const message =
-        err.response?.data?.message || err.message || "Invalid credentials";
+        err.userMessage ||
+        err.response?.data?.message ||
+        err.message ||
+        "Invalid credentials";
       return rejectWithValue(message);
     }
   }
@@ -61,13 +56,14 @@ export const checkAuth = createAsyncThunk(
   "auth/checkAuth",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/check`, {
-        withCredentials: true,
-      });
+      const response = await api.get("/check");
       return response.data;
     } catch (err) {
       const message =
-        err.response?.data?.message || err.message || "Not authenticated";
+        err.userMessage ||
+        err.response?.data?.message ||
+        err.message ||
+        "Not authenticated";
       return rejectWithValue(message);
     }
   }
@@ -80,15 +76,14 @@ export const logoutUser = createAsyncThunk(
   "auth/logoutUser",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/logout`,
-        {},
-        { withCredentials: true }
-      );
+      const response = await api.post("/logout");
       return response.data;
     } catch (err) {
       const message =
-        err.response?.data?.message || err.message || "Logout failed";
+        err.userMessage ||
+        err.response?.data?.message ||
+        err.message ||
+        "Logout failed";
       return rejectWithValue(message);
     }
   }

@@ -1,7 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-
-const API_URL = import.meta.env.VITE_API_URL || "/api";
+import { api } from "../lib/api";
 
 /**
  * 1. Fetch All Problems Thunk (GET /problem/all)
@@ -11,18 +9,20 @@ export const getAllProblems = createAsyncThunk(
   "problems/getAllProblems",
   async (params = {}, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/problem/all`, {
+      const response = await api.get("/problem/all", {
         params: {
           limit: 100, // Fetch up to 100 problems for smooth client-side filtering
           ...params,
         },
-        withCredentials: true,
       });
       // response.data has { totalProblems, count, problems, totalPages, page }
       return response.data.problems || [];
     } catch (err) {
       const message =
-        err.response?.data?.message || err.message || "Failed to fetch problems";
+        err.userMessage ||
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to fetch problems";
       return rejectWithValue(message);
     }
   }
@@ -36,9 +36,7 @@ export const getSolvedProblems = createAsyncThunk(
   "problems/getSolvedProblems",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/problem/solved`, {
-        withCredentials: true,
-      });
+      const response = await api.get("/problem/solved");
       // response.data has { count, solvedProblems }
       return response.data.solvedProblems || [];
     } catch (err) {
@@ -47,7 +45,10 @@ export const getSolvedProblems = createAsyncThunk(
         return [];
       }
       const message =
-        err.response?.data?.message || err.message || "Failed to fetch solved problems";
+        err.userMessage ||
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to fetch solved problems";
       return rejectWithValue(message);
     }
   }
@@ -61,14 +62,14 @@ export const deleteProblem = createAsyncThunk(
   "problems/deleteProblem",
   async (problemId, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(
-        `${API_URL}/problem/delete/${problemId}`,
-        { withCredentials: true }
-      );
+      const response = await api.delete(`/problem/delete/${problemId}`);
       return { id: problemId, message: response.data.message };
     } catch (err) {
       const message =
-        err.response?.data?.message || err.message || "Failed to delete problem";
+        err.userMessage ||
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to delete problem";
       return rejectWithValue(message);
     }
   }
@@ -82,14 +83,11 @@ export const createProblem = createAsyncThunk(
   "problems/createProblem",
   async (problemData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/problem/create`,
-        problemData,
-        { withCredentials: true }
-      );
+      const response = await api.post("/problem/create", problemData);
       return response.data.problem;
     } catch (err) {
       const message =
+        err.userMessage ||
         err.response?.data?.message ||
         err.response?.data?.error ||
         err.message ||
@@ -107,14 +105,11 @@ export const updateProblem = createAsyncThunk(
   "problems/updateProblem",
   async ({ id, problemData }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(
-        `${API_URL}/problem/update/${id}`,
-        problemData,
-        { withCredentials: true }
-      );
+      const response = await api.put(`/problem/update/${id}`, problemData);
       return response.data.problem;
     } catch (err) {
       const message =
+        err.userMessage ||
         err.response?.data?.message ||
         err.response?.data?.["here is the error"] ||
         err.response?.data?.error ||

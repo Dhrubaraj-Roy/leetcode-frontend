@@ -1,73 +1,37 @@
 import axios from "axios";
 
-// Axios instance with default configuration
-// Uses Vite proxy `/api` in development or VITE_API_URL in production
+/**
+ * Unified Axios instance with standard configuration.
+ * Automatically handles baseURL, cookies, and 10-second timeout.
+ */
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "/api",
   withCredentials: true, // Allows HTTP-only cookies to be sent and received
+  timeout: 10000, // 10-second timeout to prevent infinite hanging spinners
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-/**
- * Call backend registration endpoint (POST /register)
- * Sends firstName, emailId, and password
- */
-export const registerUser = async ({ firstName, email, password }) => {
-  const response = await api.post("/register", {
-    firstName,
-    emailId: email,
-    email,
-    password,
-  });
-  return response.data;
-};
+// Response interceptor: Normalizes timeout errors and formats error messages
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
+      error.message =
+        "The request took too long and timed out. Please check your network connection and retry.";
+    }
 
-/**
- * Call backend login endpoint (POST /login)
- * Sends emailId and password
- */
-export const loginUser = async ({ email, password }) => {
-  const response = await api.post("/login", {
-    emailId: email,
-    password,
-  });
-  return response.data;
-};
+    // Standardized user-facing error message
+    error.userMessage =
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      error.message ||
+      "An unexpected network error occurred.";
 
-/**
- * Call backend logout endpoint (POST /logout)
- */
-export const logoutUser = async () => {
-  const response = await api.post("/logout");
-  return response.data;
-};
-
-/**
- * Check if the user is authenticated (GET /check)
- * Returns { authenticated: true, user: { id, firstName, emailId, role } }
- */
-export const checkAuth = async () => {
-  const response = await api.get("/check");
-  return response.data;
-};
-
-/**
- * Fetch all problems (GET /problem/all)
- */
-export const fetchAllProblems = async (params = {}) => {
-  const response = await api.get("/problem/all", { params });
-  return response.data;
-};
-
-/**
- * Fetch all solved problems for logged-in user (GET /problem/solved)
- */
-export const fetchSolvedProblems = async () => {
-  const response = await api.get("/problem/solved");
-  return response.data;
-};
+    return Promise.reject(error);
+  }
+);
 
 /**
  * Fetch a single problem by ID (GET /problem/get/:id)
@@ -117,8 +81,6 @@ export const getProfile = async () => {
 
 /**
  * Send message to chat endpoint (POST /chat)
- * Sends student message, previous history, problem context (title, description),
- * and student's current code from Monaco editor.
  */
 export const sendChatMessageApi = async ({
   message,
@@ -142,7 +104,7 @@ export const sendChatMessageApi = async ({
 };
 
 /**
- * Step 1: Request a secure Cloudinary digital upload signature from backend (POST /video/create)
+ * Request a secure Cloudinary digital upload signature from backend (POST /video/create)
  */
 export const getVideoUploadSignature = async ({ problemId }) => {
   const response = await api.post("/video/create", { problemId });
@@ -150,8 +112,7 @@ export const getVideoUploadSignature = async ({ problemId }) => {
 };
 
 /**
- * Step 4: Save uploaded video metadata to backend (POST /video/save)
- * Backend verifies problem existence and generates thumbnail on the go
+ * Save uploaded video metadata to backend (POST /video/save)
  */
 export const saveVideoMetadataApi = async ({
   problemId,
@@ -176,7 +137,6 @@ export const saveVideoMetadataApi = async ({
 
 /**
  * Delete a solution video by videoId or problemId (DELETE /video/delete/:id)
- * Destroys Cloudinary asset using destroy command and removes from database
  */
 export const deleteVideoApi = async (id) => {
   const response = await api.delete(`/video/delete/${id}`);
@@ -185,7 +145,6 @@ export const deleteVideoApi = async (id) => {
 
 /**
  * Fetch solution video by Problem ID (GET /video/problem/:problemId)
- * One problem, one solution video
  */
 export const fetchVideoByProblemId = async (problemId) => {
   const response = await api.get(`/video/problem/${problemId}`);
