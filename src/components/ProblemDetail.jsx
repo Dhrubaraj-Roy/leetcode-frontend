@@ -3,6 +3,11 @@ import { useSelector, useDispatch } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Editor from "@monaco-editor/react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import ConfirmModal from "./ConfirmModal";
 import ErrorBoundary from "./ErrorBoundary";
 import {
@@ -619,9 +624,74 @@ export default function ProblemDetail({
                   </div>
                 </div>
 
-                {/* Problem Description Content */}
-                <div className="text-gray-200 text-xs sm:text-sm leading-relaxed whitespace-pre-line">
-                  {problem.description}
+                {/* Problem Description Content with Markdown & LaTeX Math Support */}
+                <div className="text-gray-200 text-xs sm:text-sm leading-relaxed">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
+                    components={{
+                      p: ({ node, ...props }) => (
+                        <p className="mb-3 leading-relaxed" {...props} />
+                      ),
+                      ul: ({ node, ...props }) => (
+                        <ul className="list-disc pl-5 mb-3 space-y-1 text-gray-300" {...props} />
+                      ),
+                      ol: ({ node, ...props }) => (
+                        <ol className="list-decimal pl-5 mb-3 space-y-1 text-gray-300" {...props} />
+                      ),
+                      li: ({ node, ...props }) => (
+                        <li className="leading-relaxed" {...props} />
+                      ),
+                      strong: ({ node, ...props }) => (
+                        <strong className="font-semibold text-white" {...props} />
+                      ),
+                      em: ({ node, ...props }) => (
+                        <em className="italic text-gray-200" {...props} />
+                      ),
+                      code: ({ node, inline, className, children, ...props }) => (
+                        <code
+                          className="px-1.5 py-0.5 rounded text-[12px] font-mono bg-[#1f1f1f] border border-[#333333] text-[#ffa116]"
+                          {...props}
+                        >
+                          {children}
+                        </code>
+                      ),
+                      pre: ({ node, ...props }) => (
+                        <pre
+                          className="p-3 my-3 bg-[#1e1e1e] border border-[#333333] rounded-lg overflow-x-auto font-mono text-xs text-gray-200"
+                          {...props}
+                        />
+                      ),
+                      table: ({ node, ...props }) => (
+                        <div className="overflow-x-auto my-3">
+                          <table
+                            className="w-full text-left border-collapse border border-[#333333]"
+                            {...props}
+                          />
+                        </div>
+                      ),
+                      th: ({ node, ...props }) => (
+                        <th
+                          className="border border-[#333333] bg-[#262626] px-3 py-1.5 text-xs font-semibold text-white"
+                          {...props}
+                        />
+                      ),
+                      td: ({ node, ...props }) => (
+                        <td
+                          className="border border-[#333333] px-3 py-1.5 text-xs text-gray-300"
+                          {...props}
+                        />
+                      ),
+                      blockquote: ({ node, ...props }) => (
+                        <blockquote
+                          className="border-l-2 border-[#ffa116] pl-3 py-1 my-2 text-gray-400 italic"
+                          {...props}
+                        />
+                      ),
+                    }}
+                  >
+                    {problem.description}
+                  </ReactMarkdown>
                 </div>
 
                 {/* Example Test Cases */}
