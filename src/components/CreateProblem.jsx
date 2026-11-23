@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useForm, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { createProblem } from "../store/problemSlice";
+import { createProblemSchema } from "../schemas/problemSchema";
 import {
   ChevronLeft,
-  Code2,
   Plus,
   Trash2,
   CheckCircle2,
@@ -23,32 +25,66 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
-  // Form state
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    difficulty: "easy",
-    tags: "",
-    visibleTestCases: [
-      { input: "", output: "", explanation: "" },
-    ],
-    hiddenTestCases: [
-      { input: "", output: "" },
-    ],
-    pythonRefCode: "",
-    pythonStartCode: "",
-    cppRefCode: "",
-    cppStartCode: "",
+  // Form management via react-hook-form & Zod validation
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(createProblemSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      difficulty: "easy",
+      tags: "",
+      visibleTestCases: [
+        { input: "", output: "", explanation: "" },
+        { input: "", output: "", explanation: "" },
+      ],
+      hiddenTestCases: [
+        { input: "", output: "" },
+        { input: "", output: "" },
+      ],
+      pythonRefCode: "",
+      pythonStartCode: "",
+      cppRefCode: "",
+      cppStartCode: "",
+    },
+    mode: "onTouched",
   });
 
-  const [activeLangTab, setActiveLangTab] = useState("python");
+  // Dynamic field arrays for test cases
+  const {
+    fields: visibleFields,
+    append: appendVisible,
+    remove: removeVisible,
+  } = useFieldArray({
+    control,
+    name: "visibleTestCases",
+  });
 
-  // JSON Modal
+  const {
+    fields: hiddenFields,
+    append: appendHidden,
+    remove: removeHidden,
+  } = useFieldArray({
+    control,
+    name: "hiddenTestCases",
+  });
+
+  // Language tab state
+  const [activeLangTab, setActiveLangTab] = useState("python");
+  const pythonRefCodeValue = watch("pythonRefCode");
+  const cppRefCodeValue = watch("cppRefCode");
+
+  // JSON Import Modal state
   const [isJsonModalOpen, setIsJsonModalOpen] = useState(false);
   const [jsonInput, setJsonInput] = useState("");
   const [jsonError, setJsonError] = useState(null);
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
 
@@ -75,52 +111,6 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
       </div>
     );
   }
-
-  // Visible Test Cases Handlers
-  const handleVisibleChange = (index, field, value) => {
-    const updated = [...formData.visibleTestCases];
-    updated[index] = { ...updated[index], [field]: value };
-    setFormData({ ...formData, visibleTestCases: updated });
-  };
-
-  const addVisibleTestCase = () => {
-    setFormData({
-      ...formData,
-      visibleTestCases: [
-        ...formData.visibleTestCases,
-        { input: "", output: "", explanation: "" },
-      ],
-    });
-  };
-
-  const removeVisibleTestCase = (index) => {
-    if (formData.visibleTestCases.length <= 1) return;
-    const updated = formData.visibleTestCases.filter((_, i) => i !== index);
-    setFormData({ ...formData, visibleTestCases: updated });
-  };
-
-  // Hidden Test Cases Handlers
-  const handleHiddenChange = (index, field, value) => {
-    const updated = [...formData.hiddenTestCases];
-    updated[index] = { ...updated[index], [field]: value };
-    setFormData({ ...formData, hiddenTestCases: updated });
-  };
-
-  const addHiddenTestCase = () => {
-    setFormData({
-      ...formData,
-      hiddenTestCases: [
-        ...formData.hiddenTestCases,
-        { input: "", output: "" },
-      ],
-    });
-  };
-
-  const removeHiddenTestCase = (index) => {
-    if (formData.hiddenTestCases.length <= 1) return;
-    const updated = formData.hiddenTestCases.filter((_, i) => i !== index);
-    setFormData({ ...formData, hiddenTestCases: updated });
-  };
 
   // Quick Import JSON
   const handleApplyJson = () => {
@@ -183,7 +173,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
         });
       }
 
-      setFormData({
+      reset({
         title: parsed.title || "",
         description: parsed.description || "",
         difficulty: parsed.difficulty?.toLowerCase() || "easy",
@@ -198,90 +188,61 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
 
       setIsJsonModalOpen(false);
       setJsonInput("");
+      toast.success("Problem JSON imported successfully!");
     } catch (err) {
       setJsonError("Invalid JSON: " + err.message);
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const onSubmit = async (data) => {
     setErrorMessage(null);
     setSuccessMessage(null);
 
-    const tagsArray = formData.tags
+    const tagsArray = (data.tags || "")
       .split(",")
       .map((t) => t.trim().toLowerCase())
       .filter(Boolean);
 
-    const validVisibleCases = formData.visibleTestCases
-      .filter((tc) => tc.input?.trim() !== "" || tc.output?.trim() !== "")
-      .map((tc) => ({
-        input: tc.input,
-        output: tc.output,
-        explanation: tc.explanation || "Example test case",
-      }));
+    const validVisibleCases = data.visibleTestCases.map((tc) => ({
+      input: tc.input.trim(),
+      output: tc.output.trim(),
+      explanation: tc.explanation?.trim() || "Example test case",
+    }));
 
-    const validHiddenCases = formData.hiddenTestCases
-      .filter((tc) => tc.input?.trim() !== "" || tc.output?.trim() !== "")
-      .map((tc) => ({
-        input: tc.input,
-        output: tc.output,
-      }));
-
-    if (validVisibleCases.length < 2) {
-      setIsSubmitting(false);
-      setErrorMessage(
-        "Please provide at least 2 visible test cases. Click '+ Add Visible Test Case' for the second case."
-      );
-      return;
-    }
-
-    if (validHiddenCases.length < 2) {
-      setIsSubmitting(false);
-      setErrorMessage(
-        "Please provide at least 2 hidden test cases. Click '+ Add Hidden Test Case' for the second case."
-      );
-      return;
-    }
+    const validHiddenCases = data.hiddenTestCases.map((tc) => ({
+      input: tc.input.trim(),
+      output: tc.output.trim(),
+    }));
 
     const referenceSolution = [];
     const startCode = [];
 
-    if (formData.pythonRefCode?.trim()) {
+    if (data.pythonRefCode?.trim()) {
       referenceSolution.push({
         language: "python",
-        completeCode: formData.pythonRefCode,
+        completeCode: data.pythonRefCode,
       });
       startCode.push({
         language: "python",
-        initialCode: formData.pythonStartCode?.trim() || formData.pythonRefCode,
+        initialCode: data.pythonStartCode?.trim() || data.pythonRefCode,
       });
     }
 
-    if (formData.cppRefCode?.trim()) {
+    if (data.cppRefCode?.trim()) {
       referenceSolution.push({
         language: "cpp",
-        completeCode: formData.cppRefCode,
+        completeCode: data.cppRefCode,
       });
       startCode.push({
         language: "cpp",
-        initialCode: formData.cppStartCode?.trim() || formData.cppRefCode,
+        initialCode: data.cppStartCode?.trim() || data.cppRefCode,
       });
-    }
-
-    if (referenceSolution.length === 0) {
-      setIsSubmitting(false);
-      setErrorMessage(
-        "At least one reference solution (Python or C++) is required."
-      );
-      return;
     }
 
     const payload = {
-      title: formData.title.trim(),
-      description: formData.description.trim(),
-      difficulty: formData.difficulty.toLowerCase().trim(),
+      title: data.title.trim(),
+      description: data.description.trim(),
+      difficulty: data.difficulty.toLowerCase().trim(),
       tags: tagsArray,
       visibleTestCases: validVisibleCases,
       hiddenTestCases: validHiddenCases,
@@ -290,13 +251,11 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
     };
 
     const result = await dispatch(createProblem(payload));
-    setIsSubmitting(false);
 
     if (createProblem.fulfilled.match(result)) {
       const msg = "Problem created and verified successfully!";
       setSuccessMessage(msg);
       toast.success(msg);
-
       handleGoAdmin();
     } else {
       const errMsg =
@@ -360,7 +319,8 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
 
       {/* Form */}
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
         className="bg-[#262626] p-6 sm:p-7 rounded-xl border border-[#333333] space-y-6 text-xs"
       >
         {/* Title and Difficulty */}
@@ -369,29 +329,42 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
             <label className="text-gray-300 font-medium">Problem Title *</label>
             <input
               type="text"
-              required
               placeholder="e.g. Valid Parentheses"
-              value={formData.title}
-              onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
-              }
-              className="w-full h-8 px-3 bg-[#1e1e1e] border border-[#333333] rounded text-white focus:outline-none focus:border-[#ffa116]"
+              {...register("title")}
+              className={`w-full h-8 px-3 bg-[#1e1e1e] border rounded text-white focus:outline-none transition-colors ${
+                errors.title
+                  ? "border-rose-500 focus:border-rose-500"
+                  : "border-[#333333] focus:border-[#ffa116]"
+              }`}
             />
+            {errors.title && (
+              <p className="text-[11px] text-[#ff375f] flex items-center gap-1 mt-0.5">
+                <AlertCircle className="w-3 h-3 shrink-0" />
+                {errors.title.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1">
             <label className="text-gray-300 font-medium">Difficulty *</label>
             <select
-              value={formData.difficulty}
-              onChange={(e) =>
-                setFormData({ ...formData, difficulty: e.target.value })
-              }
-              className="w-full h-8 px-2 bg-[#1e1e1e] border border-[#333333] rounded text-white focus:outline-none focus:border-[#ffa116] capitalize cursor-pointer"
+              {...register("difficulty")}
+              className={`w-full h-8 px-2 bg-[#1e1e1e] border rounded text-white focus:outline-none capitalize cursor-pointer transition-colors ${
+                errors.difficulty
+                  ? "border-rose-500 focus:border-rose-500"
+                  : "border-[#333333] focus:border-[#ffa116]"
+              }`}
             >
               <option value="easy">Easy</option>
               <option value="medium">Medium</option>
               <option value="hard">Hard</option>
             </select>
+            {errors.difficulty && (
+              <p className="text-[11px] text-[#ff375f] flex items-center gap-1 mt-0.5">
+                <AlertCircle className="w-3 h-3 shrink-0" />
+                {errors.difficulty.message}
+              </p>
+            )}
           </div>
         </div>
 
@@ -399,15 +372,21 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
         <div className="space-y-1">
           <label className="text-gray-300 font-medium">Description & Constraints *</label>
           <textarea
-            required
             rows={5}
             placeholder="Problem description, input/output specifications, constraints..."
-            value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-            className="w-full p-3 bg-[#1e1e1e] border border-[#333333] rounded text-white leading-relaxed focus:outline-none focus:border-[#ffa116]"
+            {...register("description")}
+            className={`w-full p-3 bg-[#1e1e1e] border rounded text-white leading-relaxed focus:outline-none transition-colors ${
+              errors.description
+                ? "border-rose-500 focus:border-rose-500"
+                : "border-[#333333] focus:border-[#ffa116]"
+            }`}
           ></textarea>
+          {errors.description && (
+            <p className="text-[11px] text-[#ff375f] flex items-center gap-1 mt-0.5">
+              <AlertCircle className="w-3 h-3 shrink-0" />
+              {errors.description.message}
+            </p>
+          )}
         </div>
 
         {/* Tags */}
@@ -416,10 +395,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
           <input
             type="text"
             placeholder="e.g. stack, string, hash-table"
-            value={formData.tags}
-            onChange={(e) =>
-              setFormData({ ...formData, tags: e.target.value })
-            }
+            {...register("tags")}
             className="w-full h-8 px-3 bg-[#1e1e1e] border border-[#333333] rounded text-white focus:outline-none focus:border-[#ffa116]"
           />
         </div>
@@ -429,7 +405,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
           <div className="flex items-center justify-between">
             <div>
               <span className="font-semibold text-white">
-                Visible Test Cases ({formData.visibleTestCases.length})
+                Visible Test Cases ({visibleFields.length})
               </span>
               <span className="text-[11px] text-gray-400 ml-2">
                 (2 required)
@@ -438,78 +414,107 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
 
             <button
               type="button"
-              onClick={addVisibleTestCase}
-              className="px-2.5 py-1 rounded bg-[#1e1e1e] hover:bg-[#333333] border border-[#383838] text-gray-200 text-xs flex items-center gap-1"
+              onClick={() =>
+                appendVisible({ input: "", output: "", explanation: "" })
+              }
+              className="px-2.5 py-1 rounded bg-[#1e1e1e] hover:bg-[#333333] border border-[#383838] text-gray-200 text-xs flex items-center gap-1 transition-colors"
             >
               <Plus className="w-3.5 h-3.5 text-[#ffa116]" />
               <span>Add Visible Case</span>
             </button>
           </div>
 
+          {errors.visibleTestCases?.message && (
+            <p className="text-[11px] text-[#ff375f] flex items-center gap-1">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              {errors.visibleTestCases.message}
+            </p>
+          )}
+          {errors.visibleTestCases?.root?.message && (
+            <p className="text-[11px] text-[#ff375f] flex items-center gap-1">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              {errors.visibleTestCases.root.message}
+            </p>
+          )}
+
           <div className="space-y-3">
-            {formData.visibleTestCases.map((tc, index) => (
-              <div
-                key={index}
-                className="border border-[#333333] rounded-lg p-3.5 bg-[#1e1e1e] space-y-2.5"
-              >
-                <div className="flex items-center justify-between text-gray-400">
-                  <span className="font-medium text-white">Visible Case #{index + 1}</span>
-                  {formData.visibleTestCases.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeVisibleTestCase(index)}
-                      className="text-[#ff375f] hover:underline flex items-center gap-1"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      <span>Remove</span>
-                    </button>
-                  )}
-                </div>
+            {visibleFields.map((field, index) => {
+              const inputError = errors.visibleTestCases?.[index]?.input;
+              const outputError = errors.visibleTestCases?.[index]?.output;
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-gray-400 text-[11px]">Input *</label>
-                    <textarea
-                      required
-                      rows={2}
-                      placeholder="Input..."
-                      value={tc.input}
-                      onChange={(e) =>
-                        handleVisibleChange(index, "input", e.target.value)
-                      }
-                      className="w-full p-2 bg-[#262626] border border-[#333333] rounded font-mono text-xs text-white"
-                    ></textarea>
+              return (
+                <div
+                  key={field.id}
+                  className="border border-[#333333] rounded-lg p-3.5 bg-[#1e1e1e] space-y-2.5"
+                >
+                  <div className="flex items-center justify-between text-gray-400">
+                    <span className="font-medium text-white">Visible Case #{index + 1}</span>
+                    {visibleFields.length > 2 && (
+                      <button
+                        type="button"
+                        onClick={() => removeVisible(index)}
+                        className="text-[#ff375f] hover:underline flex items-center gap-1"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Remove</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-gray-400 text-[11px]">Input *</label>
+                      <textarea
+                        rows={2}
+                        placeholder="Input..."
+                        {...register(`visibleTestCases.${index}.input`)}
+                        className={`w-full p-2 bg-[#262626] border rounded font-mono text-xs text-white focus:outline-none transition-colors ${
+                          inputError
+                            ? "border-rose-500 focus:border-rose-500"
+                            : "border-[#333333] focus:border-[#ffa116]"
+                        }`}
+                      ></textarea>
+                      {inputError && (
+                        <p className="text-[11px] text-[#ff375f] flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 shrink-0" />
+                          {inputError.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-gray-400 text-[11px]">Expected Output *</label>
+                      <textarea
+                        rows={2}
+                        placeholder="Output..."
+                        {...register(`visibleTestCases.${index}.output`)}
+                        className={`w-full p-2 bg-[#262626] border rounded font-mono text-xs text-[#00b8a3] focus:outline-none transition-colors ${
+                          outputError
+                            ? "border-rose-500 focus:border-rose-500"
+                            : "border-[#333333] focus:border-[#ffa116]"
+                        }`}
+                      ></textarea>
+                      {outputError && (
+                        <p className="text-[11px] text-[#ff375f] flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 shrink-0" />
+                          {outputError.message}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-gray-400 text-[11px]">Expected Output *</label>
-                    <textarea
-                      required
-                      rows={2}
-                      placeholder="Output..."
-                      value={tc.output}
-                      onChange={(e) =>
-                        handleVisibleChange(index, "output", e.target.value)
-                      }
-                      className="w-full p-2 bg-[#262626] border border-[#333333] rounded font-mono text-xs text-[#00b8a3]"
-                    ></textarea>
+                    <label className="text-gray-400 text-[11px]">Explanation (Optional)</label>
+                    <input
+                      type="text"
+                      placeholder="Why this output is expected..."
+                      {...register(`visibleTestCases.${index}.explanation`)}
+                      className="w-full h-7 px-2.5 bg-[#262626] border border-[#333333] rounded text-xs text-white focus:outline-none focus:border-[#ffa116]"
+                    />
                   </div>
                 </div>
-
-                <div className="space-y-1">
-                  <label className="text-gray-400 text-[11px]">Explanation (Optional)</label>
-                  <input
-                    type="text"
-                    placeholder="Why this output is expected..."
-                    value={tc.explanation}
-                    onChange={(e) =>
-                      handleVisibleChange(index, "explanation", e.target.value)
-                    }
-                    className="w-full h-7 px-2.5 bg-[#262626] border border-[#333333] rounded text-xs text-white"
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -518,7 +523,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
           <div className="flex items-center justify-between">
             <div>
               <span className="font-semibold text-white">
-                Hidden Test Cases ({formData.hiddenTestCases.length})
+                Hidden Test Cases ({hiddenFields.length})
               </span>
               <span className="text-[11px] text-gray-400 ml-2">
                 (2 required)
@@ -527,65 +532,95 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
 
             <button
               type="button"
-              onClick={addHiddenTestCase}
-              className="px-2.5 py-1 rounded bg-[#1e1e1e] hover:bg-[#333333] border border-[#383838] text-gray-200 text-xs flex items-center gap-1"
+              onClick={() => appendHidden({ input: "", output: "" })}
+              className="px-2.5 py-1 rounded bg-[#1e1e1e] hover:bg-[#333333] border border-[#383838] text-gray-200 text-xs flex items-center gap-1 transition-colors"
             >
               <Plus className="w-3.5 h-3.5 text-[#ffa116]" />
               <span>Add Hidden Case</span>
             </button>
           </div>
 
+          {errors.hiddenTestCases?.message && (
+            <p className="text-[11px] text-[#ff375f] flex items-center gap-1">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              {errors.hiddenTestCases.message}
+            </p>
+          )}
+          {errors.hiddenTestCases?.root?.message && (
+            <p className="text-[11px] text-[#ff375f] flex items-center gap-1">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              {errors.hiddenTestCases.root.message}
+            </p>
+          )}
+
           <div className="space-y-3">
-            {formData.hiddenTestCases.map((tc, index) => (
-              <div
-                key={index}
-                className="border border-[#333333] rounded-lg p-3.5 bg-[#1e1e1e] space-y-2.5"
-              >
-                <div className="flex items-center justify-between text-gray-400">
-                  <span className="font-medium text-white">Hidden Case #{index + 1}</span>
-                  {formData.hiddenTestCases.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeHiddenTestCase(index)}
-                      className="text-[#ff375f] hover:underline flex items-center gap-1"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      <span>Remove</span>
-                    </button>
-                  )}
-                </div>
+            {hiddenFields.map((field, index) => {
+              const inputError = errors.hiddenTestCases?.[index]?.input;
+              const outputError = errors.hiddenTestCases?.[index]?.output;
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-gray-400 text-[11px]">Hidden Input *</label>
-                    <textarea
-                      required
-                      rows={2}
-                      placeholder="Input..."
-                      value={tc.input}
-                      onChange={(e) =>
-                        handleHiddenChange(index, "input", e.target.value)
-                      }
-                      className="w-full p-2 bg-[#262626] border border-[#333333] rounded font-mono text-xs text-white"
-                    ></textarea>
+              return (
+                <div
+                  key={field.id}
+                  className="border border-[#333333] rounded-lg p-3.5 bg-[#1e1e1e] space-y-2.5"
+                >
+                  <div className="flex items-center justify-between text-gray-400">
+                    <span className="font-medium text-white">Hidden Case #{index + 1}</span>
+                    {hiddenFields.length > 2 && (
+                      <button
+                        type="button"
+                        onClick={() => removeHidden(index)}
+                        className="text-[#ff375f] hover:underline flex items-center gap-1"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Remove</span>
+                      </button>
+                    )}
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-gray-400 text-[11px]">Hidden Expected Output *</label>
-                    <textarea
-                      required
-                      rows={2}
-                      placeholder="Output..."
-                      value={tc.output}
-                      onChange={(e) =>
-                        handleHiddenChange(index, "output", e.target.value)
-                      }
-                      className="w-full p-2 bg-[#262626] border border-[#333333] rounded font-mono text-xs text-[#00b8a3]"
-                    ></textarea>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-gray-400 text-[11px]">Hidden Input *</label>
+                      <textarea
+                        rows={2}
+                        placeholder="Input..."
+                        {...register(`hiddenTestCases.${index}.input`)}
+                        className={`w-full p-2 bg-[#262626] border rounded font-mono text-xs text-white focus:outline-none transition-colors ${
+                          inputError
+                            ? "border-rose-500 focus:border-rose-500"
+                            : "border-[#333333] focus:border-[#ffa116]"
+                        }`}
+                      ></textarea>
+                      {inputError && (
+                        <p className="text-[11px] text-[#ff375f] flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 shrink-0" />
+                          {inputError.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-gray-400 text-[11px]">Hidden Expected Output *</label>
+                      <textarea
+                        rows={2}
+                        placeholder="Output..."
+                        {...register(`hiddenTestCases.${index}.output`)}
+                        className={`w-full p-2 bg-[#262626] border rounded font-mono text-xs text-[#00b8a3] focus:outline-none transition-colors ${
+                          outputError
+                            ? "border-rose-500 focus:border-rose-500"
+                            : "border-[#333333] focus:border-[#ffa116]"
+                        }`}
+                      ></textarea>
+                      {outputError && (
+                        <p className="text-[11px] text-[#ff375f] flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 shrink-0" />
+                          {outputError.message}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -597,6 +632,13 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
               Provide complete reference code that solves the problem.
             </p>
           </div>
+
+          {errors.pythonRefCode && (
+            <div className="p-2.5 rounded bg-rose-500/10 border border-rose-500/25 text-[#ff375f] text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errors.pythonRefCode.message}</span>
+            </div>
+          )}
 
           {/* Language Toggle */}
           <div className="flex items-center bg-[#1e1e1e] p-0.5 rounded-lg border border-[#333333] text-xs w-fit">
@@ -610,7 +652,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
               }`}
             >
               Python
-              {formData.pythonRefCode && (
+              {pythonRefCodeValue?.trim() && (
                 <span className="w-1.5 h-1.5 rounded-full bg-[#00b8a3] inline-block ml-1.5"></span>
               )}
             </button>
@@ -624,7 +666,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
               }`}
             >
               C++
-              {formData.cppRefCode && (
+              {cppRefCodeValue?.trim() && (
                 <span className="w-1.5 h-1.5 rounded-full bg-[#00b8a3] inline-block ml-1.5"></span>
               )}
             </button>
@@ -640,10 +682,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                 <textarea
                   rows={8}
                   placeholder="Complete reference code..."
-                  value={formData.pythonRefCode}
-                  onChange={(e) =>
-                    setFormData({ ...formData, pythonRefCode: e.target.value })
-                  }
+                  {...register("pythonRefCode")}
                   className="w-full p-2.5 bg-[#141414] border border-[#2e2e2e] rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-[#ffa116]"
                 ></textarea>
               </div>
@@ -655,13 +694,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                 <textarea
                   rows={5}
                   placeholder="Starter template code..."
-                  value={formData.pythonStartCode}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      pythonStartCode: e.target.value,
-                    })
-                  }
+                  {...register("pythonStartCode")}
                   className="w-full p-2.5 bg-[#141414] border border-[#2e2e2e] rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-[#ffa116]"
                 ></textarea>
               </div>
@@ -678,10 +711,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                 <textarea
                   rows={8}
                   placeholder="#include <iostream>&#10;using namespace std;&#10;..."
-                  value={formData.cppRefCode}
-                  onChange={(e) =>
-                    setFormData({ ...formData, cppRefCode: e.target.value })
-                  }
+                  {...register("cppRefCode")}
                   className="w-full p-2.5 bg-[#141414] border border-[#2e2e2e] rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-[#ffa116]"
                 ></textarea>
               </div>
@@ -693,13 +723,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                 <textarea
                   rows={5}
                   placeholder="#include <iostream>&#10;..."
-                  value={formData.cppStartCode}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      cppStartCode: e.target.value,
-                    })
-                  }
+                  {...register("cppStartCode")}
                   className="w-full p-2.5 bg-[#141414] border border-[#2e2e2e] rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-[#ffa116]"
                 ></textarea>
               </div>
@@ -719,12 +743,12 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-5 py-2 rounded-md bg-[#ffa116] hover:bg-[#e68a00] text-[#1a1a1a] font-semibold transition-colors flex items-center gap-2 shadow-xs"
+            className="px-5 py-2 rounded-md bg-[#ffa116] hover:bg-[#e68a00] text-[#1a1a1a] font-semibold transition-colors flex items-center gap-2 shadow-xs disabled:opacity-50"
           >
             {isSubmitting ? (
               <div className="w-3.5 h-3.5 rounded-full border border-black border-t-transparent animate-spin"></div>
             ) : null}
-            <span>Create Problem</span>
+            <span>{isSubmitting ? "Creating..." : "Create Problem"}</span>
           </button>
         </div>
       </form>
