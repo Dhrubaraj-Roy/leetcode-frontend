@@ -221,11 +221,11 @@ export default function ChatInterface({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#262626] text-[#eff1f6] overflow-hidden select-text">
+    <div className="flex flex-col h-full bg-panel text-primary overflow-hidden select-text">
       {/* Header Bar */}
-      <div className="h-11 bg-[#222222] border-b border-[#333333] px-3 flex items-center justify-between shrink-0 text-xs">
+      <div className="h-11 bg-panel-header border-b border-border px-3 flex items-center justify-between shrink-0 text-xs">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="w-5 h-5 rounded-full bg-[#ffa116]/10 text-[#ffa116] flex items-center justify-center shrink-0">
+          <div className="w-5 h-5 rounded-full bg-brand/10 text-brand flex items-center justify-center shrink-0">
             <Bot className="w-3.5 h-3.5" />
           </div>
           <div className="flex items-center gap-2 truncate">
@@ -235,8 +235,8 @@ export default function ChatInterface({
             <span
               className={`text-[9px] font-medium px-1.5 py-0.2 rounded ${
                 isAuthenticated
-                  ? "bg-emerald-500/10 text-[#2cbb5d]"
-                  : "bg-amber-500/10 text-[#ffc01e]"
+                  ? "bg-emerald-500/10 text-easy"
+                  : "bg-amber-500/10 text-medium"
               }`}
             >
               {isAuthenticated ? "Online" : "Sign in required"}
@@ -248,7 +248,7 @@ export default function ChatInterface({
           <button
             type="button"
             onClick={handleResetChat}
-            className="flex items-center gap-1 px-2 py-0.5 rounded text-[11px] text-gray-400 hover:text-white hover:bg-[#333333] transition-colors"
+            className="flex items-center gap-1 px-2 py-0.5 rounded text-[11px] text-gray-400 hover:text-white hover:bg-panel-hover transition-colors"
             title="Clear Chat"
           >
             <RotateCcw className="w-3 h-3" />
@@ -258,7 +258,7 @@ export default function ChatInterface({
             <button
               type="button"
               onClick={onClose}
-              className="p-1 rounded text-gray-400 hover:text-white hover:bg-[#333333] transition-colors"
+              className="p-1 rounded text-gray-400 hover:text-white hover:bg-panel-hover transition-colors"
               title="Close"
             >
               <X className="w-4 h-4" />
@@ -290,11 +290,11 @@ export default function ChatInterface({
                 <button
                   type="button"
                   onClick={() => handleCopyMessage(msg.id, msg.text)}
-                  className="opacity-50 hover:opacity-100 transition-opacity ml-1 p-0.5 rounded hover:bg-[#333333]"
+                  className="opacity-50 hover:opacity-100 transition-opacity ml-1 p-0.5 rounded hover:bg-panel-hover"
                   title="Copy message"
                 >
                   {copiedMessageId === msg.id ? (
-                    <Check className="w-3 h-3 text-[#2cbb5d]" />
+                    <Check className="w-3 h-3 text-easy" />
                   ) : (
                     <Copy className="w-3 h-3" />
                   )}
@@ -305,8 +305,8 @@ export default function ChatInterface({
               <div
                 className={`p-3 rounded-lg text-xs leading-relaxed max-w-[92%] sm:max-w-[85%] ${
                   isTeacher
-                    ? "bg-[#1e1e1e] border border-[#333333] text-gray-200 shadow-xs"
-                    : "bg-[#ffa116]/15 border border-[#ffa116]/30 text-white"
+                    ? "bg-panel-subtle border border-border text-gray-200 shadow-xs"
+                    : "bg-brand/15 border border-brand/30 text-white"
                 }`}
               >
                 <FormattedMessage text={msg.text} />
@@ -321,8 +321,8 @@ export default function ChatInterface({
             <div className="text-[10px] text-gray-400 px-1">
               DSA Tutor • Thinking...
             </div>
-            <div className="p-2.5 rounded-lg bg-[#1e1e1e] border border-[#333333] text-xs text-gray-300 flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#ffa116] animate-ping"></div>
+            <div className="p-2.5 rounded-lg bg-panel-subtle border border-border text-xs text-gray-300 flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-brand animate-ping"></div>
               <span>Thinking about your question...</span>
             </div>
           </div>
@@ -333,7 +333,7 @@ export default function ChatInterface({
 
       {/* Unauthenticated Alert */}
       {!isAuthenticated && (
-        <div className="px-3 py-2 bg-amber-500/10 border-t border-amber-500/25 flex items-center justify-between text-xs text-[#ffc01e] shrink-0">
+        <div className="px-3 py-2 bg-amber-500/10 border-t border-amber-500/25 flex items-center justify-between text-xs text-medium shrink-0">
           <div className="flex items-center gap-1.5 text-[11px]">
             <Lock className="w-3.5 h-3.5 shrink-0" />
             <span>Sign in to ask questions to the DSA Tutor</span>
@@ -342,7 +342,7 @@ export default function ChatInterface({
             <button
               type="button"
               onClick={onNavigateToLogin}
-              className="px-2 py-0.5 rounded bg-[#ffa116] text-[#1a1a1a] text-[10px] font-semibold hover:bg-[#e68a00] transition-colors"
+              className="px-2 py-0.5 rounded bg-brand text-canvas text-[10px] font-semibold hover:bg-brand-hover transition-colors"
             >
               Sign In
             </button>
@@ -351,9 +351,9 @@ export default function ChatInterface({
       )}
 
       {/* Quick Suggestions Chips */}
-      <div className="px-3 py-1.5 bg-[#1f1f1f] border-t border-[#333333] flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 text-[11px]">
+      <div className="px-3 py-1.5 bg-panel-subtle border-t border-border flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 text-[11px]">
         <span className="text-gray-400 shrink-0 flex items-center gap-1">
-          <Lightbulb className="w-3 h-3 text-[#ffa116]" />
+          <Lightbulb className="w-3 h-3 text-brand" />
           Suggestions:
         </span>
         {quickPrompts.map((promptText, idx) => (
@@ -362,7 +362,7 @@ export default function ChatInterface({
             type="button"
             onClick={() => handleSendMessage(promptText)}
             disabled={isTyping || !isAuthenticated}
-            className="px-2.5 py-0.5 rounded-full bg-[#262626] hover:bg-[#333333] border border-[#383838] text-gray-300 hover:text-white whitespace-nowrap transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-2.5 py-0.5 rounded-full bg-panel hover:bg-panel-hover border border-border-subtle text-gray-300 hover:text-white whitespace-nowrap transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {promptText}
           </button>
@@ -370,7 +370,7 @@ export default function ChatInterface({
       </div>
 
       {/* Input Bar */}
-      <div className="p-2.5 bg-[#222222] border-t border-[#333333] flex items-center gap-2 shrink-0">
+      <div className="p-2.5 bg-panel-header border-t border-border flex items-center gap-2 shrink-0">
         <input
           ref={inputRef}
           type="text"
@@ -388,14 +388,14 @@ export default function ChatInterface({
             }
           }}
           disabled={isTyping || !isAuthenticated}
-          className="w-full h-8 px-3 bg-[#1e1e1e] border border-[#333333] rounded text-xs text-white placeholder:text-gray-500 focus:outline-none focus:border-[#ffa116] disabled:opacity-50 transition-colors"
+          className="w-full h-8 px-3 bg-panel-subtle border border-border rounded text-xs text-white placeholder:text-gray-500 focus:outline-none focus:border-brand disabled:opacity-50 transition-colors"
         />
 
         <button
           type="button"
           onClick={() => handleSendMessage()}
           disabled={!input.trim() || isTyping || !isAuthenticated}
-          className="h-8 px-3 rounded bg-[#ffa116] hover:bg-[#e68a00] text-[#1a1a1a] text-xs font-semibold flex items-center gap-1 disabled:opacity-40 transition-colors shadow-xs cursor-pointer"
+          className="h-8 px-3 rounded bg-brand hover:bg-brand-hover text-canvas text-xs font-semibold flex items-center gap-1 disabled:opacity-40 transition-colors shadow-xs cursor-pointer"
           title="Send"
         >
           <Send className="w-3.5 h-3.5" />

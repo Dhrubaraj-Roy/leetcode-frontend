@@ -103,13 +103,13 @@ export default function Home({ onSelectProblem }) {
   const renderDifficulty = (difficulty) => {
     const diff = difficulty?.toLowerCase();
     if (diff === "easy") {
-      return <span className="text-[#00b8a3] font-medium text-xs">Easy</span>;
+      return <span className="text-easy font-medium text-xs">Easy</span>;
     }
     if (diff === "medium") {
-      return <span className="text-[#ffc01e] font-medium text-xs">Medium</span>;
+      return <span className="text-medium font-medium text-xs">Medium</span>;
     }
     if (diff === "hard") {
-      return <span className="text-[#ff375f] font-medium text-xs">Hard</span>;
+      return <span className="text-hard font-medium text-xs">Hard</span>;
     }
     return <span className="text-gray-400 font-medium text-xs">{difficulty}</span>;
   };
@@ -129,7 +129,7 @@ export default function Home({ onSelectProblem }) {
   return (
     <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-6">
       {/* 1. Header & Progress Summary Card */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-[#262626] rounded-xl border border-[#333333] p-5 sm:p-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-panel rounded-xl border border-border p-5 sm:p-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white">
             Problemset
@@ -141,28 +141,28 @@ export default function Home({ onSelectProblem }) {
 
         {/* User Progress Stats */}
         {isAuthenticated ? (
-          <div className="bg-[#1f1f1f] border border-[#333333] rounded-lg p-3.5 sm:min-w-[260px] shrink-0 space-y-2">
+          <div className="bg-panel-subtle border border-border rounded-lg p-3.5 sm:min-w-[260px] shrink-0 space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="text-gray-400 font-medium">Solved</span>
               <span className="font-semibold text-white">
-                <span className="text-[#ffa116]">{solvedCount}</span> / {totalProblemsCount}
+                <span className="text-brand">{solvedCount}</span> / {totalProblemsCount}
               </span>
             </div>
-            <div className="w-full h-1.5 bg-[#333333] rounded-full overflow-hidden">
+            <div className="w-full h-1.5 bg-border rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#ffa116] rounded-full transition-all duration-300"
+                className="h-full bg-brand rounded-full transition-all duration-300"
                 style={{ width: `${solvedPercentage}%` }}
               ></div>
             </div>
             <div className="flex items-center justify-between text-[11px] text-gray-400 pt-0.5">
               <span>
-                Easy: <strong className="text-[#00b8a3]">{easyTotal}</strong>
+                Easy: <strong className="text-easy">{easyTotal}</strong>
               </span>
               <span>
-                Med: <strong className="text-[#ffc01e]">{medTotal}</strong>
+                Med: <strong className="text-medium">{medTotal}</strong>
               </span>
               <span>
-                Hard: <strong className="text-[#ff375f]">{hardTotal}</strong>
+                Hard: <strong className="text-hard">{hardTotal}</strong>
               </span>
             </div>
           </div>
@@ -174,16 +174,16 @@ export default function Home({ onSelectProblem }) {
       </div>
 
       {/* 2. Real-World Filter & Search Bar */}
-      <div className="bg-[#262626] rounded-xl border border-[#333333] p-3.5 sm:p-4">
+      <div className="bg-panel rounded-xl border border-border p-3.5 sm:p-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Status Switcher */}
-          <div className="flex items-center bg-[#1e1e1e] p-1 rounded-lg border border-[#333333] text-xs self-start sm:self-auto">
+          <div className="flex items-center bg-panel-subtle p-1 rounded-lg border border-border text-xs self-start sm:self-auto">
             <button
               type="button"
               onClick={() => dispatch(setStatusFilter("all"))}
               className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
                 filters.status === "all"
-                  ? "bg-[#2d2d2d] text-white shadow-xs"
+                  ? "bg-panel-elevated text-white shadow-xs"
                   : "text-gray-400 hover:text-white"
               }`}
             >
@@ -195,7 +195,7 @@ export default function Home({ onSelectProblem }) {
               onClick={() => dispatch(setStatusFilter("solved"))}
               className={`px-3 py-1.5 rounded-md font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                 filters.status === "solved"
-                  ? "bg-[#2d2d2d] text-[#00b8a3] shadow-xs"
+                  ? "bg-panel-elevated text-easy shadow-xs"
                   : "text-gray-400 hover:text-white"
               }`}
               title={!isAuthenticated ? "Log in to view solved problems" : ""}
@@ -214,7 +214,7 @@ export default function Home({ onSelectProblem }) {
                 placeholder="Search questions..."
                 value={filters.search}
                 onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-                className="w-full h-8 pl-8 pr-3 text-xs bg-[#1e1e1e] border border-[#333333] rounded-md text-white placeholder:text-gray-500 focus:outline-none focus:border-[#ffa116] transition-colors"
+                className="w-full h-8 pl-8 pr-3 text-xs bg-panel-subtle border border-border rounded-md text-white placeholder:text-gray-500 focus:outline-none focus:border-brand transition-colors"
               />
             </div>
 
@@ -222,7 +222,7 @@ export default function Home({ onSelectProblem }) {
             <select
               value={filters.difficulty}
               onChange={(e) => dispatch(setDifficultyFilter(e.target.value))}
-              className="h-8 px-2.5 text-xs bg-[#1e1e1e] border border-[#333333] rounded-md text-gray-300 focus:outline-none focus:border-[#ffa116] cursor-pointer"
+              className="h-8 px-2.5 text-xs bg-panel-subtle border border-border rounded-md text-gray-300 focus:outline-none focus:border-brand cursor-pointer"
               aria-label="Filter by difficulty"
             >
               <option value="all">Difficulty</option>
@@ -235,7 +235,7 @@ export default function Home({ onSelectProblem }) {
             <select
               value={filters.tag}
               onChange={(e) => dispatch(setTagFilter(e.target.value))}
-              className="h-8 px-2.5 text-xs bg-[#1e1e1e] border border-[#333333] rounded-md text-gray-300 focus:outline-none focus:border-[#ffa116] max-w-[150px] truncate cursor-pointer"
+              className="h-8 px-2.5 text-xs bg-panel-subtle border border-border rounded-md text-gray-300 focus:outline-none focus:border-brand max-w-[150px] truncate cursor-pointer"
               aria-label="Filter by tag"
             >
               <option value="all">Tags</option>
@@ -254,7 +254,7 @@ export default function Home({ onSelectProblem }) {
               <button
                 type="button"
                 onClick={() => dispatch(resetFilters())}
-                className="h-8 px-2.5 rounded-md border border-[#333333] text-xs text-gray-400 hover:text-white hover:bg-[#2d2d2d] flex items-center gap-1 transition-colors"
+                className="h-8 px-2.5 rounded-md border border-border text-xs text-gray-400 hover:text-white hover:bg-panel-hover flex items-center gap-1 transition-colors"
                 title="Reset filters"
               >
                 <RotateCcw className="w-3 h-3" />
@@ -266,15 +266,15 @@ export default function Home({ onSelectProblem }) {
       </div>
 
       {/* 3. Problems List Table - Real-World LeetCode Table */}
-      <div className="bg-[#262626] rounded-xl border border-[#333333] overflow-hidden shadow-xs">
+      <div className="bg-panel rounded-xl border border-border overflow-hidden shadow-xs">
         {isLoading ? (
           <div className="p-16 text-center flex flex-col items-center justify-center space-y-3">
-            <div className="w-7 h-7 rounded-full border-2 border-[#ffa116] border-t-transparent animate-spin"></div>
+            <div className="w-7 h-7 rounded-full border-2 border-brand border-t-transparent animate-spin"></div>
             <p className="text-xs text-gray-400">Loading problems...</p>
           </div>
         ) : filteredProblems.length === 0 ? (
           <div className="p-16 text-center space-y-3">
-            <div className="w-10 h-10 rounded-full bg-[#1e1e1e] border border-[#333333] flex items-center justify-center mx-auto text-gray-500">
+            <div className="w-10 h-10 rounded-full bg-panel-subtle border border-border flex items-center justify-center mx-auto text-gray-500">
               <Filter className="w-5 h-5" />
             </div>
             <div className="text-sm font-semibold text-white">No problems found</div>
@@ -284,7 +284,7 @@ export default function Home({ onSelectProblem }) {
             <button
               type="button"
               onClick={() => dispatch(resetFilters())}
-              className="mt-2 px-3 py-1.5 rounded-md text-xs bg-[#1e1e1e] border border-[#333333] hover:bg-[#333333] text-white transition-colors"
+              className="mt-2 px-3 py-1.5 rounded-md text-xs bg-panel-subtle border border-border hover:bg-panel-hover text-white transition-colors"
             >
               Reset Filters
             </button>
@@ -293,7 +293,7 @@ export default function Home({ onSelectProblem }) {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-[#333333] bg-[#222222] text-[11px] font-medium text-gray-400 uppercase tracking-wider">
+                <tr className="border-b border-border bg-panel-header text-[11px] font-medium text-gray-400 uppercase tracking-wider">
                   <th className="py-3 px-4 w-14 text-center">Status</th>
                   <th className="py-3 px-4">Title</th>
                   <th className="py-3 px-4 w-28">Difficulty</th>
@@ -301,7 +301,7 @@ export default function Home({ onSelectProblem }) {
                   <th className="py-3 px-4 w-24 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#333333]/70 text-xs">
+              <tbody className="divide-y divide-border/70 text-xs">
                 {filteredProblems.map((prob, index) => {
                   const isSolved = solvedIdSet.has(prob._id);
                   const problemNumber = index + 1;
@@ -309,12 +309,12 @@ export default function Home({ onSelectProblem }) {
                   return (
                     <tr
                       key={prob._id || index}
-                      className="hover:bg-[#2e2e2e]/60 transition-colors group"
+                      className="hover:bg-panel-hover/60 transition-colors group"
                     >
                       {/* Status */}
                       <td className="py-3.5 px-4 text-center">
                         {isSolved ? (
-                          <span title="Solved" className="inline-flex text-[#2cbb5d]">
+                          <span title="Solved" className="inline-flex text-easy">
                             <CheckCircle2 className="w-4 h-4" />
                           </span>
                         ) : (
@@ -339,12 +339,12 @@ export default function Home({ onSelectProblem }) {
                                 handleSelectProblem(prob._id || prob.id);
                             }
                           }}
-                          className="flex items-center gap-2 cursor-pointer group-hover:text-[#ffa116] transition-colors"
+                          className="flex items-center gap-2 cursor-pointer group-hover:text-brand transition-colors"
                         >
                           <span className="text-gray-400 font-mono text-[11px]">
                             {problemNumber}.
                           </span>
-                          <span className="font-medium text-sm text-[#eff1f6] group-hover:text-[#ffa116] transition-colors">
+                          <span className="font-medium text-sm text-primary group-hover:text-brand transition-colors">
                             {prob.title}
                           </span>
                         </div>
@@ -371,8 +371,8 @@ export default function Home({ onSelectProblem }) {
                                 className={`px-2 py-0.5 rounded-full text-[11px] transition-colors ${
                                   filters.tag.toLowerCase() ===
                                   tag.toLowerCase().trim()
-                                    ? "bg-[#ffa116] text-[#1a1a1a] font-medium"
-                                    : "bg-[#1f1f1f] text-gray-400 hover:text-white border border-[#333333]"
+                                    ? "bg-brand text-canvas font-medium"
+                                    : "bg-panel-subtle text-gray-400 hover:text-white border border-border"
                                 }`}
                               >
                                 {tag}
@@ -392,7 +392,7 @@ export default function Home({ onSelectProblem }) {
                             handleSelectProblem &&
                             handleSelectProblem(prob._id || prob.id)
                           }
-                          className="px-3 py-1 rounded-md text-xs font-medium text-gray-300 hover:text-white bg-[#1e1e1e] hover:bg-[#333333] border border-[#383838] transition-colors"
+                          className="px-3 py-1 rounded-md text-xs font-medium text-gray-300 hover:text-white bg-panel-subtle hover:bg-panel-hover border border-border-subtle transition-colors"
                         >
                           Solve
                         </button>

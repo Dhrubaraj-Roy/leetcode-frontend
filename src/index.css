@@ -1,9 +1,94 @@
 @import "tailwindcss";
 
+@theme {
+  /* Canvas (Main App Background) */
+  --color-canvas: #1a1a1a;
+  --color-canvas-subtle: #141414;
+  --color-canvas-muted: #0f0f0f;
+
+  /* Panel & Surface (Cards, Modals, Sections) */
+  --color-panel: #262626;
+  --color-panel-subtle: #1e1e1e;
+  --color-panel-header: #222222;
+  --color-panel-elevated: #282828;
+  --color-panel-hover: #2d2d2d;
+  --color-panel-active: #333333;
+  --color-panel-border: #333333;
+  --color-panel-border-subtle: #383838;
+
+  /* Border tokens */
+  --color-border: #333333;
+  --color-border-subtle: #383838;
+  --color-border-muted: #2a2a2a;
+  --color-border-focus: #ffa116;
+
+  /* Brand / LeetCode Primary (Orange) */
+  --color-brand: #ffa116;
+  --color-brand-hover: #e68a00;
+  --color-brand-active: #cc7a00;
+  --color-brand-muted: rgba(255, 161, 22, 0.15);
+
+  /* Problem Difficulty & Status */
+  --color-easy: #00b8a3;
+  --color-easy-hover: #009985;
+  --color-easy-muted: rgba(0, 184, 163, 0.15);
+
+  --color-medium: #ffc01e;
+  --color-medium-hover: #e0a300;
+  --color-medium-muted: rgba(255, 192, 30, 0.15);
+
+  --color-hard: #ff375f;
+  --color-hard-hover: #e0264b;
+  --color-hard-muted: rgba(255, 55, 95, 0.15);
+
+  /* Typography */
+  --color-primary: #eff1f6;
+  --color-secondary: #9ca3af;
+  --color-muted: #6b7280;
+}
+
+:root {
+  /* Mirror CSS variables for standard CSS / library access */
+  --canvas: var(--color-canvas);
+  --canvas-subtle: var(--color-canvas-subtle);
+  --panel: var(--color-panel);
+  --panel-subtle: var(--color-panel-subtle);
+  --panel-elevated: var(--color-panel-elevated);
+  --brand: var(--color-brand);
+  --easy: var(--color-easy);
+  --medium: var(--color-medium);
+  --hard: var(--color-hard);
+  --border: var(--color-border);
+}
+
+/* Light Mode Overrides Ready */
+[data-theme="light"] {
+  --color-canvas: #f7f8fa;
+  --color-canvas-subtle: #ffffff;
+  --color-canvas-muted: #e5e7eb;
+
+  --color-panel: #ffffff;
+  --color-panel-subtle: #f2f3f5;
+  --color-panel-header: #f8f9fa;
+  --color-panel-elevated: #ffffff;
+  --color-panel-hover: #f0f2f5;
+  --color-panel-active: #e5e7eb;
+  --color-panel-border: #e5e7eb;
+  --color-panel-border-subtle: #d1d5db;
+
+  --color-border: #e5e7eb;
+  --color-border-subtle: #d1d5db;
+  --color-border-muted: #f3f4f6;
+
+  --color-primary: #1f2937;
+  --color-secondary: #4b5563;
+  --color-muted: #9ca3af;
+}
+
 @layer base {
   body {
-    background-color: #1a1a1a;
-    color: #eff1f6;
+    background-color: var(--color-canvas, #1a1a1a);
+    color: var(--color-primary, #eff1f6);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -23,10 +108,10 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #3a3a3a;
+    background: var(--color-border-subtle);
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #4a4a4a;
+    background: var(--color-border);
   }
 }

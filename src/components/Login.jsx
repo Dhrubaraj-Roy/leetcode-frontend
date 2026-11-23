@@ -55,10 +55,10 @@ export default function Login({ onSwitchToSignup }) {
 
   return (
     <div className="w-full max-w-sm mx-auto">
-      <div className="bg-[#262626] rounded-xl border border-[#333333] p-7 shadow-xl space-y-6">
+      <div className="bg-panel rounded-xl border border-border p-7 shadow-xl space-y-6">
         {/* Header & Logo */}
         <div className="text-center space-y-2">
-          <svg className="w-10 h-10 mx-auto" viewBox="0 0 24 24" fill="#FFA116">
+          <svg className="w-10 h-10 mx-auto fill-brand" viewBox="0 0 24 24">
             <path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/>
           </svg>
           <h1 className="text-xl font-bold tracking-tight text-white">
@@ -71,7 +71,7 @@ export default function Login({ onSwitchToSignup }) {
 
         {/* Success Alert */}
         {successMessage && (
-          <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-[#2cbb5d] text-xs flex items-center gap-2">
+          <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-easy text-xs flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
             <span>{successMessage}</span>
           </div>
@@ -79,7 +79,7 @@ export default function Login({ onSwitchToSignup }) {
 
         {/* Error Alert */}
         {displayError && (
-          <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/25 text-[#ff375f] text-xs flex items-center gap-2">
+          <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/25 text-hard text-xs flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{displayError}</span>
           </div>
@@ -99,10 +99,10 @@ export default function Login({ onSwitchToSignup }) {
                 type="email"
                 placeholder="name@example.com"
                 autoComplete="email"
-                className={`w-full h-9 pl-9 pr-3 bg-[#1e1e1e] border rounded-md text-white placeholder:text-gray-500 focus:outline-none transition-colors ${
+                className={`w-full h-9 pl-9 pr-3 bg-panel-subtle border rounded-md text-white placeholder:text-gray-500 focus:outline-none transition-colors ${
                   errors.email
                     ? "border-rose-500 focus:border-rose-500"
-                    : "border-[#333333] focus:border-[#ffa116]"
+                    : "border-border focus:border-brand"
                 }`}
                 {...register("email", {
                   onChange: () => {
@@ -115,7 +115,7 @@ export default function Login({ onSwitchToSignup }) {
               />
             </div>
             {errors.email && (
-              <span className="text-[11px] text-[#ff375f] block">
+              <span className="text-[11px] text-hard block">
                 {errors.email.message}
               </span>
             )}
@@ -133,10 +133,10 @@ export default function Login({ onSwitchToSignup }) {
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 autoComplete="current-password"
-                className={`w-full h-9 pl-9 pr-9 bg-[#1e1e1e] border rounded-md text-white placeholder:text-gray-500 focus:outline-none transition-colors ${
+                className={`w-full h-9 pl-9 pr-9 bg-panel-subtle border rounded-md text-white placeholder:text-gray-500 focus:outline-none transition-colors ${
                   errors.password
                     ? "border-rose-500 focus:border-rose-500"
-                    : "border-[#333333] focus:border-[#ffa116]"
+                    : "border-border focus:border-brand"
                 }`}
                 {...register("password", {
                   onChange: () => {
@@ -157,7 +157,7 @@ export default function Login({ onSwitchToSignup }) {
               </button>
             </div>
             {errors.password && (
-              <span className="text-[11px] text-[#ff375f] block">
+              <span className="text-[11px] text-hard block">
                 {errors.password.message}
               </span>
             )}
@@ -166,7 +166,7 @@ export default function Login({ onSwitchToSignup }) {
           <button
             type="submit"
             disabled={isSubmitting || isLoading}
-            className="w-full h-9 mt-2 rounded-md bg-[#ffa116] hover:bg-[#e68a00] text-[#1a1a1a] font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 shadow-xs cursor-pointer"
+            className="w-full h-9 mt-2 rounded-md bg-brand hover:bg-brand-hover text-canvas font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 shadow-xs cursor-pointer"
           >
             {isSubmitting || isLoading ? (
               <div className="w-3.5 h-3.5 rounded-full border border-black border-t-transparent animate-spin"></div>
@@ -181,7 +181,7 @@ export default function Login({ onSwitchToSignup }) {
           <button
             type="button"
             onClick={handleSwitchToSignup}
-            className="text-[#ffa116] hover:underline font-semibold"
+            className="text-brand hover:underline font-semibold"
           >
             Sign up
           </button>

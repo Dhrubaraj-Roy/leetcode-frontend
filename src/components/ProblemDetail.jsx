@@ -391,18 +391,18 @@ export default function ProblemDetail({
   const renderDifficulty = (diff) => {
     const d = diff?.toLowerCase();
     if (d === "easy") {
-      return <span className="text-[#00b8a3] font-medium text-xs">Easy</span>;
+      return <span className="text-easy font-medium text-xs">Easy</span>;
     }
     if (d === "medium") {
-      return <span className="text-[#ffc01e] font-medium text-xs">Medium</span>;
+      return <span className="text-medium font-medium text-xs">Medium</span>;
     }
-    return <span className="text-[#ff375f] font-medium text-xs">Hard</span>;
+    return <span className="text-hard font-medium text-xs">Hard</span>;
   };
 
   if (isLoadingProblem) {
     return (
-      <div className="h-screen bg-[#1a1a1a] flex flex-col items-center justify-center space-y-3">
-        <div className="w-8 h-8 rounded-full border-2 border-[#ffa116] border-t-transparent animate-spin"></div>
+      <div className="h-screen bg-canvas flex flex-col items-center justify-center space-y-3">
+        <div className="w-8 h-8 rounded-full border-2 border-brand border-t-transparent animate-spin"></div>
         <p className="text-xs text-gray-400">Loading problem...</p>
       </div>
     );
@@ -410,9 +410,9 @@ export default function ProblemDetail({
 
   if (problemError || !problem) {
     return (
-      <div className="h-screen bg-[#1a1a1a] flex items-center justify-center p-4">
-        <div className="max-w-md w-full p-6 bg-[#262626] rounded-xl border border-[#333333] text-center space-y-4">
-          <div className="w-10 h-10 bg-rose-500/10 text-[#ff375f] rounded-full flex items-center justify-center mx-auto">
+      <div className="h-screen bg-canvas flex items-center justify-center p-4">
+        <div className="max-w-md w-full p-6 bg-panel rounded-xl border border-border text-center space-y-4">
+          <div className="w-10 h-10 bg-rose-500/10 text-hard rounded-full flex items-center justify-center mx-auto">
             <AlertCircle className="w-5 h-5" />
           </div>
           <div>
@@ -424,7 +424,7 @@ export default function ProblemDetail({
           <button
             type="button"
             onClick={handleGoHome}
-            className="px-4 py-2 rounded-md bg-[#ffa116] text-[#1a1a1a] text-xs font-semibold hover:bg-[#e68a00] transition-colors"
+            className="px-4 py-2 rounded-md bg-brand text-canvas text-xs font-semibold hover:bg-brand-hover transition-colors"
           >
             Back to Problems
           </button>
@@ -434,9 +434,9 @@ export default function ProblemDetail({
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[#1a1a1a] text-[#eff1f6] overflow-hidden">
+    <div className="flex flex-col h-screen bg-canvas text-primary overflow-hidden">
       {/* Top IDE Command Bar - Real-World LeetCode Toolbar */}
-      <header className="h-[46px] bg-[#262626] border-b border-[#333333] px-3 sm:px-4 flex items-center justify-between shrink-0">
+      <header className="h-[46px] bg-panel border-b border-border px-3 sm:px-4 flex items-center justify-between shrink-0">
         {/* Left: Back to problem list + Title */}
         <div className="flex items-center gap-3 min-w-0">
           <button
@@ -466,7 +466,7 @@ export default function ProblemDetail({
             type="button"
             onClick={handleRunCode}
             disabled={isRunning || isSubmitting}
-            className="flex items-center gap-1.5 px-3 py-1 rounded bg-[#333333] hover:bg-[#3e3e3e] border border-[#444444] text-xs font-medium text-gray-200 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1 rounded bg-border hover:bg-panel-hover border border-border-subtle text-xs font-medium text-gray-200 transition-colors disabled:opacity-50"
             title="Run against visible test cases"
           >
             {isRunning ? (
@@ -482,7 +482,7 @@ export default function ProblemDetail({
             type="button"
             onClick={handleSubmitCode}
             disabled={isRunning || isSubmitting}
-            className="flex items-center gap-1.5 px-3.5 py-1 rounded bg-[#2cbb5d] hover:bg-[#26a653] text-xs font-semibold text-white transition-colors disabled:opacity-50 shadow-xs"
+            className="flex items-center gap-1.5 px-3.5 py-1 rounded bg-easy hover:bg-easy-hover text-xs font-semibold text-white transition-colors disabled:opacity-50 shadow-xs"
             title="Submit solution for complete evaluation"
           >
             {isSubmitting ? (
@@ -498,7 +498,7 @@ export default function ProblemDetail({
         <div className="flex items-center gap-2">
           {isAuthenticated && user ? (
             <div className="hidden sm:flex items-center gap-1.5 text-xs text-gray-400">
-              <div className="w-4 h-4 rounded-full bg-[#ffa116] text-[#1a1a1a] text-[10px] font-bold flex items-center justify-center">
+              <div className="w-4 h-4 rounded-full bg-brand text-canvas text-[10px] font-bold flex items-center justify-center">
                 {(user.firstName || user.email || "U")[0].toUpperCase()}
               </div>
               <span className="truncate max-w-[100px]">
@@ -509,7 +509,7 @@ export default function ProblemDetail({
             <button
               type="button"
               onClick={handleGoLogin}
-              className="px-2.5 py-1 rounded text-xs text-[#ffa116] hover:bg-[#ffa116]/10 border border-[#ffa116]/30 transition-colors"
+              className="px-2.5 py-1 rounded text-xs text-brand hover:bg-brand/10 border border-brand/30 transition-colors"
             >
               Sign In
             </button>
@@ -520,15 +520,15 @@ export default function ProblemDetail({
       {/* Main Split Layout: Left Panel & Right Editor Panel */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden p-2 gap-2">
         {/* ===================== LEFT WORKBENCH PANEL ===================== */}
-        <div className="w-full md:w-1/2 flex flex-col bg-[#262626] rounded-lg border border-[#333333] overflow-hidden shadow-xs">
+        <div className="w-full md:w-1/2 flex flex-col bg-panel rounded-lg border border-border overflow-hidden shadow-xs">
           {/* Left Panel Tabs Header */}
-          <div className="flex items-center bg-[#1f1f1f] border-b border-[#333333] px-2 pt-1 gap-1 shrink-0 text-xs">
+          <div className="flex items-center bg-panel-subtle border-b border-border px-2 pt-1 gap-1 shrink-0 text-xs">
             <button
               type="button"
               onClick={() => setLeftTab("description")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-t text-xs font-medium transition-colors border-b-2 ${
                 leftTab === "description"
-                  ? "bg-[#262626] text-white border-[#ffa116] font-semibold"
+                  ? "bg-panel text-white border-brand font-semibold"
                   : "text-gray-400 hover:text-white border-transparent"
               }`}
             >
@@ -541,14 +541,14 @@ export default function ProblemDetail({
               onClick={() => setLeftTab("editorial")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-t text-xs font-medium transition-colors border-b-2 ${
                 leftTab === "editorial"
-                  ? "bg-[#262626] text-white border-[#ffa116] font-semibold"
+                  ? "bg-panel text-white border-brand font-semibold"
                   : "text-gray-400 hover:text-white border-transparent"
               }`}
             >
               <BookOpen className="w-3.5 h-3.5" />
               Editorial
               {solutionVideo && (
-                <span className="text-[9px] font-bold px-1 rounded bg-[#ffa116]/20 text-[#ffa116]">
+                <span className="text-[9px] font-bold px-1 rounded bg-brand/20 text-brand">
                   VIDEO
                 </span>
               )}
@@ -559,7 +559,7 @@ export default function ProblemDetail({
               onClick={() => setLeftTab("submissions")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-t text-xs font-medium transition-colors border-b-2 ${
                 leftTab === "submissions"
-                  ? "bg-[#262626] text-white border-[#ffa116] font-semibold"
+                  ? "bg-panel text-white border-brand font-semibold"
                   : "text-gray-400 hover:text-white border-transparent"
               }`}
             >
@@ -572,8 +572,8 @@ export default function ProblemDetail({
               onClick={() => setLeftTab("teacher")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-t text-xs font-medium transition-colors border-b-2 ${
                 leftTab === "teacher"
-                  ? "bg-[#262626] text-[#ffa116] border-[#ffa116] font-semibold"
-                  : "text-gray-400 hover:text-[#ffa116] border-transparent"
+                  ? "bg-panel text-brand border-brand font-semibold"
+                  : "text-gray-400 hover:text-brand border-transparent"
               }`}
             >
               <Bot className="w-3.5 h-3.5" />
@@ -604,7 +604,7 @@ export default function ProblemDetail({
             {/* 1. DESCRIPTION TAB */}
             {leftTab === "description" && (
               <div className="space-y-5">
-                <div className="space-y-2 border-b border-[#333333] pb-4">
+                <div className="space-y-2 border-b border-border pb-4">
                   <h1 className="text-xl font-bold tracking-tight text-white">
                     {problem.title}
                   </h1>
@@ -616,7 +616,7 @@ export default function ProblemDetail({
                       problem.tags.map((tag, tIdx) => (
                         <span
                           key={tIdx}
-                          className="px-2 py-0.5 rounded-full text-[11px] text-gray-400 bg-[#1f1f1f] border border-[#333333]"
+                          className="px-2 py-0.5 rounded-full text-[11px] text-gray-400 bg-panel-subtle border border-border"
                         >
                           {tag}
                         </span>
@@ -650,7 +650,7 @@ export default function ProblemDetail({
                       ),
                       code: ({ node, inline, className, children, ...props }) => (
                         <code
-                          className="px-1.5 py-0.5 rounded text-[12px] font-mono bg-[#1f1f1f] border border-[#333333] text-[#ffa116]"
+                          className="px-1.5 py-0.5 rounded text-[12px] font-mono bg-panel-subtle border border-border text-brand"
                           {...props}
                         >
                           {children}
@@ -658,33 +658,33 @@ export default function ProblemDetail({
                       ),
                       pre: ({ node, ...props }) => (
                         <pre
-                          className="p-3 my-3 bg-[#1e1e1e] border border-[#333333] rounded-lg overflow-x-auto font-mono text-xs text-gray-200"
+                          className="p-3 my-3 bg-panel-subtle border border-border rounded-lg overflow-x-auto font-mono text-xs text-gray-200"
                           {...props}
                         />
                       ),
                       table: ({ node, ...props }) => (
                         <div className="overflow-x-auto my-3">
                           <table
-                            className="w-full text-left border-collapse border border-[#333333]"
+                            className="w-full text-left border-collapse border border-border"
                             {...props}
                           />
                         </div>
                       ),
                       th: ({ node, ...props }) => (
                         <th
-                          className="border border-[#333333] bg-[#262626] px-3 py-1.5 text-xs font-semibold text-white"
+                          className="border border-border bg-panel px-3 py-1.5 text-xs font-semibold text-white"
                           {...props}
                         />
                       ),
                       td: ({ node, ...props }) => (
                         <td
-                          className="border border-[#333333] px-3 py-1.5 text-xs text-gray-300"
+                          className="border border-border px-3 py-1.5 text-xs text-gray-300"
                           {...props}
                         />
                       ),
                       blockquote: ({ node, ...props }) => (
                         <blockquote
-                          className="border-l-2 border-[#ffa116] pl-3 py-1 my-2 text-gray-400 italic"
+                          className="border-l-2 border-brand pl-3 py-1 my-2 text-gray-400 italic"
                           {...props}
                         />
                       ),
@@ -697,7 +697,7 @@ export default function ProblemDetail({
                 {/* Example Test Cases */}
                 {Array.isArray(problem.visibleTestCases) &&
                   problem.visibleTestCases.length > 0 && (
-                    <div className="space-y-3 pt-3 border-t border-[#333333]">
+                    <div className="space-y-3 pt-3 border-t border-border">
                       <h3 className="font-semibold text-xs text-gray-300 uppercase tracking-wider">
                         Examples
                       </h3>
@@ -705,7 +705,7 @@ export default function ProblemDetail({
                       {problem.visibleTestCases.map((tc, idx) => (
                         <div
                           key={idx}
-                          className="bg-[#1f1f1f] border border-[#333333] rounded-lg p-3 space-y-1.5 text-xs font-mono"
+                          className="bg-panel-subtle border border-border rounded-lg p-3 space-y-1.5 text-xs font-mono"
                         >
                           <div className="text-gray-400 font-sans font-semibold text-[11px]">
                             Example {idx + 1}:
@@ -716,7 +716,7 @@ export default function ProblemDetail({
                           </div>
                           <div>
                             <span className="text-gray-500 font-sans">Output: </span>
-                            <span className="text-[#00b8a3]">{tc.output}</span>
+                            <span className="text-easy">{tc.output}</span>
                           </div>
                           {tc.explanation && (
                             <div className="text-gray-400 font-sans pt-1">
@@ -734,9 +734,9 @@ export default function ProblemDetail({
             {/* 2. EDITORIAL TAB */}
             {leftTab === "editorial" && (
               <div className="space-y-5">
-                <div className="border-b border-[#333333] pb-3">
+                <div className="border-b border-border pb-3">
                   <h2 className="text-base font-bold text-white flex items-center gap-2">
-                    <BookOpen className="w-4 h-4 text-[#ffa116]" />
+                    <BookOpen className="w-4 h-4 text-brand" />
                     Editorial & Solution
                   </h2>
                   <p className="text-xs text-gray-400 mt-0.5">
@@ -745,10 +745,10 @@ export default function ProblemDetail({
                 </div>
 
                 {/* Solution Video Walkthrough Card */}
-                <div className="bg-[#1f1f1f] p-4 rounded-xl border border-[#333333] space-y-3">
+                <div className="bg-panel-subtle p-4 rounded-xl border border-border space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-md bg-[#ffa116]/10 text-[#ffa116] flex items-center justify-center">
+                      <div className="w-7 h-7 rounded-md bg-brand/10 text-brand flex items-center justify-center">
                         <Video className="w-3.5 h-3.5" />
                       </div>
                       <div>
@@ -775,12 +775,12 @@ export default function ProblemDetail({
 
                   {isLoadingVideo ? (
                     <div className="py-8 flex flex-col items-center justify-center gap-2 text-xs text-gray-400">
-                      <div className="w-5 h-5 rounded-full border-2 border-[#ffa116] border-t-transparent animate-spin"></div>
+                      <div className="w-5 h-5 rounded-full border-2 border-brand border-t-transparent animate-spin"></div>
                       <p>Loading video walkthrough...</p>
                     </div>
                   ) : solutionVideo?.videoUrl ? (
                     <div className="space-y-2">
-                      <div className="rounded-lg overflow-hidden bg-black aspect-video border border-[#333333]">
+                      <div className="rounded-lg overflow-hidden bg-black aspect-video border border-border">
                         <video
                           key={solutionVideo.videoUrl}
                           controls
@@ -803,27 +803,27 @@ export default function ProblemDetail({
                           href={solutionVideo.videoUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-[#ffa116] hover:underline flex items-center gap-1"
+                          className="text-brand hover:underline flex items-center gap-1"
                         >
                           Open in Tab <ExternalLink className="w-3 h-3" />
                         </a>
                       </div>
                     </div>
                   ) : (
-                    <div className="py-6 px-4 rounded-lg border border-dashed border-[#333333] text-center text-xs text-gray-500">
+                    <div className="py-6 px-4 rounded-lg border border-dashed border-border text-center text-xs text-gray-500">
                       No video solution available for this problem yet.
                     </div>
                   )}
                 </div>
 
-                <div className="bg-[#1f1f1f] p-4 rounded-lg border border-[#333333] space-y-1.5 text-xs">
+                <div className="bg-panel-subtle p-4 rounded-lg border border-border space-y-1.5 text-xs">
                   <div className="font-semibold text-white">Intuition</div>
                   <p className="text-gray-300 leading-relaxed">
                     Identify the optimal data structures and time complexity based on problem constraints ({problem.tags?.join(", ") || "algorithm"}).
                   </p>
                 </div>
 
-                <div className="bg-[#1f1f1f] p-4 rounded-lg border border-[#333333] space-y-1 text-xs">
+                <div className="bg-panel-subtle p-4 rounded-lg border border-border space-y-1 text-xs">
                   <div className="font-semibold text-white">Complexity Analysis</div>
                   <p className="text-gray-300">
                     <strong>Time Complexity:</strong> Optimal time based on problem inputs.
@@ -835,11 +835,11 @@ export default function ProblemDetail({
 
                 {Array.isArray(problem.referenceSolution) &&
                   problem.referenceSolution.length > 0 && (
-                    <div className="bg-[#1f1f1f] p-4 rounded-lg border border-[#333333] space-y-2 text-xs">
+                    <div className="bg-panel-subtle p-4 rounded-lg border border-border space-y-2 text-xs">
                       <div className="font-semibold text-white">
                         Reference Solution ({problem.referenceSolution[0].language})
                       </div>
-                      <pre className="bg-[#141414] p-3 rounded border border-[#2e2e2e] font-mono text-[11px] overflow-x-auto text-gray-200 leading-relaxed">
+                      <pre className="bg-canvas-subtle p-3 rounded border border-border-muted font-mono text-[11px] overflow-x-auto text-gray-200 leading-relaxed">
                         <code>{problem.referenceSolution[0].completeCode}</code>
                       </pre>
                     </div>
@@ -850,9 +850,9 @@ export default function ProblemDetail({
             {/* 3. SUBMISSIONS TAB */}
             {leftTab === "submissions" && (
               <div className="space-y-4">
-                <div className="border-b border-[#333333] pb-3">
+                <div className="border-b border-border pb-3">
                   <h2 className="text-base font-bold text-white flex items-center gap-2">
-                    <History className="w-4 h-4 text-[#ffa116]" />
+                    <History className="w-4 h-4 text-brand" />
                     Submission History
                   </h2>
                   <p className="text-xs text-gray-400">
@@ -861,26 +861,26 @@ export default function ProblemDetail({
                 </div>
 
                 {!isAuthenticated ? (
-                  <div className="p-6 bg-[#1f1f1f] rounded-lg text-center border border-[#333333] text-xs text-gray-400">
+                  <div className="p-6 bg-panel-subtle rounded-lg text-center border border-border text-xs text-gray-400">
                     Sign in to track and view your submission history.
                   </div>
                 ) : isLoadingSubmissions ? (
                   <div className="p-8 text-center text-xs text-gray-400 flex flex-col items-center gap-2">
-                    <div className="w-5 h-5 rounded-full border-2 border-[#ffa116] border-t-transparent animate-spin"></div>
+                    <div className="w-5 h-5 rounded-full border-2 border-brand border-t-transparent animate-spin"></div>
                     <span>Loading submissions...</span>
                   </div>
                 ) : submissionsList.length === 0 ? (
-                  <div className="p-8 text-center bg-[#1f1f1f] rounded-lg border border-[#333333] text-xs text-gray-400 space-y-1">
+                  <div className="p-8 text-center bg-panel-subtle rounded-lg border border-border text-xs text-gray-400 space-y-1">
                     <p>No submissions recorded yet.</p>
                     <p className="text-[11px] text-gray-500">
                       Write your solution and click Submit to benchmark against test cases.
                     </p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto rounded border border-[#333333]">
+                  <div className="overflow-x-auto rounded border border-border">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="bg-[#1f1f1f] border-b border-[#333333] text-[11px] text-gray-400">
+                        <tr className="bg-panel-subtle border-b border-border text-[11px] text-gray-400">
                           <th className="py-2.5 px-3">Status</th>
                           <th className="py-2.5 px-3">Language</th>
                           <th className="py-2.5 px-3">Runtime</th>
@@ -888,15 +888,15 @@ export default function ProblemDetail({
                           <th className="py-2.5 px-3 text-right">Date</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#333333]">
+                      <tbody className="divide-y divide-border">
                         {submissionsList.map((sub, idx) => {
                           const isAcc = sub.status === "Accepted";
                           return (
-                            <tr key={sub._id || idx} className="hover:bg-[#2e2e2e]/50">
+                            <tr key={sub._id || idx} className="hover:bg-panel-hover/50">
                               <td className="py-2.5 px-3">
                                 <span
                                   className={`font-semibold ${
-                                    isAcc ? "text-[#2cbb5d]" : "text-[#ff375f]"
+                                    isAcc ? "text-easy" : "text-hard"
                                   }`}
                                 >
                                   {sub.status}
@@ -929,15 +929,15 @@ export default function ProblemDetail({
         </div>
 
         {/* ===================== RIGHT WORKBENCH: MONACO & CONSOLE ===================== */}
-        <div className="w-full md:w-1/2 flex flex-col bg-[#262626] rounded-lg border border-[#333333] overflow-hidden shadow-xs">
+        <div className="w-full md:w-1/2 flex flex-col bg-panel rounded-lg border border-border overflow-hidden shadow-xs">
           {/* Editor Header Bar */}
-          <div className="h-10 bg-[#1f1f1f] border-b border-[#333333] px-3 flex items-center justify-between shrink-0 text-xs">
+          <div className="h-10 bg-panel-subtle border-b border-border px-3 flex items-center justify-between shrink-0 text-xs">
             <div className="flex items-center gap-2">
-              <Code2 className="w-3.5 h-3.5 text-[#ffa116]" />
+              <Code2 className="w-3.5 h-3.5 text-brand" />
               <select
                 value={selectedLanguage}
                 onChange={(e) => handleLanguageChange(e.target.value)}
-                className="h-7 px-2 bg-[#262626] border border-[#383838] rounded text-xs text-gray-200 focus:outline-none focus:border-[#ffa116] cursor-pointer"
+                className="h-7 px-2 bg-panel border border-border-subtle rounded text-xs text-gray-200 focus:outline-none focus:border-brand cursor-pointer"
               >
                 <option value="python">Python3</option>
                 <option value="cpp">C++</option>
@@ -947,7 +947,7 @@ export default function ProblemDetail({
             <button
               type="button"
               onClick={handleResetCode}
-              className="flex items-center gap-1 px-2 py-1 rounded text-xs text-gray-400 hover:text-white hover:bg-[#2d2d2d] transition-colors"
+              className="flex items-center gap-1 px-2 py-1 rounded text-xs text-gray-400 hover:text-white hover:bg-panel-hover transition-colors"
               title="Reset code template"
             >
               <RotateCcw className="w-3 h-3" />
@@ -956,7 +956,7 @@ export default function ProblemDetail({
           </div>
 
           {/* Monaco Editor Container */}
-          <div className="flex-1 min-h-[320px] overflow-hidden bg-[#1e1e1e]">
+          <div className="flex-1 min-h-[320px] overflow-hidden bg-panel-subtle">
             <ErrorBoundary
               compact
               title="Code Editor Failed to Load"
@@ -969,7 +969,7 @@ export default function ProblemDetail({
                 value={code}
                 onChange={handleCodeChange}
                 loading={
-                  <div className="flex items-center justify-center h-full bg-[#1e1e1e] text-gray-400 text-xs">
+                  <div className="flex items-center justify-center h-full bg-panel-subtle text-gray-400 text-xs">
                     Loading code editor...
                   </div>
                 }
@@ -989,16 +989,16 @@ export default function ProblemDetail({
           </div>
 
           {/* Bottom Testcase & Test Result Drawer */}
-          <div className="h-60 bg-[#262626] border-t border-[#333333] flex flex-col shrink-0">
+          <div className="h-60 bg-panel border-t border-border flex flex-col shrink-0">
             {/* Drawer Tabs Bar */}
-            <div className="flex items-center justify-between bg-[#1f1f1f] border-b border-[#333333] px-3 h-8 shrink-0 text-xs">
+            <div className="flex items-center justify-between bg-panel-subtle border-b border-border px-3 h-8 shrink-0 text-xs">
               <div className="flex items-center gap-1">
                 <button
                   type="button"
                   onClick={() => setConsoleTab("testcase")}
                   className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
                     consoleTab === "testcase"
-                      ? "bg-[#262626] text-white font-semibold"
+                      ? "bg-panel text-white font-semibold"
                       : "text-gray-400 hover:text-white"
                   }`}
                 >
@@ -1009,7 +1009,7 @@ export default function ProblemDetail({
                   onClick={() => setConsoleTab("result")}
                   className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
                     consoleTab === "result"
-                      ? "bg-[#262626] text-white font-semibold"
+                      ? "bg-panel text-white font-semibold"
                       : "text-gray-400 hover:text-white"
                   }`}
                 >
@@ -1018,8 +1018,8 @@ export default function ProblemDetail({
               </div>
 
               {(isRunning || isSubmitting) && (
-                <div className="flex items-center gap-1.5 text-xs text-[#ffa116]">
-                  <div className="w-3 h-3 rounded-full border border-[#ffa116] border-t-transparent animate-spin"></div>
+                <div className="flex items-center gap-1.5 text-xs text-brand">
+                  <div className="w-3 h-3 rounded-full border border-brand border-t-transparent animate-spin"></div>
                   <span>{isRunning ? "Running..." : "Evaluating..."}</span>
                 </div>
               )}
@@ -1039,8 +1039,8 @@ export default function ProblemDetail({
                         onClick={() => setActiveTestCaseIndex(idx)}
                         className={`px-2.5 py-1 rounded text-[11px] transition-colors ${
                           activeTestCaseIndex === idx
-                            ? "bg-[#333333] text-white font-semibold border border-[#444444]"
-                            : "bg-[#1f1f1f] text-gray-400 hover:bg-[#2d2d2d] border border-[#333333]"
+                            ? "bg-border text-white font-semibold border border-border-subtle"
+                            : "bg-panel-subtle text-gray-400 hover:bg-panel-hover border border-border"
                         }`}
                       >
                         Case {idx + 1}
@@ -1056,7 +1056,7 @@ export default function ProblemDetail({
                           <span className="text-[11px] text-gray-400 block mb-1">
                             Input:
                           </span>
-                          <div className="bg-[#1a1a1a] p-2.5 rounded border border-[#333333] font-mono text-xs text-gray-200 whitespace-pre">
+                          <div className="bg-canvas p-2.5 rounded border border-border font-mono text-xs text-gray-200 whitespace-pre">
                             {problem.visibleTestCases[activeTestCaseIndex].input}
                           </div>
                         </div>
@@ -1065,7 +1065,7 @@ export default function ProblemDetail({
                           <span className="text-[11px] text-gray-400 block mb-1">
                             Expected Output:
                           </span>
-                          <div className="bg-[#1a1a1a] p-2.5 rounded border border-[#333333] font-mono text-xs text-[#00b8a3] whitespace-pre">
+                          <div className="bg-canvas p-2.5 rounded border border-border font-mono text-xs text-easy whitespace-pre">
                             {problem.visibleTestCases[activeTestCaseIndex].output}
                           </div>
                         </div>
@@ -1078,33 +1078,33 @@ export default function ProblemDetail({
               {consoleTab === "result" && (
                 <div className="space-y-3">
                   {actionError ? (
-                    <div className="p-3 rounded bg-rose-500/10 border border-rose-500/25 text-[#ff375f] text-xs flex items-start gap-2">
+                    <div className="p-3 rounded bg-rose-500/10 border border-rose-500/25 text-hard text-xs flex items-start gap-2">
                       <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                       <span className="whitespace-pre-wrap">{actionError}</span>
                     </div>
                   ) : isRunning || isSubmitting ? (
                     <div className="flex flex-col items-center justify-center py-8 space-y-2 text-gray-400">
-                      <div className="w-6 h-6 rounded-full border-2 border-[#ffa116] border-t-transparent animate-spin"></div>
+                      <div className="w-6 h-6 rounded-full border-2 border-brand border-t-transparent animate-spin"></div>
                       <p className="text-xs">Evaluating code against test cases...</p>
                     </div>
                   ) : submissionResult ? (
                     /* Final Submission Result View */
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between border-b border-[#333333] pb-2">
+                      <div className="flex items-center justify-between border-b border-border pb-2">
                         <div className="flex items-center gap-2">
                           <span
                             className={`text-base font-bold ${
                               submissionResult.status === "Accepted"
-                                ? "text-[#2cbb5d]"
-                                : "text-[#ff375f]"
+                                ? "text-easy"
+                                : "text-hard"
                             }`}
                           >
                             {submissionResult.status}
                           </span>
                           {submissionResult.status === "Accepted" ? (
-                            <CheckCircle2 className="w-4 h-4 text-[#2cbb5d]" />
+                            <CheckCircle2 className="w-4 h-4 text-easy" />
                           ) : (
-                            <XCircle className="w-4 h-4 text-[#ff375f]" />
+                            <XCircle className="w-4 h-4 text-hard" />
                           )}
                         </div>
 
@@ -1133,7 +1133,7 @@ export default function ProblemDetail({
                       </div>
 
                       {submissionResult.errorMessage && (
-                        <div className="bg-rose-500/10 text-[#ff375f] border border-rose-500/25 p-2.5 rounded text-xs whitespace-pre-wrap font-mono">
+                        <div className="bg-rose-500/10 text-hard border border-rose-500/25 p-2.5 rounded text-xs whitespace-pre-wrap font-mono">
                           {submissionResult.errorMessage}
                         </div>
                       )}
@@ -1141,12 +1141,12 @@ export default function ProblemDetail({
                   ) : runResult ? (
                     /* Run Code Result View */
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between border-b border-[#333333] pb-2">
+                      <div className="flex items-center justify-between border-b border-border pb-2">
                         <span
                           className={`text-base font-bold ${
                             runResult.status === "Accepted"
-                              ? "text-[#2cbb5d]"
-                              : "text-[#ff375f]"
+                              ? "text-easy"
+                              : "text-hard"
                           }`}
                         >
                           {runResult.status}
@@ -1174,7 +1174,7 @@ export default function ProblemDetail({
                           {runResult.results.map((res, rIdx) => (
                             <div
                               key={rIdx}
-                              className="p-2.5 rounded bg-[#1a1a1a] border border-[#333333] space-y-1 font-mono text-xs"
+                              className="p-2.5 rounded bg-canvas border border-border space-y-1 font-mono text-xs"
                             >
                               <div className="flex items-center justify-between font-sans">
                                 <span className="font-semibold text-gray-300">
@@ -1182,7 +1182,7 @@ export default function ProblemDetail({
                                 </span>
                                 <span
                                   className={`font-semibold ${
-                                    res.passed ? "text-[#2cbb5d]" : "text-[#ff375f]"
+                                    res.passed ? "text-easy" : "text-hard"
                                   }`}
                                 >
                                   {res.passed ? "Passed" : res.status || "Failed"}
@@ -1194,7 +1194,7 @@ export default function ProblemDetail({
                               </div>
                               <div>
                                 <span className="text-gray-500">Output: </span>
-                                <span className={res.passed ? "text-[#2cbb5d]" : "text-[#ff375f]"}>
+                                <span className={res.passed ? "text-easy" : "text-hard"}>
                                   {res.actualOutput || "(No output)"}
                                 </span>
                               </div>
@@ -1203,7 +1203,7 @@ export default function ProblemDetail({
                                 {res.expectedOutput}
                               </div>
                               {res.error && (
-                                <div className="text-[#ff375f] text-[11px] whitespace-pre-wrap mt-1">
+                                <div className="text-hard text-[11px] whitespace-pre-wrap mt-1">
                                   {res.error}
                                 </div>
                               )}

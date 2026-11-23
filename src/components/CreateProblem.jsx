@@ -91,8 +91,8 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
   // Security Guard: Admin only
   if (!isAuthenticated || user?.role !== "admin") {
     return (
-      <div className="max-w-md mx-auto my-20 p-8 bg-[#262626] rounded-xl border border-[#333333] text-center space-y-4">
-        <div className="w-12 h-12 bg-rose-500/10 text-[#ff375f] rounded-full flex items-center justify-center mx-auto">
+      <div className="max-w-md mx-auto my-20 p-8 bg-panel rounded-xl border border-border text-center space-y-4">
+        <div className="w-12 h-12 bg-rose-500/10 text-hard rounded-full flex items-center justify-center mx-auto">
           <AlertTriangle className="w-6 h-6" />
         </div>
         <div>
@@ -104,7 +104,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
         <button
           type="button"
           onClick={handleGoHome}
-          className="px-4 py-2 rounded-md bg-[#ffa116] text-[#1a1a1a] text-xs font-semibold hover:bg-[#e68a00] transition-colors"
+          className="px-4 py-2 rounded-md bg-brand text-canvas text-xs font-semibold hover:bg-brand-hover transition-colors"
         >
           Return to Problems
         </button>
@@ -270,7 +270,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-6">
       {/* Top Header Bar */}
-      <div className="flex items-center justify-between pb-4 border-b border-[#333333]">
+      <div className="flex items-center justify-between pb-4 border-b border-border">
         <button
           type="button"
           onClick={handleGoAdmin}
@@ -286,9 +286,9 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
             setJsonError(null);
             setIsJsonModalOpen(true);
           }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#383838] bg-[#1e1e1e] hover:bg-[#2d2d2d] text-gray-300 text-xs transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border-subtle bg-panel-subtle hover:bg-panel-elevated text-gray-300 text-xs transition-colors"
         >
-          <FileCode className="w-3.5 h-3.5 text-[#ffa116]" />
+          <FileCode className="w-3.5 h-3.5 text-brand" />
           <span>Import JSON</span>
         </button>
       </div>
@@ -304,14 +304,14 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
 
       {/* Alerts */}
       {successMessage && (
-        <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-[#2cbb5d] text-xs flex items-center gap-2">
+        <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-easy text-xs flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
           <span>{successMessage}</span>
         </div>
       )}
 
       {errorMessage && (
-        <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/25 text-[#ff375f] text-xs flex items-center gap-2">
+        <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/25 text-hard text-xs flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{errorMessage}</span>
         </div>
@@ -321,7 +321,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className="bg-[#262626] p-6 sm:p-7 rounded-xl border border-[#333333] space-y-6 text-xs"
+        className="bg-panel p-6 sm:p-7 rounded-xl border border-border space-y-6 text-xs"
       >
         {/* Title and Difficulty */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -331,14 +331,14 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
               type="text"
               placeholder="e.g. Valid Parentheses"
               {...register("title")}
-              className={`w-full h-8 px-3 bg-[#1e1e1e] border rounded text-white focus:outline-none transition-colors ${
+              className={`w-full h-8 px-3 bg-panel-subtle border rounded text-white focus:outline-none transition-colors ${
                 errors.title
                   ? "border-rose-500 focus:border-rose-500"
-                  : "border-[#333333] focus:border-[#ffa116]"
+                  : "border-border focus:border-brand"
               }`}
             />
             {errors.title && (
-              <p className="text-[11px] text-[#ff375f] flex items-center gap-1 mt-0.5">
+              <p className="text-[11px] text-hard flex items-center gap-1 mt-0.5">
                 <AlertCircle className="w-3 h-3 shrink-0" />
                 {errors.title.message}
               </p>
@@ -349,10 +349,10 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
             <label className="text-gray-300 font-medium">Difficulty *</label>
             <select
               {...register("difficulty")}
-              className={`w-full h-8 px-2 bg-[#1e1e1e] border rounded text-white focus:outline-none capitalize cursor-pointer transition-colors ${
+              className={`w-full h-8 px-2 bg-panel-subtle border rounded text-white focus:outline-none capitalize cursor-pointer transition-colors ${
                 errors.difficulty
                   ? "border-rose-500 focus:border-rose-500"
-                  : "border-[#333333] focus:border-[#ffa116]"
+                  : "border-border focus:border-brand"
               }`}
             >
               <option value="easy">Easy</option>
@@ -360,7 +360,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
               <option value="hard">Hard</option>
             </select>
             {errors.difficulty && (
-              <p className="text-[11px] text-[#ff375f] flex items-center gap-1 mt-0.5">
+              <p className="text-[11px] text-hard flex items-center gap-1 mt-0.5">
                 <AlertCircle className="w-3 h-3 shrink-0" />
                 {errors.difficulty.message}
               </p>
@@ -375,14 +375,14 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
             rows={5}
             placeholder="Problem description, input/output specifications, constraints..."
             {...register("description")}
-            className={`w-full p-3 bg-[#1e1e1e] border rounded text-white leading-relaxed focus:outline-none transition-colors ${
+            className={`w-full p-3 bg-panel-subtle border rounded text-white leading-relaxed focus:outline-none transition-colors ${
               errors.description
                 ? "border-rose-500 focus:border-rose-500"
-                : "border-[#333333] focus:border-[#ffa116]"
+                : "border-border focus:border-brand"
             }`}
           ></textarea>
           {errors.description && (
-            <p className="text-[11px] text-[#ff375f] flex items-center gap-1 mt-0.5">
+            <p className="text-[11px] text-hard flex items-center gap-1 mt-0.5">
               <AlertCircle className="w-3 h-3 shrink-0" />
               {errors.description.message}
             </p>
@@ -396,12 +396,12 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
             type="text"
             placeholder="e.g. stack, string, hash-table"
             {...register("tags")}
-            className="w-full h-8 px-3 bg-[#1e1e1e] border border-[#333333] rounded text-white focus:outline-none focus:border-[#ffa116]"
+            className="w-full h-8 px-3 bg-panel-subtle border border-border rounded text-white focus:outline-none focus:border-brand"
           />
         </div>
 
         {/* ----------------- SECTION 1: VISIBLE TEST CASES ----------------- */}
-        <div className="space-y-3 pt-4 border-t border-[#333333]">
+        <div className="space-y-3 pt-4 border-t border-border">
           <div className="flex items-center justify-between">
             <div>
               <span className="font-semibold text-white">
@@ -417,21 +417,21 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
               onClick={() =>
                 appendVisible({ input: "", output: "", explanation: "" })
               }
-              className="px-2.5 py-1 rounded bg-[#1e1e1e] hover:bg-[#333333] border border-[#383838] text-gray-200 text-xs flex items-center gap-1 transition-colors"
+              className="px-2.5 py-1 rounded bg-panel-subtle hover:bg-panel-hover border border-border-subtle text-gray-200 text-xs flex items-center gap-1 transition-colors"
             >
-              <Plus className="w-3.5 h-3.5 text-[#ffa116]" />
+              <Plus className="w-3.5 h-3.5 text-brand" />
               <span>Add Visible Case</span>
             </button>
           </div>
 
           {errors.visibleTestCases?.message && (
-            <p className="text-[11px] text-[#ff375f] flex items-center gap-1">
+            <p className="text-[11px] text-hard flex items-center gap-1">
               <AlertCircle className="w-3.5 h-3.5 shrink-0" />
               {errors.visibleTestCases.message}
             </p>
           )}
           {errors.visibleTestCases?.root?.message && (
-            <p className="text-[11px] text-[#ff375f] flex items-center gap-1">
+            <p className="text-[11px] text-hard flex items-center gap-1">
               <AlertCircle className="w-3.5 h-3.5 shrink-0" />
               {errors.visibleTestCases.root.message}
             </p>
@@ -445,7 +445,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
               return (
                 <div
                   key={field.id}
-                  className="border border-[#333333] rounded-lg p-3.5 bg-[#1e1e1e] space-y-2.5"
+                  className="border border-border rounded-lg p-3.5 bg-panel-subtle space-y-2.5"
                 >
                   <div className="flex items-center justify-between text-gray-400">
                     <span className="font-medium text-white">Visible Case #{index + 1}</span>
@@ -453,7 +453,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                       <button
                         type="button"
                         onClick={() => removeVisible(index)}
-                        className="text-[#ff375f] hover:underline flex items-center gap-1"
+                        className="text-hard hover:underline flex items-center gap-1"
                       >
                         <Trash2 className="w-3 h-3" />
                         <span>Remove</span>
@@ -468,14 +468,14 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                         rows={2}
                         placeholder="Input..."
                         {...register(`visibleTestCases.${index}.input`)}
-                        className={`w-full p-2 bg-[#262626] border rounded font-mono text-xs text-white focus:outline-none transition-colors ${
+                        className={`w-full p-2 bg-panel border rounded font-mono text-xs text-white focus:outline-none transition-colors ${
                           inputError
                             ? "border-rose-500 focus:border-rose-500"
-                            : "border-[#333333] focus:border-[#ffa116]"
+                            : "border-border focus:border-brand"
                         }`}
                       ></textarea>
                       {inputError && (
-                        <p className="text-[11px] text-[#ff375f] flex items-center gap-1">
+                        <p className="text-[11px] text-hard flex items-center gap-1">
                           <AlertCircle className="w-3 h-3 shrink-0" />
                           {inputError.message}
                         </p>
@@ -488,14 +488,14 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                         rows={2}
                         placeholder="Output..."
                         {...register(`visibleTestCases.${index}.output`)}
-                        className={`w-full p-2 bg-[#262626] border rounded font-mono text-xs text-[#00b8a3] focus:outline-none transition-colors ${
+                        className={`w-full p-2 bg-panel border rounded font-mono text-xs text-easy focus:outline-none transition-colors ${
                           outputError
                             ? "border-rose-500 focus:border-rose-500"
-                            : "border-[#333333] focus:border-[#ffa116]"
+                            : "border-border focus:border-brand"
                         }`}
                       ></textarea>
                       {outputError && (
-                        <p className="text-[11px] text-[#ff375f] flex items-center gap-1">
+                        <p className="text-[11px] text-hard flex items-center gap-1">
                           <AlertCircle className="w-3 h-3 shrink-0" />
                           {outputError.message}
                         </p>
@@ -509,7 +509,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                       type="text"
                       placeholder="Why this output is expected..."
                       {...register(`visibleTestCases.${index}.explanation`)}
-                      className="w-full h-7 px-2.5 bg-[#262626] border border-[#333333] rounded text-xs text-white focus:outline-none focus:border-[#ffa116]"
+                      className="w-full h-7 px-2.5 bg-panel border border-border rounded text-xs text-white focus:outline-none focus:border-brand"
                     />
                   </div>
                 </div>
@@ -519,7 +519,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
         </div>
 
         {/* ----------------- SECTION 2: HIDDEN TEST CASES ----------------- */}
-        <div className="space-y-3 pt-4 border-t border-[#333333]">
+        <div className="space-y-3 pt-4 border-t border-border">
           <div className="flex items-center justify-between">
             <div>
               <span className="font-semibold text-white">
@@ -533,21 +533,21 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
             <button
               type="button"
               onClick={() => appendHidden({ input: "", output: "" })}
-              className="px-2.5 py-1 rounded bg-[#1e1e1e] hover:bg-[#333333] border border-[#383838] text-gray-200 text-xs flex items-center gap-1 transition-colors"
+              className="px-2.5 py-1 rounded bg-panel-subtle hover:bg-panel-hover border border-border-subtle text-gray-200 text-xs flex items-center gap-1 transition-colors"
             >
-              <Plus className="w-3.5 h-3.5 text-[#ffa116]" />
+              <Plus className="w-3.5 h-3.5 text-brand" />
               <span>Add Hidden Case</span>
             </button>
           </div>
 
           {errors.hiddenTestCases?.message && (
-            <p className="text-[11px] text-[#ff375f] flex items-center gap-1">
+            <p className="text-[11px] text-hard flex items-center gap-1">
               <AlertCircle className="w-3.5 h-3.5 shrink-0" />
               {errors.hiddenTestCases.message}
             </p>
           )}
           {errors.hiddenTestCases?.root?.message && (
-            <p className="text-[11px] text-[#ff375f] flex items-center gap-1">
+            <p className="text-[11px] text-hard flex items-center gap-1">
               <AlertCircle className="w-3.5 h-3.5 shrink-0" />
               {errors.hiddenTestCases.root.message}
             </p>
@@ -561,7 +561,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
               return (
                 <div
                   key={field.id}
-                  className="border border-[#333333] rounded-lg p-3.5 bg-[#1e1e1e] space-y-2.5"
+                  className="border border-border rounded-lg p-3.5 bg-panel-subtle space-y-2.5"
                 >
                   <div className="flex items-center justify-between text-gray-400">
                     <span className="font-medium text-white">Hidden Case #{index + 1}</span>
@@ -569,7 +569,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                       <button
                         type="button"
                         onClick={() => removeHidden(index)}
-                        className="text-[#ff375f] hover:underline flex items-center gap-1"
+                        className="text-hard hover:underline flex items-center gap-1"
                       >
                         <Trash2 className="w-3 h-3" />
                         <span>Remove</span>
@@ -584,14 +584,14 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                         rows={2}
                         placeholder="Input..."
                         {...register(`hiddenTestCases.${index}.input`)}
-                        className={`w-full p-2 bg-[#262626] border rounded font-mono text-xs text-white focus:outline-none transition-colors ${
+                        className={`w-full p-2 bg-panel border rounded font-mono text-xs text-white focus:outline-none transition-colors ${
                           inputError
                             ? "border-rose-500 focus:border-rose-500"
-                            : "border-[#333333] focus:border-[#ffa116]"
+                            : "border-border focus:border-brand"
                         }`}
                       ></textarea>
                       {inputError && (
-                        <p className="text-[11px] text-[#ff375f] flex items-center gap-1">
+                        <p className="text-[11px] text-hard flex items-center gap-1">
                           <AlertCircle className="w-3 h-3 shrink-0" />
                           {inputError.message}
                         </p>
@@ -604,14 +604,14 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                         rows={2}
                         placeholder="Output..."
                         {...register(`hiddenTestCases.${index}.output`)}
-                        className={`w-full p-2 bg-[#262626] border rounded font-mono text-xs text-[#00b8a3] focus:outline-none transition-colors ${
+                        className={`w-full p-2 bg-panel border rounded font-mono text-xs text-easy focus:outline-none transition-colors ${
                           outputError
                             ? "border-rose-500 focus:border-rose-500"
-                            : "border-[#333333] focus:border-[#ffa116]"
+                            : "border-border focus:border-brand"
                         }`}
                       ></textarea>
                       {outputError && (
-                        <p className="text-[11px] text-[#ff375f] flex items-center gap-1">
+                        <p className="text-[11px] text-hard flex items-center gap-1">
                           <AlertCircle className="w-3 h-3 shrink-0" />
                           {outputError.message}
                         </p>
@@ -625,7 +625,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
         </div>
 
         {/* ----------------- SECTION 3: CODE IMPLEMENTATIONS ----------------- */}
-        <div className="space-y-3 pt-4 border-t border-[#333333]">
+        <div className="space-y-3 pt-4 border-t border-border">
           <div>
             <span className="font-semibold text-white">Code Templates</span>
             <p className="text-[11px] text-gray-400">
@@ -634,26 +634,26 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
           </div>
 
           {errors.pythonRefCode && (
-            <div className="p-2.5 rounded bg-rose-500/10 border border-rose-500/25 text-[#ff375f] text-xs flex items-center gap-2">
+            <div className="p-2.5 rounded bg-rose-500/10 border border-rose-500/25 text-hard text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errors.pythonRefCode.message}</span>
             </div>
           )}
 
           {/* Language Toggle */}
-          <div className="flex items-center bg-[#1e1e1e] p-0.5 rounded-lg border border-[#333333] text-xs w-fit">
+          <div className="flex items-center bg-panel-subtle p-0.5 rounded-lg border border-border text-xs w-fit">
             <button
               type="button"
               onClick={() => setActiveLangTab("python")}
               className={`px-3 py-1 rounded font-medium transition-colors ${
                 activeLangTab === "python"
-                  ? "bg-[#2d2d2d] text-white"
+                  ? "bg-panel-elevated text-white"
                   : "text-gray-400 hover:text-white"
               }`}
             >
               Python
               {pythonRefCodeValue?.trim() && (
-                <span className="w-1.5 h-1.5 rounded-full bg-[#00b8a3] inline-block ml-1.5"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-easy inline-block ml-1.5"></span>
               )}
             </button>
             <button
@@ -661,20 +661,20 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
               onClick={() => setActiveLangTab("cpp")}
               className={`px-3 py-1 rounded font-medium transition-colors ${
                 activeLangTab === "cpp"
-                  ? "bg-[#2d2d2d] text-white"
+                  ? "bg-panel-elevated text-white"
                   : "text-gray-400 hover:text-white"
               }`}
             >
               C++
               {cppRefCodeValue?.trim() && (
-                <span className="w-1.5 h-1.5 rounded-full bg-[#00b8a3] inline-block ml-1.5"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-easy inline-block ml-1.5"></span>
               )}
             </button>
           </div>
 
           {/* Python Config */}
           {activeLangTab === "python" && (
-            <div className="space-y-3 bg-[#1e1e1e] p-4 rounded-lg border border-[#333333]">
+            <div className="space-y-3 bg-panel-subtle p-4 rounded-lg border border-border">
               <div className="space-y-1">
                 <label className="text-gray-300 font-medium">
                   Python Complete Reference Solution *
@@ -683,7 +683,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                   rows={8}
                   placeholder="Complete reference code..."
                   {...register("pythonRefCode")}
-                  className="w-full p-2.5 bg-[#141414] border border-[#2e2e2e] rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-[#ffa116]"
+                  className="w-full p-2.5 bg-canvas-subtle border border-border-muted rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-brand"
                 ></textarea>
               </div>
 
@@ -695,7 +695,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                   rows={5}
                   placeholder="Starter template code..."
                   {...register("pythonStartCode")}
-                  className="w-full p-2.5 bg-[#141414] border border-[#2e2e2e] rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-[#ffa116]"
+                  className="w-full p-2.5 bg-canvas-subtle border border-border-muted rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-brand"
                 ></textarea>
               </div>
             </div>
@@ -703,7 +703,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
 
           {/* C++ Config */}
           {activeLangTab === "cpp" && (
-            <div className="space-y-3 bg-[#1e1e1e] p-4 rounded-lg border border-[#333333]">
+            <div className="space-y-3 bg-panel-subtle p-4 rounded-lg border border-border">
               <div className="space-y-1">
                 <label className="text-gray-300 font-medium">
                   C++ Complete Reference Solution *
@@ -712,7 +712,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                   rows={8}
                   placeholder="#include <iostream>&#10;using namespace std;&#10;..."
                   {...register("cppRefCode")}
-                  className="w-full p-2.5 bg-[#141414] border border-[#2e2e2e] rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-[#ffa116]"
+                  className="w-full p-2.5 bg-canvas-subtle border border-border-muted rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-brand"
                 ></textarea>
               </div>
 
@@ -724,7 +724,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                   rows={5}
                   placeholder="#include <iostream>&#10;..."
                   {...register("cppStartCode")}
-                  className="w-full p-2.5 bg-[#141414] border border-[#2e2e2e] rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-[#ffa116]"
+                  className="w-full p-2.5 bg-canvas-subtle border border-border-muted rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-brand"
                 ></textarea>
               </div>
             </div>
@@ -732,18 +732,18 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
         </div>
 
         {/* Action Controls */}
-        <div className="pt-4 border-t border-[#333333] flex items-center justify-end gap-3">
+        <div className="pt-4 border-t border-border flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={handleGoAdmin}
-            className="px-4 py-2 rounded-md border border-[#333333] bg-[#1e1e1e] hover:bg-[#333333] text-gray-300 transition-colors"
+            className="px-4 py-2 rounded-md border border-border bg-panel-subtle hover:bg-panel-hover text-gray-300 transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-5 py-2 rounded-md bg-[#ffa116] hover:bg-[#e68a00] text-[#1a1a1a] font-semibold transition-colors flex items-center gap-2 shadow-xs disabled:opacity-50"
+            className="px-5 py-2 rounded-md bg-brand hover:bg-brand-hover text-canvas font-semibold transition-colors flex items-center gap-2 shadow-xs disabled:opacity-50"
           >
             {isSubmitting ? (
               <div className="w-3.5 h-3.5 rounded-full border border-black border-t-transparent animate-spin"></div>
@@ -756,10 +756,10 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
       {/* JSON Import Modal */}
       {isJsonModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[#262626] rounded-xl border border-[#333333] w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl text-xs">
-            <div className="p-4 border-b border-[#333333] flex items-center justify-between bg-[#222222]">
+          <div className="bg-panel rounded-xl border border-border w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl text-xs">
+            <div className="p-4 border-b border-border flex items-center justify-between bg-panel-header">
               <span className="font-bold text-white flex items-center gap-2">
-                <FileCode className="w-4 h-4 text-[#ffa116]" />
+                <FileCode className="w-4 h-4 text-brand" />
                 Import Problem JSON
               </span>
               <button
@@ -777,7 +777,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
               </p>
 
               {jsonError && (
-                <div className="p-2.5 rounded bg-rose-500/10 border border-rose-500/25 text-[#ff375f]">
+                <div className="p-2.5 rounded bg-rose-500/10 border border-rose-500/25 text-hard">
                   {jsonError}
                 </div>
               )}
@@ -787,15 +787,15 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                 placeholder={`{\n  "title": "Two Sum",\n  "difficulty": "easy",\n  "description": "...",\n  "visibleTestCases": [...]\n}`}
                 value={jsonInput}
                 onChange={(e) => setJsonInput(e.target.value)}
-                className="w-full p-3 bg-[#1e1e1e] border border-[#333333] rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-[#ffa116]"
+                className="w-full p-3 bg-panel-subtle border border-border rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-brand"
               ></textarea>
             </div>
 
-            <div className="p-3.5 border-t border-[#333333] flex items-center justify-end gap-2 bg-[#222222]">
+            <div className="p-3.5 border-t border-border flex items-center justify-end gap-2 bg-panel-header">
               <button
                 type="button"
                 onClick={() => setIsJsonModalOpen(false)}
-                className="px-3 py-1.5 rounded border border-[#333333] bg-[#1e1e1e] hover:bg-[#333333] text-gray-300"
+                className="px-3 py-1.5 rounded border border-border bg-panel-subtle hover:bg-panel-hover text-gray-300"
               >
                 Cancel
               </button>
@@ -803,7 +803,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                 type="button"
                 onClick={handleApplyJson}
                 disabled={!jsonInput.trim()}
-                className="px-4 py-1.5 rounded bg-[#ffa116] text-[#1a1a1a] font-semibold hover:bg-[#e68a00] transition-colors disabled:opacity-40"
+                className="px-4 py-1.5 rounded bg-brand text-canvas font-semibold hover:bg-brand-hover transition-colors disabled:opacity-40"
               >
                 Apply JSON
               </button>

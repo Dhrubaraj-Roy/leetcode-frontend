@@ -238,11 +238,11 @@ export default function VideoUploadModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs text-xs">
-      <div className="bg-[#262626] border border-[#333333] w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-panel border border-border w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="p-4 border-b border-[#333333] flex items-center justify-between bg-[#222222]">
+        <div className="p-4 border-b border-border flex items-center justify-between bg-panel-header">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-md bg-[#ffa116]/10 text-[#ffa116] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-md bg-brand/10 text-brand flex items-center justify-center">
               <Video className="w-4 h-4" />
             </div>
             <div>
@@ -267,14 +267,14 @@ export default function VideoUploadModal({
         {/* Body */}
         <div className="p-5 overflow-y-auto space-y-4">
           {successMessage && (
-            <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-[#2cbb5d] flex items-center gap-2">
+            <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-easy flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
               <span>{successMessage}</span>
             </div>
           )}
 
           {errorMessage && (
-            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/25 text-[#ff375f] flex items-center gap-2">
+            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/25 text-hard flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>
@@ -282,14 +282,14 @@ export default function VideoUploadModal({
 
           {isLoadingExisting ? (
             <div className="py-12 flex flex-col items-center justify-center gap-2 text-gray-400">
-              <div className="w-6 h-6 rounded-full border-2 border-[#ffa116] border-t-transparent animate-spin"></div>
+              <div className="w-6 h-6 rounded-full border-2 border-brand border-t-transparent animate-spin"></div>
               <p>Checking existing video...</p>
             </div>
           ) : existingVideo ? (
             /* Existing Video View */
             <div className="space-y-4">
               <div className="flex items-center justify-between text-[11px]">
-                <span className="font-medium text-[#2cbb5d]">
+                <span className="font-medium text-easy">
                   Active Solution Video
                 </span>
                 <span className="text-gray-400">
@@ -298,7 +298,7 @@ export default function VideoUploadModal({
               </div>
 
               {/* Video Player */}
-              <div className="rounded-lg overflow-hidden border border-[#333333] bg-black aspect-video relative">
+              <div className="rounded-lg overflow-hidden border border-border bg-black aspect-video relative">
                 <video
                   src={existingVideo.videoUrl}
                   poster={existingVideo.thumbnailUrl}
@@ -312,19 +312,19 @@ export default function VideoUploadModal({
 
               {/* Video Details */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                <div className="bg-[#1e1e1e] p-2.5 rounded border border-[#333333]">
+                <div className="bg-panel-subtle p-2.5 rounded border border-border">
                   <span className="text-[10px] text-gray-400 block">Duration</span>
                   <span className="font-semibold text-white mt-0.5 block">
                     {existingVideo.duration ? `${Math.round(existingVideo.duration)}s` : "--"}
                   </span>
                 </div>
-                <div className="bg-[#1e1e1e] p-2.5 rounded border border-[#333333]">
+                <div className="bg-panel-subtle p-2.5 rounded border border-border">
                   <span className="text-[10px] text-gray-400 block">Format</span>
                   <span className="font-semibold text-white uppercase mt-0.5 block">
                     {existingVideo.format || "mp4"}
                   </span>
                 </div>
-                <div className="bg-[#1e1e1e] p-2.5 rounded border border-[#333333]">
+                <div className="bg-panel-subtle p-2.5 rounded border border-border">
                   <span className="text-[10px] text-gray-400 block">Size</span>
                   <span className="font-semibold text-white mt-0.5 block">
                     {existingVideo.bytes
@@ -332,13 +332,13 @@ export default function VideoUploadModal({
                       : "--"}
                   </span>
                 </div>
-                <div className="bg-[#1e1e1e] p-2.5 rounded border border-[#333333]">
+                <div className="bg-panel-subtle p-2.5 rounded border border-border">
                   <span className="text-[10px] text-gray-400 block">Direct Link</span>
                   <a
                     href={existingVideo.videoUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[#ffa116] hover:underline font-semibold flex items-center gap-1 mt-0.5 truncate"
+                    className="text-brand hover:underline font-semibold flex items-center gap-1 mt-0.5 truncate"
                   >
                     Open <ExternalLink className="w-3 h-3" />
                   </a>
@@ -346,7 +346,7 @@ export default function VideoUploadModal({
               </div>
 
               {/* Delete / Replace Action */}
-              <div className="pt-3 border-t border-[#333333] flex items-center justify-between">
+              <div className="pt-3 border-t border-border flex items-center justify-between">
                 <p className="text-[11px] text-gray-400">
                   Delete current video to upload a replacement.
                 </p>
@@ -356,7 +356,7 @@ export default function VideoUploadModal({
                       type="button"
                       onClick={() => setShowDeleteConfirm(false)}
                       disabled={isDeleting}
-                      className="px-2.5 py-1 rounded border border-[#333333] text-gray-300 hover:bg-[#333333]"
+                      className="px-2.5 py-1 rounded border border-border text-gray-300 hover:bg-panel-hover"
                     >
                       Cancel
                     </button>
@@ -364,7 +364,7 @@ export default function VideoUploadModal({
                       type="button"
                       onClick={handleDeleteVideo}
                       disabled={isDeleting}
-                      className="px-3 py-1 rounded bg-rose-500/10 border border-rose-500/30 text-[#ff375f] font-semibold hover:bg-rose-500/20"
+                      className="px-3 py-1 rounded bg-rose-500/10 border border-rose-500/30 text-hard font-semibold hover:bg-rose-500/20"
                     >
                       {isDeleting ? "Deleting..." : "Confirm Delete"}
                     </button>
@@ -373,7 +373,7 @@ export default function VideoUploadModal({
                   <button
                     type="button"
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="px-2.5 py-1 rounded border border-rose-500/30 text-[#ff375f] hover:bg-rose-500/10 flex items-center gap-1"
+                    className="px-2.5 py-1 rounded border border-rose-500/30 text-hard hover:bg-rose-500/10 flex items-center gap-1"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Delete Video</span>
@@ -390,8 +390,8 @@ export default function VideoUploadModal({
                 onClick={() => !isUploading && fileInputRef.current?.click()}
                 className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer ${
                   selectedFile
-                    ? "border-[#ffa116] bg-[#ffa116]/5"
-                    : "border-[#3e3e3e] hover:border-[#ffa116]/60 hover:bg-[#1e1e1e]"
+                    ? "border-brand bg-brand/5"
+                    : "border-border-subtle hover:border-brand/60 hover:bg-panel-subtle"
                 } ${isUploading ? "opacity-50 pointer-events-none" : ""}`}
               >
                 <input
@@ -401,7 +401,7 @@ export default function VideoUploadModal({
                   accept="video/mp4,video/webm,video/quicktime,video/x-matroska"
                   className="hidden"
                 />
-                <div className="w-12 h-12 rounded-lg bg-[#1e1e1e] text-[#ffa116] mx-auto flex items-center justify-center mb-2.5 border border-[#333333]">
+                <div className="w-12 h-12 rounded-lg bg-panel-subtle text-brand mx-auto flex items-center justify-center mb-2.5 border border-border">
                   <UploadCloud className="w-6 h-6" />
                 </div>
                 <div className="font-semibold text-xs text-white mb-1">
@@ -413,7 +413,7 @@ export default function VideoUploadModal({
               </div>
 
               {selectedFile && (
-                <div className="p-3 bg-[#1e1e1e] rounded-lg border border-[#333333] flex items-center justify-between">
+                <div className="p-3 bg-panel-subtle rounded-lg border border-border flex items-center justify-between">
                   <div className="overflow-hidden">
                     <p className="font-semibold text-white truncate text-xs">
                       {selectedFile.name}
@@ -429,7 +429,7 @@ export default function VideoUploadModal({
                         setSelectedFile(null);
                         if (fileInputRef.current) fileInputRef.current.value = "";
                       }}
-                      className="text-[#ff375f] hover:underline text-xs"
+                      className="text-hard hover:underline text-xs"
                     >
                       Remove
                     </button>
@@ -438,26 +438,26 @@ export default function VideoUploadModal({
               )}
 
               {fileError && (
-                <div className="p-2.5 rounded bg-amber-500/10 border border-amber-500/25 text-[#ffc01e] flex items-center gap-1.5">
+                <div className="p-2.5 rounded bg-amber-500/10 border border-amber-500/25 text-medium flex items-center gap-1.5">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{fileError}</span>
                 </div>
               )}
 
               {isUploading && (
-                <div className="space-y-2 p-3 bg-[#1e1e1e] rounded-lg border border-[#333333]">
+                <div className="space-y-2 p-3 bg-panel-subtle rounded-lg border border-border">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-white">
                       {statusMessage}
                     </span>
-                    <span className="text-[#ffa116] font-semibold">
+                    <span className="text-brand font-semibold">
                       {uploadStep === 3 ? `${uploadProgress}%` : "Processing"}
                     </span>
                   </div>
 
-                  <div className="w-full h-1.5 bg-[#333333] rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-border rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-[#ffa116] transition-all duration-200 rounded-full"
+                      className="h-full bg-brand transition-all duration-200 rounded-full"
                       style={{
                         width: `${uploadStep === 3 ? uploadProgress : uploadStep === 4 ? 100 : 25}%`,
                       }}
@@ -470,7 +470,7 @@ export default function VideoUploadModal({
         </div>
 
         {/* Footer */}
-        <div className="p-3.5 border-t border-[#333333] flex items-center justify-between bg-[#222222]">
+        <div className="p-3.5 border-t border-border flex items-center justify-between bg-panel-header">
           <span className="text-[11px] text-gray-500">
             Maximum file size: 100 MB
           </span>
@@ -479,7 +479,7 @@ export default function VideoUploadModal({
               type="button"
               onClick={onClose}
               disabled={isUploading || isDeleting}
-              className="px-3 py-1.5 rounded border border-[#333333] bg-[#1e1e1e] hover:bg-[#333333] text-gray-300"
+              className="px-3 py-1.5 rounded border border-border bg-panel-subtle hover:bg-panel-hover text-gray-300"
             >
               Close
             </button>
@@ -488,7 +488,7 @@ export default function VideoUploadModal({
                 type="button"
                 onClick={handleUploadVideo}
                 disabled={!selectedFile || isUploading}
-                className="px-3.5 py-1.5 rounded bg-[#ffa116] hover:bg-[#e68a00] text-[#1a1a1a] font-semibold transition-colors disabled:opacity-40"
+                className="px-3.5 py-1.5 rounded bg-brand hover:bg-brand-hover text-canvas font-semibold transition-colors disabled:opacity-40"
               >
                 Upload Video
               </button>

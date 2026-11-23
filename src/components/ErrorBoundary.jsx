@@ -41,8 +41,8 @@ export default class ErrorBoundary extends Component {
 
       if (compact) {
         return (
-          <div className="flex flex-col items-center justify-center p-6 text-center h-full w-full bg-[#1e1e1e] border border-[#333333] rounded-lg text-gray-300 space-y-3">
-            <div className="w-8 h-8 rounded-full bg-rose-500/10 text-[#ff375f] flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center p-6 text-center h-full w-full bg-panel-subtle border border-border rounded-lg text-gray-300 space-y-3">
+            <div className="w-8 h-8 rounded-full bg-rose-500/10 text-hard flex items-center justify-center">
               <AlertTriangle className="w-4 h-4" />
             </div>
             <div>
@@ -54,7 +54,7 @@ export default class ErrorBoundary extends Component {
             <button
               type="button"
               onClick={this.handleReset}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-[#ffa116] text-[#1a1a1a] hover:bg-[#e68a00] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-brand text-canvas hover:bg-brand-hover transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Retry</span>
@@ -64,9 +64,9 @@ export default class ErrorBoundary extends Component {
       }
 
       return (
-        <div className="min-h-[300px] w-full flex items-center justify-center p-6 bg-[#1a1a1a] text-white">
-          <div className="max-w-md w-full bg-[#262626] border border-[#333333] rounded-xl p-6 text-center space-y-4 shadow-xl">
-            <div className="w-12 h-12 rounded-full bg-rose-500/10 text-[#ff375f] flex items-center justify-center mx-auto border border-rose-500/20">
+        <div className="min-h-[300px] w-full flex items-center justify-center p-6 bg-canvas text-white">
+          <div className="max-w-md w-full bg-panel border border-border rounded-xl p-6 text-center space-y-4 shadow-xl">
+            <div className="w-12 h-12 rounded-full bg-rose-500/10 text-hard flex items-center justify-center mx-auto border border-rose-500/20">
               <AlertTriangle className="w-6 h-6" />
             </div>
 
@@ -78,7 +78,7 @@ export default class ErrorBoundary extends Component {
             </div>
 
             {this.state.error?.message && (
-              <div className="text-left bg-[#1e1e1e] border border-[#333333] p-3 rounded-md text-[11px] font-mono text-rose-300 break-words max-h-24 overflow-y-auto">
+              <div className="text-left bg-panel-subtle border border-border p-3 rounded-md text-[11px] font-mono text-rose-300 break-words max-h-24 overflow-y-auto">
                 {this.state.error.message}
               </div>
             )}
@@ -87,7 +87,7 @@ export default class ErrorBoundary extends Component {
               <button
                 type="button"
                 onClick={this.handleReset}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-[#ffa116] hover:bg-[#e68a00] text-[#1a1a1a] transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-brand hover:bg-brand-hover text-canvas transition-colors cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Try Again</span>
@@ -96,7 +96,7 @@ export default class ErrorBoundary extends Component {
               <button
                 type="button"
                 onClick={() => window.location.reload()}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium text-gray-300 hover:text-white bg-[#1e1e1e] hover:bg-[#333333] border border-[#383838] transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium text-gray-300 hover:text-white bg-panel-subtle hover:bg-panel-hover border border-border-subtle transition-colors cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>Reload Page</span>

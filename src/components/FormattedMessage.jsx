@@ -19,11 +19,11 @@ export function CodeBlockItem({ language = "code", code = "" }) {
   const displayLang = (language || "CODE").toUpperCase();
 
   return (
-    <div className="my-2.5 rounded-lg overflow-hidden border border-[#333333] bg-[#1a1a1a] text-neutral-100 text-xs font-mono shadow-xs">
+    <div className="my-2.5 rounded-lg overflow-hidden border border-border bg-canvas text-neutral-100 text-xs font-mono shadow-xs">
       {/* Code Header Bar */}
-      <div className="bg-[#222222] px-3 py-1.5 flex items-center justify-between border-b border-[#333333] select-none">
+      <div className="bg-panel-header px-3 py-1.5 flex items-center justify-between border-b border-border select-none">
         <div className="flex items-center gap-2">
-          <Terminal className="w-3.5 h-3.5 text-[#ffa116]" />
+          <Terminal className="w-3.5 h-3.5 text-brand" />
           <span className="text-[11px] font-sans font-medium text-gray-400">
             {displayLang}
           </span>
@@ -33,13 +33,13 @@ export function CodeBlockItem({ language = "code", code = "" }) {
         <button
           type="button"
           onClick={handleCopy}
-          className="h-5 px-2 rounded text-[11px] gap-1 text-gray-400 hover:text-white hover:bg-[#333333] transition-all flex items-center font-sans"
+          className="h-5 px-2 rounded text-[11px] gap-1 text-gray-400 hover:text-white hover:bg-panel-hover transition-all flex items-center font-sans"
           title="Copy code to clipboard"
         >
           {copied ? (
             <>
-              <Check className="w-3 h-3 text-[#2cbb5d]" />
-              <span className="text-[#2cbb5d]">Copied</span>
+              <Check className="w-3 h-3 text-easy" />
+              <span className="text-easy">Copied</span>
             </>
           ) : (
             <>
@@ -51,8 +51,8 @@ export function CodeBlockItem({ language = "code", code = "" }) {
       </div>
 
       {/* Code Content */}
-      <div className="p-3 overflow-x-auto leading-relaxed select-text text-[12px] bg-[#1a1a1a] font-mono">
-        <pre className="m-0 p-0 whitespace-pre text-gray-200 selection:bg-[#ffa116]/20">
+      <div className="p-3 overflow-x-auto leading-relaxed select-text text-[12px] bg-canvas font-mono">
+        <pre className="m-0 p-0 whitespace-pre text-gray-200 selection:bg-brand/20">
           {code}
         </pre>
       </div>
@@ -75,23 +75,23 @@ export function BlockQuoteItem({ text = "" }) {
   };
 
   return (
-    <div className="relative group my-2 border-l-2 border-[#ffa116] bg-[#1f1f1f] py-2 px-3 rounded-r-md text-xs text-gray-200">
+    <div className="relative group my-2 border-l-2 border-brand bg-panel-subtle py-2 px-3 rounded-r-md text-xs text-gray-200">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-1.5 flex-1 min-w-0">
-          <Quote className="w-3.5 h-3.5 text-[#ffa116] shrink-0 mt-0.5 opacity-80" />
+          <Quote className="w-3.5 h-3.5 text-brand shrink-0 mt-0.5 opacity-80" />
           <div className="whitespace-pre-wrap leading-relaxed">{text}</div>
         </div>
 
         <button
           type="button"
           onClick={handleCopy}
-          className="h-5 px-1.5 rounded text-[10px] gap-1 shrink-0 bg-[#262626] hover:bg-[#333333] border border-[#383838] text-gray-400 hover:text-white transition-all flex items-center"
+          className="h-5 px-1.5 rounded text-[10px] gap-1 shrink-0 bg-panel hover:bg-panel-hover border border-border-subtle text-gray-400 hover:text-white transition-all flex items-center"
           title="Copy quote"
         >
           {copied ? (
             <>
-              <Check className="w-3 h-3 text-[#2cbb5d]" />
-              <span className="text-[#2cbb5d]">Copied</span>
+              <Check className="w-3 h-3 text-easy" />
+              <span className="text-easy">Copied</span>
             </>
           ) : (
             <>
@@ -119,7 +119,7 @@ function renderInlineText(text) {
       return (
         <code
           key={pIdx}
-          className="px-1.5 py-0.5 mx-0.5 rounded bg-[#1e1e1e] text-[#ffa116] font-mono text-[11px] border border-[#333333] font-semibold inline-block select-all"
+          className="px-1.5 py-0.5 mx-0.5 rounded bg-panel-subtle text-brand font-mono text-[11px] border border-border font-semibold inline-block select-all"
         >
           {inlineCode}
         </code>
@@ -213,7 +213,7 @@ function TextBlock({ content }) {
       const listContent = trimmed.replace(/^(-|\*|\d+\.)\s+/, "");
       elements.push(
         <div key={`li-${i}`} className="flex items-start gap-2 my-0.5 pl-1">
-          <span className="text-[#ffa116] text-[10px] mt-0.5 select-none font-mono">
+          <span className="text-brand text-[10px] mt-0.5 select-none font-mono">
             {isBullet ? "•" : trimmed.match(/^\d+\./)[0]}
           </span>
           <div className="flex-1 leading-relaxed text-xs text-gray-200">

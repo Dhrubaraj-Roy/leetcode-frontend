@@ -45,18 +45,18 @@ export default function ConfirmModal({
   // Variant styling
   const variantStyles = {
     danger: {
-      iconBg: "bg-rose-500/10 text-[#ff375f] border-rose-500/20",
-      buttonBg: "bg-[#ff375f] hover:bg-[#e03152] text-white",
+      iconBg: "bg-rose-500/10 text-hard border-rose-500/20",
+      buttonBg: "bg-hard hover:bg-hard-hover text-white",
       Icon: AlertTriangle,
     },
     warning: {
-      iconBg: "bg-amber-500/10 text-[#ffc01e] border-amber-500/20",
-      buttonBg: "bg-[#ffa116] hover:bg-[#e68a00] text-[#1a1a1a]",
+      iconBg: "bg-amber-500/10 text-medium border-amber-500/20",
+      buttonBg: "bg-brand hover:bg-brand-hover text-canvas",
       Icon: AlertCircle,
     },
     brand: {
-      iconBg: "bg-[#ffa116]/10 text-[#ffa116] border-[#ffa116]/20",
-      buttonBg: "bg-[#ffa116] hover:bg-[#e68a00] text-[#1a1a1a]",
+      iconBg: "bg-brand/10 text-brand border-brand/20",
+      buttonBg: "bg-brand hover:bg-brand-hover text-canvas",
       Icon: Check,
     },
   };
@@ -74,7 +74,7 @@ export default function ConfirmModal({
         aria-modal="true"
         aria-labelledby="confirm-modal-title"
         aria-describedby="confirm-modal-desc"
-        className="w-full max-w-md bg-[#262626] border border-[#333333] rounded-xl shadow-2xl p-6 space-y-5 animate-in zoom-in-95 duration-150 text-[#eff1f6]"
+        className="w-full max-w-md bg-panel border border-border rounded-xl shadow-2xl p-6 space-y-5 animate-in zoom-in-95 duration-150 text-primary"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-4">
@@ -103,19 +103,19 @@ export default function ConfirmModal({
             type="button"
             onClick={onCancel}
             disabled={isLoading}
-            className="text-gray-400 hover:text-white p-1 rounded-md hover:bg-[#333333] transition-colors -mr-1 -mt-1 cursor-pointer"
+            className="text-gray-400 hover:text-white p-1 rounded-md hover:bg-panel-hover transition-colors -mr-1 -mt-1 cursor-pointer"
             aria-label="Close dialog"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#333333]">
+        <div className="flex items-center justify-end gap-3 pt-2 border-t border-border">
           <button
             type="button"
             onClick={onCancel}
             disabled={isLoading}
-            className="px-4 py-2 rounded-lg text-xs font-medium text-gray-300 hover:text-white bg-[#1e1e1e] hover:bg-[#333333] border border-[#383838] transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-lg text-xs font-medium text-gray-300 hover:text-white bg-panel-subtle hover:bg-panel-hover border border-border-subtle transition-colors cursor-pointer"
           >
             {cancelText}
           </button>
