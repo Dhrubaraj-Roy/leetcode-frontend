@@ -5,13 +5,19 @@ import { BrowserRouter } from "react-router-dom";
 import store from "./store";
 import "./index.css";
 import App from "./App.jsx";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <Provider store={store}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </Provider>
+    <ErrorBoundary
+      title="Application Error"
+      message="An unexpected error occurred in the LeetCode frontend. You can retry or reload the page."
+    >
+      <Provider store={store}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </Provider>
+    </ErrorBoundary>
   </StrictMode>
 );

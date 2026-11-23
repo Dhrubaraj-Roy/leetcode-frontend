@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Editor from "@monaco-editor/react";
 import ConfirmModal from "./ConfirmModal";
+import ErrorBoundary from "./ErrorBoundary";
 import {
   fetchProblemById,
   runCodeApi,
@@ -857,29 +858,35 @@ export default function ProblemDetail({
 
           {/* Monaco Editor Container */}
           <div className="flex-1 min-h-[320px] overflow-hidden bg-[#1e1e1e]">
-            <Editor
-              height="100%"
-              language={selectedLanguage === "cpp" ? "cpp" : "python"}
-              theme="vs-dark"
-              value={code}
-              onChange={handleCodeChange}
-              loading={
-                <div className="flex items-center justify-center h-full bg-[#1e1e1e] text-gray-400 text-xs">
-                  Loading code editor...
-                </div>
-              }
-              options={{
-                minimap: { enabled: false },
-                fontSize: 13,
-                fontFamily: "'Fira Code', Menlo, Monaco, Consolas, monospace",
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                tabSize: 4,
-                padding: { top: 12, bottom: 12 },
-                lineNumbersMinChars: 3,
-                smoothScrolling: true,
-              }}
-            />
+            <ErrorBoundary
+              compact
+              title="Code Editor Failed to Load"
+              message="Monaco Editor could not be initialized. Please check your network connection or click Retry."
+            >
+              <Editor
+                height="100%"
+                language={selectedLanguage === "cpp" ? "cpp" : "python"}
+                theme="vs-dark"
+                value={code}
+                onChange={handleCodeChange}
+                loading={
+                  <div className="flex items-center justify-center h-full bg-[#1e1e1e] text-gray-400 text-xs">
+                    Loading code editor...
+                  </div>
+                }
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 13,
+                  fontFamily: "'Fira Code', Menlo, Monaco, Consolas, monospace",
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                  tabSize: 4,
+                  padding: { top: 12, bottom: 12 },
+                  lineNumbersMinChars: 3,
+                  smoothScrolling: true,
+                }}
+              />
+            </ErrorBoundary>
           </div>
 
           {/* Bottom Testcase & Test Result Drawer */}

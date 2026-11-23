@@ -11,6 +11,7 @@ import {
 } from "react-router-dom";
 import Home from "./components/Home";
 import NotFound from "./components/NotFound";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { checkAuth, logoutUser } from "./store/authSlice";
 import {
   LogOut,
@@ -224,50 +225,55 @@ export default function App() {
 
       {/* Main Routed Area */}
       <main className="flex-1 w-full">
-        <Suspense fallback={<RouteLoadingFallback />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/problem/:id" element={<ProblemDetail />} />
-            <Route
-              path="/admin"
-              element={
-                <AdminRoute>
-                  <AdminPanel />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/problem/create"
-              element={
-                <AdminRoute>
-                  <CreateProblem />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/login"
-              element={
-                <GuestRoute>
-                  <div className="min-h-[calc(100vh-52px)] flex items-center justify-center p-4">
-                    <Login />
-                  </div>
-                </GuestRoute>
-              }
-            />
-            <Route
-              path="/signup"
-              element={
-                <GuestRoute>
-                  <div className="min-h-[calc(100vh-52px)] flex items-center justify-center p-4">
-                    <Signup />
-                  </div>
-                </GuestRoute>
-              }
-            />
-            {/* 404 Catch-All Route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
+        <ErrorBoundary
+          title="Failed to load page"
+          message="An error occurred while loading this view. You can retry below or return to problems."
+        >
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/problem/:id" element={<ProblemDetail />} />
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <AdminPanel />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/problem/create"
+                element={
+                  <AdminRoute>
+                    <CreateProblem />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/login"
+                element={
+                  <GuestRoute>
+                    <div className="min-h-[calc(100vh-52px)] flex items-center justify-center p-4">
+                      <Login />
+                    </div>
+                  </GuestRoute>
+                }
+              />
+              <Route
+                path="/signup"
+                element={
+                  <GuestRoute>
+                    <div className="min-h-[calc(100vh-52px)] flex items-center justify-center p-4">
+                      <Signup />
+                    </div>
+                  </GuestRoute>
+                }
+              />
+              {/* 404 Catch-All Route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
       </main>
 
       {/* Floating DSA Tutor Widget */}
