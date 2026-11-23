@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Routes,
@@ -9,12 +9,6 @@ import {
   Navigate,
 } from "react-router-dom";
 import Home from "./components/Home";
-import Signup from "./components/Signup";
-import Login from "./components/Login";
-import AdminPanel from "./components/AdminPanel";
-import CreateProblem from "./components/CreateProblem";
-import ProblemDetail from "./components/ProblemDetail";
-import ChatInterface from "./components/ChatInterface";
 import NotFound from "./components/NotFound";
 import { checkAuth, logoutUser } from "./store/authSlice";
 import {
@@ -22,6 +16,25 @@ import {
   Shield,
   Bot,
 } from "lucide-react";
+
+// Code-split heavy routes and components so Monaco Editor & Admin tools only download on demand
+const ProblemDetail = lazy(() => import("./components/ProblemDetail"));
+const AdminPanel = lazy(() => import("./components/AdminPanel"));
+const CreateProblem = lazy(() => import("./components/CreateProblem"));
+const Login = lazy(() => import("./components/Login"));
+const Signup = lazy(() => import("./components/Signup"));
+const ChatInterface = lazy(() => import("./components/ChatInterface"));
+
+function RouteLoadingFallback() {
+  return (
+    <div className="min-h-[calc(100vh-52px)] bg-[#1a1a1a] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-7 h-7 rounded-full border-2 border-[#ffa116] border-t-transparent animate-spin"></div>
+        <span className="text-xs text-gray-400">Loading view...</span>
+      </div>
+    </div>
+  );
+}
 
 /**
  * Route guard: Requires authenticated admin.
@@ -210,48 +223,50 @@ export default function App() {
 
       {/* Main Routed Area */}
       <main className="flex-1 w-full">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/problem/:id" element={<ProblemDetail />} />
-          <Route
-            path="/admin"
-            element={
-              <AdminRoute>
-                <AdminPanel />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/problem/create"
-            element={
-              <AdminRoute>
-                <CreateProblem />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/login"
-            element={
-              <GuestRoute>
-                <div className="min-h-[calc(100vh-52px)] flex items-center justify-center p-4">
-                  <Login />
-                </div>
-              </GuestRoute>
-            }
-          />
-          <Route
-            path="/signup"
-            element={
-              <GuestRoute>
-                <div className="min-h-[calc(100vh-52px)] flex items-center justify-center p-4">
-                  <Signup />
-                </div>
-              </GuestRoute>
-            }
-          />
-          {/* 404 Catch-All Route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={<RouteLoadingFallback />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/problem/:id" element={<ProblemDetail />} />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminPanel />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/problem/create"
+              element={
+                <AdminRoute>
+                  <CreateProblem />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <GuestRoute>
+                  <div className="min-h-[calc(100vh-52px)] flex items-center justify-center p-4">
+                    <Login />
+                  </div>
+                </GuestRoute>
+              }
+            />
+            <Route
+              path="/signup"
+              element={
+                <GuestRoute>
+                  <div className="min-h-[calc(100vh-52px)] flex items-center justify-center p-4">
+                    <Signup />
+                  </div>
+                </GuestRoute>
+              }
+            />
+            {/* 404 Catch-All Route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </main>
 
       {/* Floating DSA Tutor Widget */}
@@ -259,13 +274,22 @@ export default function App() {
         <div className="fixed bottom-5 right-5 z-50">
           {isChatOpen ? (
             <div className="w-[380px] sm:w-[420px] h-[520px] max-w-[calc(100vw-2.5rem)] max-h-[calc(100vh-6rem)] shadow-2xl rounded-xl border border-[#333333] overflow-hidden flex flex-col bg-[#262626]">
-              <ChatInterface
-                onClose={() => setIsChatOpen(false)}
-                onNavigateToLogin={() => {
-                  setIsChatOpen(false);
-                  navigate("/login");
-                }}
-              />
+              <Suspense
+                fallback={
+                  <div className="flex-1 flex flex-col items-center justify-center gap-2 bg-[#262626] text-xs text-gray-400">
+                    <div className="w-5 h-5 rounded-full border-2 border-[#ffa116] border-t-transparent animate-spin"></div>
+                    <span>Loading tutor...</span>
+                  </div>
+                }
+              >
+                <ChatInterface
+                  onClose={() => setIsChatOpen(false)}
+                  onNavigateToLogin={() => {
+                    setIsChatOpen(false);
+                    navigate("/login");
+                  }}
+                />
+              </Suspense>
             </div>
           ) : (
             <button
