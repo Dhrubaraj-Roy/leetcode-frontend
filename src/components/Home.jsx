@@ -31,10 +31,19 @@ export default function Home({ onSelectProblem }) {
   );
 
   useEffect(() => {
-    dispatch(getAllProblems());
+    const allProblemsPromise = dispatch(getAllProblems());
+    let solvedPromise = null;
     if (isAuthenticated) {
-      dispatch(getSolvedProblems());
+      solvedPromise = dispatch(getSolvedProblems());
     }
+
+    return () => {
+      // Abort in-flight catalog requests if navigating away
+      allProblemsPromise.abort();
+      if (solvedPromise) {
+        solvedPromise.abort();
+      }
+    };
   }, [dispatch, isAuthenticated]);
 
   const solvedIdSet = useMemo(() => {

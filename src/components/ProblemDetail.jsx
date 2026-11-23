@@ -106,17 +106,20 @@ export default function ProblemDetail({
   const [submissionsList, setSubmissionsList] = useState([]);
   const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(false);
 
-  // Fetch problem details on mount or problemId change
+  // Fetch problem details on mount or problemId change with AbortController to prevent race conditions
   useEffect(() => {
-    let isMounted = true;
+    if (!problemId) return;
+
+    const controller = new AbortController();
+    const signal = controller.signal;
 
     const loadProblem = async () => {
       try {
         setIsLoadingProblem(true);
         setProblemError(null);
-        const data = await fetchProblemById(problemId);
+        const data = await fetchProblemById(problemId, { signal });
 
-        if (!isMounted) return;
+        if (signal.aborted) return;
 
         if (data) {
           setProblem(data);
@@ -162,51 +165,77 @@ export default function ProblemDetail({
           // Fetch solution video if available
           setIsLoadingVideo(true);
           try {
-            const vData = await fetchVideoByProblemId(problemId);
-            if (isMounted) setSolutionVideo(vData?.video || null);
+            const vData = await fetchVideoByProblemId(problemId, { signal });
+            if (!signal.aborted) setSolutionVideo(vData?.video || null);
           } catch (_) {
-            if (isMounted) setSolutionVideo(null);
+            if (!signal.aborted) setSolutionVideo(null);
           } finally {
-            if (isMounted) setIsLoadingVideo(false);
+            if (!signal.aborted) setIsLoadingVideo(false);
           }
         } else {
-          setProblemError("Problem not found.");
+          if (!signal.aborted) setProblemError("Problem not found.");
         }
       } catch (err) {
-        if (!isMounted) return;
+        if (
+          signal.aborted ||
+          err.name === "CanceledError" ||
+          err.code === "ERR_CANCELED"
+        ) {
+          return;
+        }
         setProblemError(
-          err.response?.data?.message || err.message || "Failed to load problem."
+          err.userMessage ||
+            err.response?.data?.message ||
+            err.message ||
+            "Failed to load problem."
         );
       } finally {
-        if (isMounted) setIsLoadingProblem(false);
+        if (!signal.aborted) setIsLoadingProblem(false);
       }
     };
 
-    if (problemId) {
-      loadProblem();
-    }
+    loadProblem();
 
     return () => {
-      isMounted = false;
+      // Abort in-flight requests if problemId changes or component unmounts
+      controller.abort();
     };
   }, [problemId]);
 
-  // Fetch submissions history when switching to submissions tab
+  // Fetch submissions history with AbortController when switching to submissions tab
   useEffect(() => {
     if (leftTab === "submissions" && isAuthenticated && problemId) {
+      const controller = new AbortController();
+      const signal = controller.signal;
+
       const loadSubmissions = async () => {
         try {
           setIsLoadingSubmissions(true);
-          const data = await fetchProblemSubmissionsApi(problemId);
-          setSubmissionsList(data.submissions || []);
-        } catch (_) {
+          const data = await fetchProblemSubmissionsApi(problemId, { signal });
+          if (!signal.aborted) {
+            setSubmissionsList(data.submissions || []);
+          }
+        } catch (err) {
+          if (
+            signal.aborted ||
+            err.name === "CanceledError" ||
+            err.code === "ERR_CANCELED"
+          ) {
+            return;
+          }
           setSubmissionsList([]);
         } finally {
-          setIsLoadingSubmissions(false);
+          if (!signal.aborted) {
+            setIsLoadingSubmissions(false);
+          }
         }
       };
 
       loadSubmissions();
+
+      return () => {
+        controller.abort();
+      };
     }
   }, [leftTab, isAuthenticated, problemId]);
 

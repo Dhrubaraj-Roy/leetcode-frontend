@@ -4,20 +4,29 @@ import { api } from "../lib/api";
 /**
  * 1. Fetch All Problems Thunk (GET /problem/all)
  * Accepts optional query params: { difficulty, tag, page, limit }
+ * Supports request cancellation via AbortSignal
  */
 export const getAllProblems = createAsyncThunk(
   "problems/getAllProblems",
-  async (params = {}, { rejectWithValue }) => {
+  async (params = {}, { rejectWithValue, signal }) => {
     try {
       const response = await api.get("/problem/all", {
         params: {
           limit: 100, // Fetch up to 100 problems for smooth client-side filtering
           ...params,
         },
+        signal,
       });
       // response.data has { totalProblems, count, problems, totalPages, page }
       return response.data.problems || [];
     } catch (err) {
+      if (
+        signal.aborted ||
+        err.name === "CanceledError" ||
+        err.code === "ERR_CANCELED"
+      ) {
+        return rejectWithValue("Request aborted");
+      }
       const message =
         err.userMessage ||
         err.response?.data?.message ||
@@ -31,15 +40,23 @@ export const getAllProblems = createAsyncThunk(
 /**
  * 2. Fetch Solved Problems Thunk (GET /problem/solved)
  * Requires authenticated user session (HTTP-only cookie)
+ * Supports request cancellation via AbortSignal
  */
 export const getSolvedProblems = createAsyncThunk(
   "problems/getSolvedProblems",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, signal }) => {
     try {
-      const response = await api.get("/problem/solved");
+      const response = await api.get("/problem/solved", { signal });
       // response.data has { count, solvedProblems }
       return response.data.solvedProblems || [];
     } catch (err) {
+      if (
+        signal.aborted ||
+        err.name === "CanceledError" ||
+        err.code === "ERR_CANCELED"
+      ) {
+        return [];
+      }
       // If 401 unauthenticated, return empty array without error
       if (err.response?.status === 401) {
         return [];

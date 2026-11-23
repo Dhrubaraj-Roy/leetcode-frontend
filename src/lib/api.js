@@ -17,6 +17,15 @@ export const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Pass through canceled requests silently
+    if (
+      axios.isCancel(error) ||
+      error.name === "CanceledError" ||
+      error.code === "ERR_CANCELED"
+    ) {
+      return Promise.reject(error);
+    }
+
     if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
       error.message =
         "The request took too long and timed out. Please check your network connection and retry.";
@@ -35,95 +44,104 @@ api.interceptors.response.use(
 
 /**
  * Fetch a single problem by ID (GET /problem/get/:id)
+ * Supports AbortSignal in options (e.g. { signal })
  */
-export const fetchProblemById = async (id) => {
-  const response = await api.get(`/problem/get/${id}`);
+export const fetchProblemById = async (id, options = {}) => {
+  const response = await api.get(`/problem/get/${id}`, options);
   return response.data?.problem || response.data;
 };
 
 /**
  * Run code against visible test cases (POST /problem/run/:problemId)
  */
-export const runCodeApi = async ({ problemId, language, code }) => {
-  const response = await api.post(`/problem/run/${problemId}`, {
-    language,
-    code,
-  });
+export const runCodeApi = async ({ problemId, language, code }, options = {}) => {
+  const response = await api.post(
+    `/problem/run/${problemId}`,
+    {
+      language,
+      code,
+    },
+    options
+  );
   return response.data;
 };
 
 /**
  * Submit code for evaluation against all test cases (POST /problem/solve/:problemId)
  */
-export const submitCodeApi = async ({ problemId, language, code }) => {
-  const response = await api.post(`/problem/solve/${problemId}`, {
-    language,
-    code,
-  });
+export const submitCodeApi = async ({ problemId, language, code }, options = {}) => {
+  const response = await api.post(
+    `/problem/solve/${problemId}`,
+    {
+      language,
+      code,
+    },
+    options
+  );
   return response.data;
 };
 
 /**
  * Fetch user submissions for a specific problem (GET /submit/:problemId)
+ * Supports AbortSignal in options (e.g. { signal })
  */
-export const fetchProblemSubmissionsApi = async (problemId) => {
-  const response = await api.get(`/submit/${problemId}`);
+export const fetchProblemSubmissionsApi = async (problemId, options = {}) => {
+  const response = await api.get(`/submit/${problemId}`, options);
   return response.data;
 };
 
 /**
  * Fetch current user profile (GET /profile)
  */
-export const getProfile = async () => {
-  const response = await api.get("/profile");
+export const getProfile = async (options = {}) => {
+  const response = await api.get("/profile", options);
   return response.data;
 };
 
 /**
  * Send message to chat endpoint (POST /chat)
  */
-export const sendChatMessageApi = async ({
-  message,
-  history = [],
-  problemId = null,
-  problemTitle = null,
-  problemDescription = null,
-  currentCode = null,
-  language = null,
-}) => {
-  const response = await api.post("/chat", {
+export const sendChatMessageApi = async (
+  {
     message,
-    history,
-    problemId,
-    problemTitle,
-    problemDescription,
-    currentCode,
-    language,
-  });
+    history = [],
+    problemId = null,
+    problemTitle = null,
+    problemDescription = null,
+    currentCode = null,
+    language = null,
+  },
+  options = {}
+) => {
+  const response = await api.post(
+    "/chat",
+    {
+      message,
+      history,
+      problemId,
+      problemTitle,
+      problemDescription,
+      currentCode,
+      language,
+    },
+    options
+  );
   return response.data;
 };
 
 /**
  * Request a secure Cloudinary digital upload signature from backend (POST /video/create)
  */
-export const getVideoUploadSignature = async ({ problemId }) => {
-  const response = await api.post("/video/create", { problemId });
+export const getVideoUploadSignature = async ({ problemId }, options = {}) => {
+  const response = await api.post("/video/create", { problemId }, options);
   return response.data;
 };
 
 /**
  * Save uploaded video metadata to backend (POST /video/save)
  */
-export const saveVideoMetadataApi = async ({
-  problemId,
-  videoUrl,
-  publicId,
-  thumbnailUrl,
-  duration,
-  format,
-  bytes,
-}) => {
-  const response = await api.post("/video/save", {
+export const saveVideoMetadataApi = async (
+  {
     problemId,
     videoUrl,
     publicId,
@@ -131,22 +149,38 @@ export const saveVideoMetadataApi = async ({
     duration,
     format,
     bytes,
-  });
+  },
+  options = {}
+) => {
+  const response = await api.post(
+    "/video/save",
+    {
+      problemId,
+      videoUrl,
+      publicId,
+      thumbnailUrl,
+      duration,
+      format,
+      bytes,
+    },
+    options
+  );
   return response.data;
 };
 
 /**
  * Delete a solution video by videoId or problemId (DELETE /video/delete/:id)
  */
-export const deleteVideoApi = async (id) => {
-  const response = await api.delete(`/video/delete/${id}`);
+export const deleteVideoApi = async (id, options = {}) => {
+  const response = await api.delete(`/video/delete/${id}`, options);
   return response.data;
 };
 
 /**
  * Fetch solution video by Problem ID (GET /video/problem/:problemId)
+ * Supports AbortSignal in options (e.g. { signal })
  */
-export const fetchVideoByProblemId = async (problemId) => {
-  const response = await api.get(`/video/problem/${problemId}`);
+export const fetchVideoByProblemId = async (problemId, options = {}) => {
+  const response = await api.get(`/video/problem/${problemId}`, options);
   return response.data;
 };
