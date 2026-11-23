@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { User, Mail, Lock, Eye, EyeOff, CheckCircle2, AlertCircle } from "lucide-react";
@@ -7,6 +8,9 @@ import { signupSchema } from "../schemas/authSchema";
 import { registerUser, clearError } from "../store/authSlice";
 
 export default function Signup({ onSwitchToLogin }) {
+  const navigate = useNavigate();
+  const handleSwitchToLogin = onSwitchToLogin || (() => navigate("/login"));
+
   const dispatch = useDispatch();
   const { isLoading, error: reduxError } = useSelector((state) => state.auth);
   const [showPassword, setShowPassword] = useState(false);
@@ -36,8 +40,9 @@ export default function Signup({ onSwitchToLogin }) {
       const result = await dispatch(registerUser(data));
 
       if (registerUser.fulfilled.match(result)) {
-        setSuccessMessage("Account created successfully! You can now sign in.");
+        setSuccessMessage("Account created successfully! Welcome to LeetCode.");
         reset();
+        navigate("/");
       } else {
         const errorMsg = result.payload || "Registration failed. Please try again.";
         setServerError(errorMsg);
@@ -189,7 +194,7 @@ export default function Signup({ onSwitchToLogin }) {
           Already registered?{" "}
           <button
             type="button"
-            onClick={onSwitchToLogin}
+            onClick={handleSwitchToLogin}
             className="text-[#ffa116] hover:underline font-semibold"
           >
             Sign in

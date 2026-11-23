@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
   getAllProblems,
   getSolvedProblems,
@@ -20,6 +21,9 @@ import {
 } from "lucide-react";
 
 export default function Home({ onSelectProblem }) {
+  const navigate = useNavigate();
+  const handleSelectProblem = onSelectProblem || ((id) => navigate(`/problem/${id}`));
+
   const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state) => state.auth);
   const { problems, solvedProblems, isLoading, filters } = useSelector(
@@ -317,13 +321,13 @@ export default function Home({ onSelectProblem }) {
                           role="button"
                           tabIndex={0}
                           onClick={() =>
-                            onSelectProblem &&
-                            onSelectProblem(prob._id || prob.id)
+                            handleSelectProblem &&
+                            handleSelectProblem(prob._id || prob.id)
                           }
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === " ") {
-                              onSelectProblem &&
-                                onSelectProblem(prob._id || prob.id);
+                              handleSelectProblem &&
+                                handleSelectProblem(prob._id || prob.id);
                             }
                           }}
                           className="flex items-center gap-2 cursor-pointer group-hover:text-[#ffa116] transition-colors"
@@ -376,8 +380,8 @@ export default function Home({ onSelectProblem }) {
                         <button
                           type="button"
                           onClick={() =>
-                            onSelectProblem &&
-                            onSelectProblem(prob._id || prob.id)
+                            handleSelectProblem &&
+                            handleSelectProblem(prob._id || prob.id)
                           }
                           className="px-3 py-1 rounded-md text-xs font-medium text-gray-300 hover:text-white bg-[#1e1e1e] hover:bg-[#333333] border border-[#383838] transition-colors"
                         >

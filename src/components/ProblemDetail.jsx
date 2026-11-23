@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useParams, useNavigate } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import {
   fetchProblemById,
@@ -30,10 +31,16 @@ import {
 } from "lucide-react";
 
 export default function ProblemDetail({
-  problemId,
+  problemId: propProblemId,
   onNavigateToHome,
   onNavigateToLogin,
 }) {
+  const params = useParams();
+  const navigate = useNavigate();
+  const problemId = propProblemId || params.id;
+  const handleGoHome = onNavigateToHome || (() => navigate("/"));
+  const handleGoLogin = onNavigateToLogin || (() => navigate("/login"));
+
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
@@ -376,7 +383,7 @@ export default function ProblemDetail({
           </div>
           <button
             type="button"
-            onClick={onNavigateToHome}
+            onClick={handleGoHome}
             className="px-4 py-2 rounded-md bg-[#ffa116] text-[#1a1a1a] text-xs font-semibold hover:bg-[#e68a00] transition-colors"
           >
             Back to Problems
@@ -394,7 +401,7 @@ export default function ProblemDetail({
         <div className="flex items-center gap-3 min-w-0">
           <button
             type="button"
-            onClick={onNavigateToHome}
+            onClick={handleGoHome}
             className="flex items-center gap-1 text-xs text-gray-400 hover:text-white transition-colors"
             title="Return to Problem List"
           >
@@ -461,7 +468,7 @@ export default function ProblemDetail({
           ) : (
             <button
               type="button"
-              onClick={onNavigateToLogin}
+              onClick={handleGoLogin}
               className="px-2.5 py-1 rounded text-xs text-[#ffa116] hover:bg-[#ffa116]/10 border border-[#ffa116]/30 transition-colors"
             >
               Sign In
@@ -544,7 +551,7 @@ export default function ProblemDetail({
               problem={problem}
               currentCode={code}
               language={selectedLanguage}
-              onNavigateToLogin={onNavigateToLogin}
+              onNavigateToLogin={handleGoLogin}
             />
           </div>
 

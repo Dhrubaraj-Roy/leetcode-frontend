@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { createProblem } from "../store/problemSlice";
 import {
   ChevronLeft,
@@ -14,6 +15,10 @@ import {
 } from "lucide-react";
 
 export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
+  const navigate = useNavigate();
+  const handleGoAdmin = onNavigateToAdmin || (() => navigate("/admin"));
+  const handleGoHome = onNavigateToHome || (() => navigate("/"));
+
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
@@ -61,7 +66,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
         </div>
         <button
           type="button"
-          onClick={onNavigateToHome}
+          onClick={handleGoHome}
           className="px-4 py-2 rounded-md bg-[#ffa116] text-[#1a1a1a] text-xs font-semibold hover:bg-[#e68a00] transition-colors"
         >
           Return to Problems
@@ -291,9 +296,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
       setSuccessMessage(msg);
       alert(msg);
 
-      if (onNavigateToAdmin) {
-        onNavigateToAdmin();
-      }
+      handleGoAdmin();
     } else {
       setErrorMessage(
         typeof result.payload === "string"
@@ -309,7 +312,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
       <div className="flex items-center justify-between pb-4 border-b border-[#333333]">
         <button
           type="button"
-          onClick={onNavigateToAdmin}
+          onClick={handleGoAdmin}
           className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -706,7 +709,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
         <div className="pt-4 border-t border-[#333333] flex items-center justify-end gap-3">
           <button
             type="button"
-            onClick={onNavigateToAdmin}
+            onClick={handleGoAdmin}
             className="px-4 py-2 rounded-md border border-[#333333] bg-[#1e1e1e] hover:bg-[#333333] text-gray-300 transition-colors"
           >
             Cancel

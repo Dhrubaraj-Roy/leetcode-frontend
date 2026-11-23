@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Lock, Eye, EyeOff, CheckCircle2, AlertCircle } from "lucide-react";
@@ -7,6 +8,9 @@ import { loginSchema } from "../schemas/authSchema";
 import { loginUser, clearError } from "../store/authSlice";
 
 export default function Login({ onSwitchToSignup }) {
+  const navigate = useNavigate();
+  const handleSwitchToSignup = onSwitchToSignup || (() => navigate("/signup"));
+
   const dispatch = useDispatch();
   const { isLoading, error: reduxError } = useSelector((state) => state.auth);
   const [showPassword, setShowPassword] = useState(false);
@@ -37,6 +41,7 @@ export default function Login({ onSwitchToSignup }) {
       if (loginUser.fulfilled.match(result)) {
         setSuccessMessage(result.payload?.message || "Sign in successful. Welcome back!");
         reset();
+        navigate(result.payload?.user?.role === "admin" ? "/admin" : "/");
       } else {
         const errorMsg = result.payload || "Invalid credentials. Please verify your email and password.";
         setServerError(errorMsg);
@@ -175,7 +180,7 @@ export default function Login({ onSwitchToSignup }) {
           Don't have an account?{" "}
           <button
             type="button"
-            onClick={onSwitchToSignup}
+            onClick={handleSwitchToSignup}
             className="text-[#ffa116] hover:underline font-semibold"
           >
             Sign up

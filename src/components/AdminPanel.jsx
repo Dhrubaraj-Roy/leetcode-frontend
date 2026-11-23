@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
   getAllProblems,
   deleteProblem,
@@ -28,6 +29,11 @@ export default function AdminPanel({
   onNavigateToCreateProblem,
   onSelectProblem,
 }) {
+  const navigate = useNavigate();
+  const handleGoHome = onNavigateToHome || (() => navigate("/"));
+  const handleGoCreateProblem = onNavigateToCreateProblem || (() => navigate("/problem/create"));
+  const handleSelectProblem = onSelectProblem || ((id) => navigate(`/problem/${id}`));
+
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { problems, isLoading } = useSelector((state) => state.problems);
@@ -84,7 +90,7 @@ export default function AdminPanel({
         </div>
         <button
           type="button"
-          onClick={onNavigateToHome}
+          onClick={handleGoHome}
           className="px-4 py-2 rounded-md bg-[#ffa116] text-[#1a1a1a] text-xs font-semibold hover:bg-[#e68a00] transition-colors"
         >
           Return to Problems
@@ -449,14 +455,14 @@ export default function AdminPanel({
         <div className="flex items-center gap-2.5 text-xs">
           <button
             type="button"
-            onClick={onNavigateToHome}
+            onClick={handleGoHome}
             className="px-3 py-1.5 rounded-md border border-[#333333] bg-[#1e1e1e] hover:bg-[#2d2d2d] text-gray-300 transition-colors"
           >
             View Public Catalog
           </button>
           <button
             type="button"
-            onClick={onNavigateToCreateProblem || handleOpenCreateModal}
+            onClick={handleGoCreateProblem || handleOpenCreateModal}
             className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-[#ffa116] hover:bg-[#e68a00] text-[#1a1a1a] font-semibold transition-colors shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -591,13 +597,13 @@ export default function AdminPanel({
                           role="button"
                           tabIndex={0}
                           onClick={() =>
-                            onSelectProblem &&
-                            onSelectProblem(prob._id || prob.id)
+                            handleSelectProblem &&
+                            handleSelectProblem(prob._id || prob.id)
                           }
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === " ") {
-                              onSelectProblem &&
-                                onSelectProblem(prob._id || prob.id);
+                              handleSelectProblem &&
+                                handleSelectProblem(prob._id || prob.id);
                             }
                           }}
                           className="font-medium text-sm text-[#eff1f6] hover:text-[#ffa116] transition-colors cursor-pointer"
@@ -628,8 +634,8 @@ export default function AdminPanel({
                           <button
                             type="button"
                             onClick={() =>
-                              onSelectProblem &&
-                              onSelectProblem(prob._id || prob.id)
+                              handleSelectProblem &&
+                              handleSelectProblem(prob._id || prob.id)
                             }
                             className="px-2.5 py-1 rounded bg-[#1e1e1e] hover:bg-[#333333] text-gray-300 hover:text-white border border-[#383838] transition-colors"
                             title="Open Problem"
