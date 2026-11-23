@@ -16,9 +16,7 @@ import {
   Filter,
   RotateCcw,
   Sparkles,
-  Code2,
-  Tag as TagIcon,
-  Check,
+  ChevronRight,
 } from "lucide-react";
 
 export default function Home({ onSelectProblem }) {
@@ -28,9 +26,6 @@ export default function Home({ onSelectProblem }) {
     (state) => state.problems
   );
 
-  // 1. Hit the 2 APIs on component mount:
-  // - API 1: GET /problem/all (Fetch all problems)
-  // - API 2: GET /problem/solved (Fetch solved problems if authenticated)
   useEffect(() => {
     dispatch(getAllProblems());
     if (isAuthenticated) {
@@ -38,7 +33,6 @@ export default function Home({ onSelectProblem }) {
     }
   }, [dispatch, isAuthenticated]);
 
-  // Create a fast lookup Set of solved problem IDs
   const solvedIdSet = useMemo(() => {
     return new Set(
       solvedProblems.map((p) =>
@@ -47,7 +41,6 @@ export default function Home({ onSelectProblem }) {
     );
   }, [solvedProblems]);
 
-  // Extract all unique tags dynamically from the problems list
   const availableTags = useMemo(() => {
     const tagSet = new Set();
     problems.forEach((prob) => {
@@ -58,17 +51,14 @@ export default function Home({ onSelectProblem }) {
     return Array.from(tagSet).sort();
   }, [problems]);
 
-  // Apply the 3 user filters (+ search)
   const filteredProblems = useMemo(() => {
     return problems.filter((prob) => {
       const isSolved = solvedIdSet.has(prob._id);
 
-      // Filter 1: Status Filter ("all" vs "solved")
       if (filters.status === "solved" && !isSolved) {
         return false;
       }
 
-      // Filter 2: Difficulty Filter ("all", "easy", "medium", "hard")
       if (
         filters.difficulty !== "all" &&
         prob.difficulty?.toLowerCase() !== filters.difficulty.toLowerCase()
@@ -76,7 +66,6 @@ export default function Home({ onSelectProblem }) {
         return false;
       }
 
-      // Filter 3: Tag Filter ("all" vs specific tag)
       if (filters.tag !== "all") {
         const hasTag = prob.tags?.some(
           (t) => t.toLowerCase().trim() === filters.tag.toLowerCase().trim()
@@ -84,7 +73,6 @@ export default function Home({ onSelectProblem }) {
         if (!hasTag) return false;
       }
 
-      // Search Query Filter
       if (filters.search.trim()) {
         const query = filters.search.toLowerCase().trim();
         const matchesTitle = prob.title?.toLowerCase().includes(query);
@@ -98,231 +86,233 @@ export default function Home({ onSelectProblem }) {
     });
   }, [problems, solvedIdSet, filters]);
 
-  // Difficulty badge styling helper
-  const getDifficultyBadge = (difficulty) => {
+  // Authentic LeetCode difficulty colored text
+  const renderDifficulty = (difficulty) => {
     const diff = difficulty?.toLowerCase();
     if (diff === "easy") {
-      return <span className="badge badge-success badge-sm font-semibold">Easy</span>;
+      return <span className="text-[#00b8a3] font-medium text-xs">Easy</span>;
     }
     if (diff === "medium") {
-      return <span className="badge badge-warning badge-sm font-semibold">Medium</span>;
+      return <span className="text-[#ffc01e] font-medium text-xs">Medium</span>;
     }
     if (diff === "hard") {
-      return <span className="badge badge-error badge-sm font-semibold">Hard</span>;
+      return <span className="text-[#ff375f] font-medium text-xs">Hard</span>;
     }
-    return <span className="badge badge-ghost badge-sm">{difficulty}</span>;
+    return <span className="text-gray-400 font-medium text-xs">{difficulty}</span>;
   };
 
   const totalProblemsCount = problems.length;
   const solvedCount = solvedIdSet.size;
   const solvedPercentage =
-    totalProblemsCount > 0 ? Math.round((solvedCount / totalProblemsCount) * 100) : 0;
+    totalProblemsCount > 0
+      ? Math.round((solvedCount / totalProblemsCount) * 100)
+      : 0;
+
+  // Breakdown counts
+  const easyTotal = problems.filter((p) => p.difficulty?.toLowerCase() === "easy").length;
+  const medTotal = problems.filter((p) => p.difficulty?.toLowerCase() === "medium").length;
+  const hardTotal = problems.filter((p) => p.difficulty?.toLowerCase() === "hard").length;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* 1. Header Banner & Stats */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-base-100 p-6 rounded-2xl border border-base-300 shadow-sm">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-6">
+      {/* 1. Header & Progress Summary Card */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-[#262626] rounded-xl border border-[#333333] p-5 sm:p-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight flex items-center gap-2">
-            <span>Explore Problems</span>
-            <Sparkles className="w-6 h-6 text-warning" />
+          <h1 className="text-2xl font-bold tracking-tight text-white">
+            Problemset
           </h1>
-          <p className="text-sm text-base-content/70 mt-1">
-            Solve algorithmic problems, master data structures, and prepare for interviews.
+          <p className="text-xs text-gray-400 mt-1">
+            Browse and practice programming challenges across data structures and algorithms.
           </p>
         </div>
 
-        {/* User Progress Mini Card */}
-        {isAuthenticated && (
-          <div className="flex items-center gap-4 bg-base-200/60 p-4 rounded-xl border border-base-300 shrink-0">
-            <div>
-              <div className="text-xs text-base-content/70 font-medium">Solved Progress</div>
-              <div className="text-xl font-bold flex items-baseline gap-1 mt-0.5">
-                <span className="text-primary">{solvedCount}</span>
-                <span className="text-sm text-base-content/50">/ {totalProblemsCount}</span>
-              </div>
+        {/* User Progress Stats */}
+        {isAuthenticated ? (
+          <div className="bg-[#1f1f1f] border border-[#333333] rounded-lg p-3.5 sm:min-w-[260px] shrink-0 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-400 font-medium">Solved</span>
+              <span className="font-semibold text-white">
+                <span className="text-[#ffa116]">{solvedCount}</span> / {totalProblemsCount}
+              </span>
             </div>
-            <div
-              className="radial-progress text-primary font-bold text-xs"
-              style={{
-                "--value": solvedPercentage,
-                "--size": "3rem",
-                "--thickness": "4px",
-              }}
-              role="progressbar"
-            >
-              {solvedPercentage}%
+            <div className="w-full h-1.5 bg-[#333333] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#ffa116] rounded-full transition-all duration-300"
+                style={{ width: `${solvedPercentage}%` }}
+              ></div>
             </div>
+            <div className="flex items-center justify-between text-[11px] text-gray-400 pt-0.5">
+              <span>
+                Easy: <strong className="text-[#00b8a3]">{easyTotal}</strong>
+              </span>
+              <span>
+                Med: <strong className="text-[#ffc01e]">{medTotal}</strong>
+              </span>
+              <span>
+                Hard: <strong className="text-[#ff375f]">{hardTotal}</strong>
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="text-xs text-gray-400 max-w-xs">
+            Sign in to track your solved problems, review submissions, and earn badges.
           </div>
         )}
       </div>
 
-      {/* 2. Three Filters & Search Bar Section */}
-      <div className="card bg-base-100 border border-base-300 shadow-sm">
-        <div className="card-body p-5 sm:p-6 space-y-4">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            
-            {/* Filter 1: All Problems vs Solved Problems */}
-            <div className="flex items-center">
-              <div className="join w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={() => dispatch(setStatusFilter("all"))}
-                  className={`join-item btn btn-sm sm:btn-md flex-1 sm:flex-initial ${
-                    filters.status === "all" ? "btn-primary" : "btn-outline"
-                  }`}
-                >
-                  All Problems ({totalProblemsCount})
-                </button>
-                <button
-                  type="button"
-                  disabled={!isAuthenticated}
-                  onClick={() => dispatch(setStatusFilter("solved"))}
-                  className={`join-item btn btn-sm sm:btn-md flex-1 sm:flex-initial ${
-                    filters.status === "solved" ? "btn-primary" : "btn-outline"
-                  }`}
-                  title={!isAuthenticated ? "Log in to view solved problems" : ""}
-                >
-                  <Check className="w-4 h-4 mr-1" />
-                  Solved ({solvedCount})
-                </button>
-              </div>
+      {/* 2. Real-World Filter & Search Bar */}
+      <div className="bg-[#262626] rounded-xl border border-[#333333] p-3.5 sm:p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {/* Status Switcher */}
+          <div className="flex items-center bg-[#1e1e1e] p-1 rounded-lg border border-[#333333] text-xs self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => dispatch(setStatusFilter("all"))}
+              className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
+                filters.status === "all"
+                  ? "bg-[#2d2d2d] text-white shadow-xs"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              All Problems
+            </button>
+            <button
+              type="button"
+              disabled={!isAuthenticated}
+              onClick={() => dispatch(setStatusFilter("solved"))}
+              className={`px-3 py-1.5 rounded-md font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                filters.status === "solved"
+                  ? "bg-[#2d2d2d] text-[#00b8a3] shadow-xs"
+                  : "text-gray-400 hover:text-white"
+              }`}
+              title={!isAuthenticated ? "Log in to view solved problems" : ""}
+            >
+              Solved ({solvedCount})
+            </button>
+          </div>
+
+          {/* Search & Dropdown Selects */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Search Input */}
+            <div className="relative flex-1 sm:w-60 min-w-[180px]">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search questions..."
+                value={filters.search}
+                onChange={(e) => dispatch(setSearchQuery(e.target.value))}
+                className="w-full h-8 pl-8 pr-3 text-xs bg-[#1e1e1e] border border-[#333333] rounded-md text-white placeholder:text-gray-500 focus:outline-none focus:border-[#ffa116] transition-colors"
+              />
             </div>
 
-            {/* Filter 2 & 3: Difficulty & Tags + Search */}
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Search Bar */}
-              <div className="relative flex-1 sm:w-64">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-base-content/50 pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="Search by title or tag..."
-                  value={filters.search}
-                  onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-                  className="input input-sm sm:input-md input-bordered w-full pl-9"
-                />
-              </div>
+            {/* Difficulty Filter */}
+            <select
+              value={filters.difficulty}
+              onChange={(e) => dispatch(setDifficultyFilter(e.target.value))}
+              className="h-8 px-2.5 text-xs bg-[#1e1e1e] border border-[#333333] rounded-md text-gray-300 focus:outline-none focus:border-[#ffa116] cursor-pointer"
+              aria-label="Filter by difficulty"
+            >
+              <option value="all">Difficulty</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
 
-              {/* Filter 2: Difficulty Filter */}
-              <div className="form-control">
-                <select
-                  value={filters.difficulty}
-                  onChange={(e) => dispatch(setDifficultyFilter(e.target.value))}
-                  className="select select-sm sm:select-md select-bordered font-medium"
-                  aria-label="Filter by difficulty"
-                >
-                  <option value="all">All Difficulties</option>
-                  <option value="easy">Easy</option>
-                  <option value="medium">Medium</option>
-                  <option value="hard">Hard</option>
-                </select>
-              </div>
+            {/* Tags Filter */}
+            <select
+              value={filters.tag}
+              onChange={(e) => dispatch(setTagFilter(e.target.value))}
+              className="h-8 px-2.5 text-xs bg-[#1e1e1e] border border-[#333333] rounded-md text-gray-300 focus:outline-none focus:border-[#ffa116] max-w-[150px] truncate cursor-pointer"
+              aria-label="Filter by tag"
+            >
+              <option value="all">Tags</option>
+              {availableTags.map((tag) => (
+                <option key={tag} value={tag}>
+                  {tag.charAt(0).toUpperCase() + tag.slice(1)}
+                </option>
+              ))}
+            </select>
 
-              {/* Filter 3: Tags Filter */}
-              <div className="form-control">
-                <select
-                  value={filters.tag}
-                  onChange={(e) => dispatch(setTagFilter(e.target.value))}
-                  className="select select-sm sm:select-md select-bordered font-medium max-w-[180px]"
-                  aria-label="Filter by tag"
-                >
-                  <option value="all">All Tags</option>
-                  {availableTags.map((tag) => (
-                    <option key={tag} value={tag}>
-                      {tag.charAt(0).toUpperCase() + tag.slice(1)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Reset Filters Button */}
-              {(filters.status !== "all" ||
-                filters.difficulty !== "all" ||
-                filters.tag !== "all" ||
-                filters.search !== "") && (
-                <button
-                  type="button"
-                  onClick={() => dispatch(resetFilters())}
-                  className="btn btn-sm sm:btn-md btn-ghost gap-1 text-base-content/70 hover:text-base-content"
-                  title="Reset all filters"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  <span className="hidden sm:inline">Reset</span>
-                </button>
-              )}
-            </div>
+            {/* Reset Button */}
+            {(filters.status !== "all" ||
+              filters.difficulty !== "all" ||
+              filters.tag !== "all" ||
+              filters.search !== "") && (
+              <button
+                type="button"
+                onClick={() => dispatch(resetFilters())}
+                className="h-8 px-2.5 rounded-md border border-[#333333] text-xs text-gray-400 hover:text-white hover:bg-[#2d2d2d] flex items-center gap-1 transition-colors"
+                title="Reset filters"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Reset</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* 3. Problems List / Table */}
-      <div className="card bg-base-100 border border-base-300 shadow-sm overflow-hidden">
+      {/* 3. Problems List Table - Real-World LeetCode Table */}
+      <div className="bg-[#262626] rounded-xl border border-[#333333] overflow-hidden shadow-xs">
         {isLoading ? (
-          <div className="p-12 text-center flex flex-col items-center justify-center space-y-3">
-            <span className="loading loading-spinner loading-lg text-primary"></span>
-            <p className="text-sm text-base-content/60">Loading problems...</p>
+          <div className="p-16 text-center flex flex-col items-center justify-center space-y-3">
+            <div className="w-7 h-7 rounded-full border-2 border-[#ffa116] border-t-transparent animate-spin"></div>
+            <p className="text-xs text-gray-400">Loading problems...</p>
           </div>
         ) : filteredProblems.length === 0 ? (
-          <div className="p-12 text-center space-y-3">
-            <div className="w-12 h-12 rounded-full bg-base-200 flex items-center justify-center mx-auto text-base-content/40">
-              <Filter className="w-6 h-6" />
+          <div className="p-16 text-center space-y-3">
+            <div className="w-10 h-10 rounded-full bg-[#1e1e1e] border border-[#333333] flex items-center justify-center mx-auto text-gray-500">
+              <Filter className="w-5 h-5" />
             </div>
-            <h3 className="font-semibold text-lg">No problems found</h3>
-            <p className="text-sm text-base-content/60 max-w-md mx-auto">
-              No problems match your current filters. Try resetting the filters or modifying your search query.
+            <div className="text-sm font-semibold text-white">No problems found</div>
+            <p className="text-xs text-gray-400 max-w-sm mx-auto">
+              No problems match your current search or filters. Try resetting the criteria.
             </p>
             <button
               type="button"
               onClick={() => dispatch(resetFilters())}
-              className="btn btn-sm btn-outline btn-primary mt-2"
+              className="mt-2 px-3 py-1.5 rounded-md text-xs bg-[#1e1e1e] border border-[#333333] hover:bg-[#333333] text-white transition-colors"
             >
               Reset Filters
             </button>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="table table-zebra w-full">
-              {/* Table Head */}
-              <thead className="bg-base-200/60 text-xs font-semibold uppercase text-base-content/70">
-                <tr>
-                  <th className="w-16 text-center">Status</th>
-                  <th>Title</th>
-                  <th className="w-32">Difficulty</th>
-                  <th>Tags</th>
-                  <th className="w-28 text-right">Action</th>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-[#333333] bg-[#222222] text-[11px] font-medium text-gray-400 uppercase tracking-wider">
+                  <th className="py-3 px-4 w-14 text-center">Status</th>
+                  <th className="py-3 px-4">Title</th>
+                  <th className="py-3 px-4 w-28">Difficulty</th>
+                  <th className="py-3 px-4 hidden md:table-cell">Tags</th>
+                  <th className="py-3 px-4 w-24 text-right">Action</th>
                 </tr>
               </thead>
-
-              {/* Table Body */}
-              <tbody className="divide-y divide-base-300">
+              <tbody className="divide-y divide-[#333333]/70 text-xs">
                 {filteredProblems.map((prob, index) => {
                   const isSolved = solvedIdSet.has(prob._id);
+                  const problemNumber = index + 1;
+
                   return (
                     <tr
                       key={prob._id || index}
-                      className="hover:bg-base-200/40 transition-colors"
+                      className="hover:bg-[#2e2e2e]/60 transition-colors group"
                     >
-                      {/* Column 1: Status Icon */}
-                      <td className="text-center">
+                      {/* Status */}
+                      <td className="py-3.5 px-4 text-center">
                         {isSolved ? (
-                          <div
-                            className="tooltip tooltip-right"
-                            data-tip="Solved"
-                          >
-                            <CheckCircle2 className="w-5 h-5 text-success inline-block" />
-                          </div>
+                          <span title="Solved" className="inline-flex text-[#2cbb5d]">
+                            <CheckCircle2 className="w-4 h-4" />
+                          </span>
                         ) : (
-                          <div
-                            className="tooltip tooltip-right"
-                            data-tip="Unsolved"
-                          >
-                            <Circle className="w-4 h-4 text-base-content/30 inline-block" />
-                          </div>
+                          <span title="Unsolved" className="inline-flex text-gray-600">
+                            <Circle className="w-3.5 h-3.5" />
+                          </span>
                         )}
                       </td>
 
-                      {/* Column 2: Problem Title */}
-                      <td>
+                      {/* Title */}
+                      <td className="py-3.5 px-4">
                         <div
                           role="button"
                           tabIndex={0}
@@ -336,17 +326,24 @@ export default function Home({ onSelectProblem }) {
                                 onSelectProblem(prob._id || prob.id);
                             }
                           }}
-                          className="font-medium text-base hover:text-primary transition-colors cursor-pointer"
+                          className="flex items-center gap-2 cursor-pointer group-hover:text-[#ffa116] transition-colors"
                         >
-                          {prob.title}
+                          <span className="text-gray-400 font-mono text-[11px]">
+                            {problemNumber}.
+                          </span>
+                          <span className="font-medium text-sm text-[#eff1f6] group-hover:text-[#ffa116] transition-colors">
+                            {prob.title}
+                          </span>
                         </div>
                       </td>
 
-                      {/* Column 3: Difficulty */}
-                      <td>{getDifficultyBadge(prob.difficulty)}</td>
+                      {/* Difficulty (Clean text, not loud badge) */}
+                      <td className="py-3.5 px-4">
+                        {renderDifficulty(prob.difficulty)}
+                      </td>
 
-                      {/* Column 4: Tags */}
-                      <td>
+                      {/* Tags */}
+                      <td className="py-3.5 px-4 hidden md:table-cell">
                         <div className="flex flex-wrap gap-1.5">
                           {Array.isArray(prob.tags) && prob.tags.length > 0 ? (
                             prob.tags.map((tag, tIndex) => (
@@ -354,35 +351,35 @@ export default function Home({ onSelectProblem }) {
                                 key={tIndex}
                                 type="button"
                                 onClick={() =>
-                                  dispatch(setTagFilter(tag.toLowerCase().trim()))
+                                  dispatch(
+                                    setTagFilter(tag.toLowerCase().trim())
+                                  )
                                 }
-                                className={`badge badge-sm cursor-pointer transition-colors ${
+                                className={`px-2 py-0.5 rounded-full text-[11px] transition-colors ${
                                   filters.tag.toLowerCase() ===
                                   tag.toLowerCase().trim()
-                                    ? "badge-primary"
-                                    : "badge-ghost hover:badge-outline"
+                                    ? "bg-[#ffa116] text-[#1a1a1a] font-medium"
+                                    : "bg-[#1f1f1f] text-gray-400 hover:text-white border border-[#333333]"
                                 }`}
                               >
-                                #{tag}
+                                {tag}
                               </button>
                             ))
                           ) : (
-                            <span className="text-xs text-base-content/40">
-                              No tags
-                            </span>
+                            <span className="text-gray-600 text-xs">--</span>
                           )}
                         </div>
                       </td>
 
-                      {/* Column 5: Solve Action */}
-                      <td className="text-right">
+                      {/* Action */}
+                      <td className="py-3.5 px-4 text-right">
                         <button
                           type="button"
                           onClick={() =>
                             onSelectProblem &&
                             onSelectProblem(prob._id || prob.id)
                           }
-                          className="btn btn-xs sm:btn-sm btn-outline btn-primary"
+                          className="px-3 py-1 rounded-md text-xs font-medium text-gray-300 hover:text-white bg-[#1e1e1e] hover:bg-[#333333] border border-[#383838] transition-colors"
                         >
                           Solve
                         </button>
@@ -398,4 +395,3 @@ export default function Home({ onSelectProblem }) {
     </div>
   );
 }
-

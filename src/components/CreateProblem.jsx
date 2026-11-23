@@ -2,24 +2,22 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createProblem } from "../store/problemSlice";
 import {
-  ArrowLeft,
+  ChevronLeft,
   Code2,
   Plus,
   Trash2,
   CheckCircle2,
   AlertCircle,
   AlertTriangle,
-  Sparkles,
   FileCode,
   X,
-  Layers,
 } from "lucide-react";
 
 export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
-  // Form state: by default shows ONE input for visible and hidden test cases, with option to add another one
+  // Form state
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -37,10 +35,9 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
     cppStartCode: "",
   });
 
-  // Active language tab for solution & template: "python" | "cpp"
   const [activeLangTab, setActiveLangTab] = useState("python");
 
-  // Quick JSON Import modal state
+  // JSON Modal
   const [isJsonModalOpen, setIsJsonModalOpen] = useState(false);
   const [jsonInput, setJsonInput] = useState("");
   const [jsonError, setJsonError] = useState(null);
@@ -52,29 +49,28 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
   // Security Guard: Admin only
   if (!isAuthenticated || user?.role !== "admin") {
     return (
-      <div className="max-w-xl mx-auto my-16 p-8 bg-base-100 rounded-2xl shadow-xl border border-error/20 text-center">
-        <div className="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto mb-4">
-          <AlertTriangle className="w-8 h-8" />
+      <div className="max-w-md mx-auto my-20 p-8 bg-[#262626] rounded-xl border border-[#333333] text-center space-y-4">
+        <div className="w-12 h-12 bg-rose-500/10 text-[#ff375f] rounded-full flex items-center justify-center mx-auto">
+          <AlertTriangle className="w-6 h-6" />
         </div>
-        <h2 className="text-2xl font-bold text-base-content mb-2">
-          Access Denied
-        </h2>
-        <p className="text-base-content/70 mb-6 text-sm">
-          You must be signed in with an <strong>admin</strong> account to create
-          problems.
-        </p>
+        <div>
+          <h2 className="text-base font-bold text-white">Access Denied</h2>
+          <p className="text-xs text-gray-400 mt-1">
+            You must be signed in with an admin account to create problems.
+          </p>
+        </div>
         <button
           type="button"
           onClick={onNavigateToHome}
-          className="btn btn-primary"
+          className="px-4 py-2 rounded-md bg-[#ffa116] text-[#1a1a1a] text-xs font-semibold hover:bg-[#e68a00] transition-colors"
         >
-          Return to Home
+          Return to Problems
         </button>
       </div>
     );
   }
 
-  // --- Visible Test Cases Handlers ---
+  // Visible Test Cases Handlers
   const handleVisibleChange = (index, field, value) => {
     const updated = [...formData.visibleTestCases];
     updated[index] = { ...updated[index], [field]: value };
@@ -97,7 +93,7 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
     setFormData({ ...formData, visibleTestCases: updated });
   };
 
-  // --- Hidden Test Cases Handlers ---
+  // Hidden Test Cases Handlers
   const handleHiddenChange = (index, field, value) => {
     const updated = [...formData.hiddenTestCases];
     updated[index] = { ...updated[index], [field]: value };
@@ -120,13 +116,12 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
     setFormData({ ...formData, hiddenTestCases: updated });
   };
 
-  // --- Quick Import from JSON ---
+  // Quick Import JSON
   const handleApplyJson = () => {
     try {
       setJsonError(null);
       const parsed = JSON.parse(jsonInput.trim());
 
-      // Extract tags
       let tagsStr = "";
       if (Array.isArray(parsed.tags)) {
         tagsStr = parsed.tags.join(", ");
@@ -134,7 +129,6 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
         tagsStr = parsed.tags;
       }
 
-      // Extract visible test cases
       let visCases = [];
       if (Array.isArray(parsed.visibleTestCases) && parsed.visibleTestCases.length > 0) {
         visCases = parsed.visibleTestCases.map((tc) => ({
@@ -149,7 +143,6 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
         ];
       }
 
-      // Extract hidden test cases
       let hidCases = [];
       if (Array.isArray(parsed.hiddenTestCases) && parsed.hiddenTestCases.length > 0) {
         hidCases = parsed.hiddenTestCases.map((tc) => ({
@@ -163,7 +156,6 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
         ];
       }
 
-      // Extract reference solutions & start code
       let pyRef = "";
       let pyStart = "";
       let cppRef = "";
@@ -201,24 +193,21 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
       setIsJsonModalOpen(false);
       setJsonInput("");
     } catch (err) {
-      setJsonError("Failed to parse JSON: " + err.message);
+      setJsonError("Invalid JSON: " + err.message);
     }
   };
 
-  // --- Form Submission ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrorMessage(null);
     setSuccessMessage(null);
 
-    // Parse tags from comma-separated string
     const tagsArray = formData.tags
       .split(",")
       .map((t) => t.trim().toLowerCase())
       .filter(Boolean);
 
-    // Filter test cases that have input and output
     const validVisibleCases = formData.visibleTestCases
       .filter((tc) => tc.input?.trim() !== "" || tc.output?.trim() !== "")
       .map((tc) => ({
@@ -234,11 +223,10 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
         output: tc.output,
       }));
 
-    // Enforce 2 test cases as requested
     if (validVisibleCases.length < 2) {
       setIsSubmitting(false);
       setErrorMessage(
-        "You have to upload two test cases for visible test cases. Please click '+ Add Visible Test Case' to provide the second one."
+        "Please provide at least 2 visible test cases. Click '+ Add Visible Test Case' for the second case."
       );
       return;
     }
@@ -246,12 +234,11 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
     if (validHiddenCases.length < 2) {
       setIsSubmitting(false);
       setErrorMessage(
-        "You have to upload two test cases for hidden test cases. Please click '+ Add Hidden Test Case' to provide the second one."
+        "Please provide at least 2 hidden test cases. Click '+ Add Hidden Test Case' for the second case."
       );
       return;
     }
 
-    // Build reference solution and starter code arrays
     const referenceSolution = [];
     const startCode = [];
 
@@ -285,7 +272,6 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
       return;
     }
 
-    // Build complete payload matching backend createProblem controller
     const payload = {
       title: formData.title.trim(),
       description: formData.description.trim(),
@@ -303,11 +289,8 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
     if (createProblem.fulfilled.match(result)) {
       const msg = "Problem was created successfully!";
       setSuccessMessage(msg);
-
-      // Send browser alert as requested
       alert(msg);
 
-      // Redirect back to Admin Panel
       if (onNavigateToAdmin) {
         onNavigateToAdmin();
       }
@@ -315,96 +298,70 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
       setErrorMessage(
         typeof result.payload === "string"
           ? result.payload
-          : "Failed to create problem. Please verify reference solution passes all test cases."
+          : "Failed to create problem. Verify reference solution passes all test cases."
       );
     }
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Top Header / Breadcrumb & JSON Import Button */}
-      <div className="flex items-center justify-between pb-4 border-b border-base-300">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-6">
+      {/* Top Header Bar */}
+      <div className="flex items-center justify-between pb-4 border-b border-[#333333]">
         <button
           type="button"
           onClick={onNavigateToAdmin}
-          className="btn btn-ghost btn-sm gap-2"
+          className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Admin Panel
+          <ChevronLeft className="w-4 h-4" />
+          <span>Back to Admin Panel</span>
         </button>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              setJsonError(null);
-              setIsJsonModalOpen(true);
-            }}
-            className="btn btn-outline btn-secondary btn-sm gap-1.5"
-            title="Import from JSON"
-          >
-            <FileCode className="w-4 h-4" />
-            Import / Paste JSON
-          </button>
-
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              setJsonError(null);
-              setIsJsonModalOpen(true);
-            }}
-            className="btn btn-outline btn-secondary btn-sm gap-1.5"
-            title="Import from JSON"
-          >
-            <FileCode className="w-4 h-4" />
-            Import / Paste JSON
-          </button>
-          <span className="badge badge-warning badge-sm font-semibold">
-            Route: /problem/create
-          </span>
-        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setJsonError(null);
+            setIsJsonModalOpen(true);
+          }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#383838] bg-[#1e1e1e] hover:bg-[#2d2d2d] text-gray-300 text-xs transition-colors"
+        >
+          <FileCode className="w-3.5 h-3.5 text-[#ffa116]" />
+          <span>Import JSON</span>
+        </button>
       </div>
 
-      <div className="space-y-1">
-        <h1 className="text-3xl font-extrabold tracking-tight text-base-content flex items-center gap-2">
-          <Code2 className="w-8 h-8 text-primary" />
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-white">
           Create New Problem
         </h1>
-        <p className="text-sm text-base-content/70">
-          Upload challenges with visible and hidden test cases. You have to upload
-          two test cases for both visible and hidden test cases.
+        <p className="text-xs text-gray-400 mt-1">
+          Add problem description, 2 visible examples, 2 hidden test cases, and reference solution.
         </p>
       </div>
 
       {/* Alerts */}
       {successMessage && (
-        <div className="alert alert-success shadow-sm flex items-center gap-2">
-          <CheckCircle2 className="w-5 h-5 shrink-0" />
+        <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-[#2cbb5d] text-xs flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
           <span>{successMessage}</span>
         </div>
       )}
 
       {errorMessage && (
-        <div className="alert alert-error shadow-sm flex items-center gap-2">
-          <AlertCircle className="w-5 h-5 shrink-0" />
+        <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/25 text-[#ff375f] text-xs flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{errorMessage}</span>
         </div>
       )}
 
-      {/* Main Form */}
+      {/* Form */}
       <form
         onSubmit={handleSubmit}
-        className="bg-base-100 p-6 sm:p-8 rounded-2xl shadow-sm border border-base-300 space-y-8"
+        className="bg-[#262626] p-6 sm:p-7 rounded-xl border border-[#333333] space-y-6 text-xs"
       >
         {/* Title and Difficulty */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="sm:col-span-2 space-y-1.5">
-            <label className="text-xs font-semibold text-base-content/80">
-              Problem Title *
-            </label>
+          <div className="sm:col-span-2 space-y-1">
+            <label className="text-gray-300 font-medium">Problem Title *</label>
             <input
               type="text"
               required
@@ -413,20 +370,18 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
               onChange={(e) =>
                 setFormData({ ...formData, title: e.target.value })
               }
-              className="input input-bordered w-full"
+              className="w-full h-8 px-3 bg-[#1e1e1e] border border-[#333333] rounded text-white focus:outline-none focus:border-[#ffa116]"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-base-content/80">
-              Difficulty *
-            </label>
+          <div className="space-y-1">
+            <label className="text-gray-300 font-medium">Difficulty *</label>
             <select
               value={formData.difficulty}
               onChange={(e) =>
                 setFormData({ ...formData, difficulty: e.target.value })
               }
-              className="select select-bordered w-full capitalize"
+              className="w-full h-8 px-2 bg-[#1e1e1e] border border-[#333333] rounded text-white focus:outline-none focus:border-[#ffa116] capitalize cursor-pointer"
             >
               <option value="easy">Easy</option>
               <option value="medium">Medium</option>
@@ -436,155 +391,116 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
         </div>
 
         {/* Description */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-base-content/80">
-            Problem Description & Constraints *
-          </label>
+        <div className="space-y-1">
+          <label className="text-gray-300 font-medium">Description & Constraints *</label>
           <textarea
             required
             rows={5}
-            placeholder="e.g. Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid..."
+            placeholder="Problem description, input/output specifications, constraints..."
             value={formData.description}
             onChange={(e) =>
               setFormData({ ...formData, description: e.target.value })
             }
-            className="textarea textarea-bordered w-full text-sm leading-relaxed"
+            className="w-full p-3 bg-[#1e1e1e] border border-[#333333] rounded text-white leading-relaxed focus:outline-none focus:border-[#ffa116]"
           ></textarea>
         </div>
 
         {/* Tags */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-base-content/80">
-            Topic Tags (comma-separated)
-          </label>
+        <div className="space-y-1">
+          <label className="text-gray-300 font-medium">Topic Tags (comma-separated)</label>
           <input
             type="text"
-            placeholder="e.g. stack, string"
+            placeholder="e.g. stack, string, hash-table"
             value={formData.tags}
             onChange={(e) =>
               setFormData({ ...formData, tags: e.target.value })
             }
-            className="input input-bordered w-full"
+            className="w-full h-8 px-3 bg-[#1e1e1e] border border-[#333333] rounded text-white focus:outline-none focus:border-[#ffa116]"
           />
-          <p className="text-xs text-base-content/50">
-            Used for filtering problems on the catalog (e.g. stack, string).
-          </p>
         </div>
 
         {/* ----------------- SECTION 1: VISIBLE TEST CASES ----------------- */}
-        <div className="space-y-4 pt-4 border-t border-base-300">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="space-y-3 pt-4 border-t border-[#333333]">
+          <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold text-base-content flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-warning" />
+              <span className="font-semibold text-white">
                 Visible Test Cases ({formData.visibleTestCases.length})
-                <span className="badge badge-warning badge-xs font-semibold">2 Required</span>
-              </h3>
-              <p className="text-xs text-warning font-semibold mt-1">
-                You have to upload two test cases.
-              </p>
-              <p className="text-xs text-base-content/60 mt-0.5">
-                Shown to users on the problem page and evaluated when clicking "Run Code".
-              </p>
+              </span>
+              <span className="text-[11px] text-gray-400 ml-2">
+                (2 required)
+              </span>
             </div>
 
             <button
               type="button"
               onClick={addVisibleTestCase}
-              className="btn btn-outline btn-sm gap-1 self-start sm:self-auto"
+              className="px-2.5 py-1 rounded bg-[#1e1e1e] hover:bg-[#333333] border border-[#383838] text-gray-200 text-xs flex items-center gap-1"
             >
-              <Plus className="w-4 h-4" />
-              Add Visible Test Case
+              <Plus className="w-3.5 h-3.5 text-[#ffa116]" />
+              <span>Add Visible Case</span>
             </button>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {formData.visibleTestCases.map((tc, index) => (
               <div
                 key={index}
-                className="border border-base-300 rounded-xl p-4 bg-base-200/40 space-y-3"
+                className="border border-[#333333] rounded-lg p-3.5 bg-[#1e1e1e] space-y-2.5"
               >
-                <div className="flex items-center justify-between">
-                  <span className="badge badge-warning badge-sm font-semibold">
-                    Visible Test Case #{index + 1}
-                  </span>
+                <div className="flex items-center justify-between text-gray-400">
+                  <span className="font-medium text-white">Visible Case #{index + 1}</span>
                   {formData.visibleTestCases.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeVisibleTestCase(index)}
-                      className="btn btn-ghost btn-xs text-error gap-1 hover:bg-error/10"
-                      title="Remove test case"
+                      className="text-[#ff375f] hover:underline flex items-center gap-1"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      Remove
+                      <Trash2 className="w-3 h-3" />
+                      <span>Remove</span>
                     </button>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-base-content/70">
-                      Input *
-                    </label>
+                    <label className="text-gray-400 text-[11px]">Input *</label>
                     <textarea
                       required
                       rows={2}
-                      placeholder={
-                        index === 0
-                          ? "e.g. ()"
-                          : index === 1
-                          ? "e.g. ()[]{}"
-                          : "Test case input..."
-                      }
+                      placeholder="Input..."
                       value={tc.input}
                       onChange={(e) =>
                         handleVisibleChange(index, "input", e.target.value)
                       }
-                      className="textarea textarea-bordered w-full font-mono text-xs"
+                      className="w-full p-2 bg-[#262626] border border-[#333333] rounded font-mono text-xs text-white"
                     ></textarea>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-base-content/70">
-                      Expected Output *
-                    </label>
+                    <label className="text-gray-400 text-[11px]">Expected Output *</label>
                     <textarea
                       required
                       rows={2}
-                      placeholder={
-                        index === 0
-                          ? "e.g. true\n"
-                          : index === 1
-                          ? "e.g. true\n"
-                          : "Expected output..."
-                      }
+                      placeholder="Output..."
                       value={tc.output}
                       onChange={(e) =>
                         handleVisibleChange(index, "output", e.target.value)
                       }
-                      className="textarea textarea-bordered w-full font-mono text-xs"
+                      className="w-full p-2 bg-[#262626] border border-[#333333] rounded font-mono text-xs text-[#00b8a3]"
                     ></textarea>
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-base-content/70">
-                    Explanation (Optional)
-                  </label>
+                  <label className="text-gray-400 text-[11px]">Explanation (Optional)</label>
                   <input
                     type="text"
-                    placeholder={
-                      index === 0
-                        ? "e.g. The opening round bracket is immediately closed by the corresponding closing bracket."
-                        : index === 1
-                        ? "e.g. All brackets are closed in the correct order by matching bracket types."
-                        : "Explanation for why this is the output..."
-                    }
+                    placeholder="Why this output is expected..."
                     value={tc.explanation}
                     onChange={(e) =>
                       handleVisibleChange(index, "explanation", e.target.value)
                     }
-                    className="input input-bordered input-sm w-full text-xs"
+                    className="w-full h-7 px-2.5 bg-[#262626] border border-[#333333] rounded text-xs text-white"
                   />
                 </div>
               </div>
@@ -593,98 +509,73 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
         </div>
 
         {/* ----------------- SECTION 2: HIDDEN TEST CASES ----------------- */}
-        <div className="space-y-4 pt-4 border-t border-base-300">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="space-y-3 pt-4 border-t border-[#333333]">
+          <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold text-base-content flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-secondary" />
+              <span className="font-semibold text-white">
                 Hidden Test Cases ({formData.hiddenTestCases.length})
-                <span className="badge badge-secondary badge-xs font-semibold">2 Required</span>
-              </h3>
-              <p className="text-xs text-warning font-semibold mt-1">
-                You have to upload two test cases.
-              </p>
-              <p className="text-xs text-base-content/60 mt-0.5">
-                Secret test cases evaluated during "Submit" to prevent
-                hardcoded solutions.
-              </p>
+              </span>
+              <span className="text-[11px] text-gray-400 ml-2">
+                (2 required)
+              </span>
             </div>
 
             <button
               type="button"
               onClick={addHiddenTestCase}
-              className="btn btn-outline btn-sm gap-1 self-start sm:self-auto"
+              className="px-2.5 py-1 rounded bg-[#1e1e1e] hover:bg-[#333333] border border-[#383838] text-gray-200 text-xs flex items-center gap-1"
             >
-              <Plus className="w-4 h-4" />
-              Add Hidden Test Case
+              <Plus className="w-3.5 h-3.5 text-[#ffa116]" />
+              <span>Add Hidden Case</span>
             </button>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {formData.hiddenTestCases.map((tc, index) => (
               <div
                 key={index}
-                className="border border-base-300 rounded-xl p-4 bg-base-200/40 space-y-3"
+                className="border border-[#333333] rounded-lg p-3.5 bg-[#1e1e1e] space-y-2.5"
               >
-                <div className="flex items-center justify-between">
-                  <span className="badge badge-secondary badge-sm font-semibold">
-                    Hidden Test Case #{index + 1}
-                  </span>
+                <div className="flex items-center justify-between text-gray-400">
+                  <span className="font-medium text-white">Hidden Case #{index + 1}</span>
                   {formData.hiddenTestCases.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeHiddenTestCase(index)}
-                      className="btn btn-ghost btn-xs text-error gap-1 hover:bg-error/10"
-                      title="Remove test case"
+                      className="text-[#ff375f] hover:underline flex items-center gap-1"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      Remove
+                      <Trash2 className="w-3 h-3" />
+                      <span>Remove</span>
                     </button>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-base-content/70">
-                      Hidden Input *
-                    </label>
+                    <label className="text-gray-400 text-[11px]">Hidden Input *</label>
                     <textarea
                       required
                       rows={2}
-                      placeholder={
-                        index === 0
-                          ? "e.g. (]"
-                          : index === 1
-                          ? "e.g. ([)]"
-                          : "Hidden test input..."
-                      }
+                      placeholder="Input..."
                       value={tc.input}
                       onChange={(e) =>
                         handleHiddenChange(index, "input", e.target.value)
                       }
-                      className="textarea textarea-bordered w-full font-mono text-xs"
+                      className="w-full p-2 bg-[#262626] border border-[#333333] rounded font-mono text-xs text-white"
                     ></textarea>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-base-content/70">
-                      Hidden Expected Output *
-                    </label>
+                    <label className="text-gray-400 text-[11px]">Hidden Expected Output *</label>
                     <textarea
                       required
                       rows={2}
-                      placeholder={
-                        index === 0
-                          ? "e.g. false\n"
-                          : index === 1
-                          ? "e.g. false\n"
-                          : "Hidden expected output..."
-                      }
+                      placeholder="Output..."
                       value={tc.output}
                       onChange={(e) =>
                         handleHiddenChange(index, "output", e.target.value)
                       }
-                      className="textarea textarea-bordered w-full font-mono text-xs"
+                      className="w-full p-2 bg-[#262626] border border-[#333333] rounded font-mono text-xs text-[#00b8a3]"
                     ></textarea>
                   </div>
                 </div>
@@ -693,75 +584,72 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
           </div>
         </div>
 
-        {/* ----------------- SECTION 3: CODE IMPLEMENTATIONS (Python & C++) ----------------- */}
-        <div className="space-y-4 pt-4 border-t border-base-300">
+        {/* ----------------- SECTION 3: CODE IMPLEMENTATIONS ----------------- */}
+        <div className="space-y-3 pt-4 border-t border-[#333333]">
           <div>
-            <h3 className="text-lg font-bold text-base-content flex items-center gap-2">
-              <Layers className="w-5 h-5 text-primary" />
-              Reference Solutions & Starter Templates
-            </h3>
-            <p className="text-xs text-base-content/60">
-              Provide complete reference solution code and starter templates.
-              Switch tabs to configure Python and C++.
+            <span className="font-semibold text-white">Code Templates</span>
+            <p className="text-[11px] text-gray-400">
+              Provide complete reference code that solves the problem.
             </p>
           </div>
 
-          {/* Language Tabs */}
-          <div className="tabs tabs-boxed bg-base-200 p-1 w-fit">
+          {/* Language Toggle */}
+          <div className="flex items-center bg-[#1e1e1e] p-0.5 rounded-lg border border-[#333333] text-xs w-fit">
             <button
               type="button"
               onClick={() => setActiveLangTab("python")}
-              className={`tab tab-sm font-semibold gap-2 ${
-                activeLangTab === "python" ? "tab-active" : ""
+              className={`px-3 py-1 rounded font-medium transition-colors ${
+                activeLangTab === "python"
+                  ? "bg-[#2d2d2d] text-white"
+                  : "text-gray-400 hover:text-white"
               }`}
             >
               Python
               {formData.pythonRefCode && (
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00b8a3] inline-block ml-1.5"></span>
               )}
             </button>
             <button
               type="button"
               onClick={() => setActiveLangTab("cpp")}
-              className={`tab tab-sm font-semibold gap-2 ${
-                activeLangTab === "cpp" ? "tab-active" : ""
+              className={`px-3 py-1 rounded font-medium transition-colors ${
+                activeLangTab === "cpp"
+                  ? "bg-[#2d2d2d] text-white"
+                  : "text-gray-400 hover:text-white"
               }`}
             >
               C++
               {formData.cppRefCode && (
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00b8a3] inline-block ml-1.5"></span>
               )}
             </button>
           </div>
 
-          {/* Python Tab Content */}
+          {/* Python Config */}
           {activeLangTab === "python" && (
-            <div className="space-y-4 bg-base-200/30 p-4 rounded-xl border border-base-300">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-base-content/80 flex items-center justify-between">
-                  <span>Python Complete Reference Solution</span>
-                  <span className="text-[11px] text-base-content/50">
-                    Must pass all visible & hidden test cases
-                  </span>
+            <div className="space-y-3 bg-[#1e1e1e] p-4 rounded-lg border border-[#333333]">
+              <div className="space-y-1">
+                <label className="text-gray-300 font-medium">
+                  Python Complete Reference Solution *
                 </label>
                 <textarea
                   rows={8}
-                  placeholder={`e.g.\nimport sys\n\ndef isValid(s: str) -> bool:\n    stack = []\n    mapping = {')': '(', '}': '{', ']': '['}\n    for char in s:\n        if char in mapping:\n            top = stack.pop() if stack else '#'\n            if mapping[char] != top:\n                return False\n        else:\n            stack.append(char)\n    return len(stack) == 0\n\nif __name__ == '__main__':\n    s = sys.stdin.read().strip()\n    if s:\n        print("true" if isValid(s) else "false")`}
+                  placeholder="Complete reference code..."
                   value={formData.pythonRefCode}
                   onChange={(e) =>
                     setFormData({ ...formData, pythonRefCode: e.target.value })
                   }
-                  className="textarea textarea-bordered w-full font-mono text-xs leading-relaxed"
+                  className="w-full p-2.5 bg-[#141414] border border-[#2e2e2e] rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-[#ffa116]"
                 ></textarea>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-base-content/80">
-                  Python Starter Code (Boilerplate provided to users)
+              <div className="space-y-1">
+                <label className="text-gray-300 font-medium">
+                  Python Starter Code (Shown to users)
                 </label>
                 <textarea
                   rows={5}
-                  placeholder={`e.g.\nimport sys\n\ndef isValid(s: str) -> bool:\n    # Write your solution here\n    pass\n\nif __name__ == '__main__':\n    s = sys.stdin.read().strip()\n    if s:\n        print("true" if isValid(s) else "false")`}
+                  placeholder="Starter template code..."
                   value={formData.pythonStartCode}
                   onChange={(e) =>
                     setFormData({
@@ -769,40 +657,37 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                       pythonStartCode: e.target.value,
                     })
                   }
-                  className="textarea textarea-bordered w-full font-mono text-xs leading-relaxed"
+                  className="w-full p-2.5 bg-[#141414] border border-[#2e2e2e] rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-[#ffa116]"
                 ></textarea>
               </div>
             </div>
           )}
 
-          {/* C++ Tab Content */}
+          {/* C++ Config */}
           {activeLangTab === "cpp" && (
-            <div className="space-y-4 bg-base-200/30 p-4 rounded-xl border border-base-300">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-base-content/80 flex items-center justify-between">
-                  <span>C++ Complete Reference Solution</span>
-                  <span className="text-[11px] text-base-content/50">
-                    Must pass all visible & hidden test cases
-                  </span>
+            <div className="space-y-3 bg-[#1e1e1e] p-4 rounded-lg border border-[#333333]">
+              <div className="space-y-1">
+                <label className="text-gray-300 font-medium">
+                  C++ Complete Reference Solution *
                 </label>
                 <textarea
                   rows={8}
-                  placeholder={`e.g.\n#include <iostream>\n#include <string>\n#include <stack>\n\nusing namespace std;\n\nbool isValid(string s) {\n    stack<char> st;\n    for (char c : s) {\n        if (c == '(' || c == '{' || c == '[') {\n            st.push(c);\n        } else {\n            if (st.empty()) return false;\n            char top = st.top();\n            st.pop();\n            if ((c == ')' && top != '(') || (c == '}' && top != '{') || (c == ']' && top != '[')) return false;\n        }\n    }\n    return st.empty();\n}\n\nint main() {\n    string s;\n    if (cin >> s) {\n        cout << (isValid(s) ? "true" : "false") << "\\n";\n    }\n    return 0;\n}`}
+                  placeholder="#include <iostream>&#10;using namespace std;&#10;..."
                   value={formData.cppRefCode}
                   onChange={(e) =>
                     setFormData({ ...formData, cppRefCode: e.target.value })
                   }
-                  className="textarea textarea-bordered w-full font-mono text-xs leading-relaxed"
+                  className="w-full p-2.5 bg-[#141414] border border-[#2e2e2e] rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-[#ffa116]"
                 ></textarea>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-base-content/80">
-                  C++ Starter Code (Boilerplate provided to users)
+              <div className="space-y-1">
+                <label className="text-gray-300 font-medium">
+                  C++ Starter Code (Shown to users)
                 </label>
                 <textarea
                   rows={5}
-                  placeholder={`e.g.\n#include <iostream>\n#include <string>\n#include <stack>\n\nusing namespace std;\n\nbool isValid(string s) {\n    // Write your solution here\n    return false;\n}\n\nint main() {\n    string s;\n    if (cin >> s) {\n        cout << (isValid(s) ? "true" : "false") << "\\n";\n    }\n    return 0;\n}`}
+                  placeholder="#include <iostream>&#10;..."
                   value={formData.cppStartCode}
                   onChange={(e) =>
                     setFormData({
@@ -810,96 +695,78 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                       cppStartCode: e.target.value,
                     })
                   }
-                  className="textarea textarea-bordered w-full font-mono text-xs leading-relaxed"
+                  className="w-full p-2.5 bg-[#141414] border border-[#2e2e2e] rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-[#ffa116]"
                 ></textarea>
               </div>
             </div>
           )}
         </div>
 
-        {/* Form Actions */}
-        <div className="pt-4 border-t border-base-300 flex items-center justify-end gap-3">
+        {/* Action Controls */}
+        <div className="pt-4 border-t border-[#333333] flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={onNavigateToAdmin}
-            disabled={isSubmitting}
-            className="btn btn-ghost"
+            className="px-4 py-2 rounded-md border border-[#333333] bg-[#1e1e1e] hover:bg-[#333333] text-gray-300 transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="btn btn-primary gap-2"
+            className="px-5 py-2 rounded-md bg-[#ffa116] hover:bg-[#e68a00] text-[#1a1a1a] font-semibold transition-colors flex items-center gap-2 shadow-xs"
           >
             {isSubmitting ? (
-              <>
-                <span className="loading loading-spinner loading-xs"></span>
-                Evaluating on Judge0 & Publishing...
-              </>
-            ) : (
-              <>
-                <Plus className="w-4 h-4" />
-                Create Problem
-              </>
-            )}
+              <div className="w-3.5 h-3.5 rounded-full border border-black border-t-transparent animate-spin"></div>
+            ) : null}
+            <span>Create Problem</span>
           </button>
         </div>
       </form>
 
-      {/* Quick Import from JSON Modal */}
+      {/* JSON Import Modal */}
       {isJsonModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-base-100 rounded-2xl shadow-2xl border border-base-300 w-full max-w-2xl flex flex-col overflow-hidden max-h-[90vh]">
-            <div className="p-5 border-b border-base-300 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <FileCode className="w-5 h-5 text-secondary" />
-                <div>
-                  <h3 className="font-bold text-lg text-base-content">
-                    Import Problem from JSON
-                  </h3>
-                  <p className="text-xs text-base-content/60">
-                    Paste the complete problem JSON object to automatically
-                    populate all fields, test cases, and code.
-                  </p>
-                </div>
-              </div>
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#262626] rounded-xl border border-[#333333] w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl text-xs">
+            <div className="p-4 border-b border-[#333333] flex items-center justify-between bg-[#222222]">
+              <span className="font-bold text-white flex items-center gap-2">
+                <FileCode className="w-4 h-4 text-[#ffa116]" />
+                Import Problem JSON
+              </span>
               <button
                 type="button"
                 onClick={() => setIsJsonModalOpen(false)}
-                className="btn btn-ghost btn-sm btn-circle"
+                className="text-gray-400 hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="p-6 space-y-4 overflow-y-auto flex-1">
+            <div className="p-4 space-y-3 overflow-y-auto flex-1">
+              <p className="text-gray-400 text-xs">
+                Paste JSON containing fields like title, description, visibleTestCases, hiddenTestCases, and referenceSolution.
+              </p>
+
               {jsonError && (
-                <div className="alert alert-error text-xs py-2">
-                  <AlertCircle className="w-4 h-4" />
-                  <span>{jsonError}</span>
+                <div className="p-2.5 rounded bg-rose-500/10 border border-rose-500/25 text-[#ff375f]">
+                  {jsonError}
                 </div>
               )}
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-base-content/80">
-                  Paste JSON Structure
-                </label>
-                <textarea
-                  rows={14}
-                  placeholder={`{\n  "title": "Valid Parentheses",\n  "description": "...",\n  "difficulty": "easy",\n  "tags": ["stack", "string"],\n  "visibleTestCases": [...],\n  "hiddenTestCases": [...],\n  "startCode": [...],\n  "referenceSolution": [...]\n}`}
-                  value={jsonInput}
-                  onChange={(e) => setJsonInput(e.target.value)}
-                  className="textarea textarea-bordered w-full font-mono text-xs"
-                ></textarea>
-              </div>
+              <textarea
+                rows={12}
+                placeholder={`{\n  "title": "Two Sum",\n  "difficulty": "easy",\n  "description": "...",\n  "visibleTestCases": [...]\n}`}
+                value={jsonInput}
+                onChange={(e) => setJsonInput(e.target.value)}
+                className="w-full p-3 bg-[#1e1e1e] border border-[#333333] rounded font-mono text-xs text-white leading-relaxed focus:outline-none focus:border-[#ffa116]"
+              ></textarea>
             </div>
 
-            <div className="p-4 border-t border-base-300 flex justify-end gap-3 bg-base-200/30">
+            <div className="p-3.5 border-t border-[#333333] flex items-center justify-end gap-2 bg-[#222222]">
               <button
                 type="button"
                 onClick={() => setIsJsonModalOpen(false)}
-                className="btn btn-ghost btn-sm"
+                className="px-3 py-1.5 rounded border border-[#333333] bg-[#1e1e1e] hover:bg-[#333333] text-gray-300"
               >
                 Cancel
               </button>
@@ -907,10 +774,9 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
                 type="button"
                 onClick={handleApplyJson}
                 disabled={!jsonInput.trim()}
-                className="btn btn-secondary btn-sm gap-1.5"
+                className="px-4 py-1.5 rounded bg-[#ffa116] text-[#1a1a1a] font-semibold hover:bg-[#e68a00] transition-colors disabled:opacity-40"
               >
-                <CheckCircle2 className="w-4 h-4" />
-                Populate Form Fields
+                Apply JSON
               </button>
             </div>
           </div>

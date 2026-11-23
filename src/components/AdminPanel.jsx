@@ -15,12 +15,9 @@ import {
   Search,
   AlertTriangle,
   Code2,
-  Layers,
   X,
   CheckCircle2,
   AlertCircle,
-  Sparkles,
-  FileEdit,
   Play,
   Video,
 } from "lucide-react";
@@ -35,7 +32,7 @@ export default function AdminPanel({
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { problems, isLoading } = useSelector((state) => state.problems);
 
-  // Local state for searching & filtering inside admin panel
+  // Local state for searching & filtering
   const [searchTerm, setSearchTerm] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState("all");
 
@@ -53,59 +50,50 @@ export default function AdminPanel({
     setIsVideoModalOpen(true);
   };
 
-  // Form loading & alert states
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [adminError, setAdminError] = useState(null);
   const [adminSuccess, setAdminSuccess] = useState(null);
 
-  // Form state for creating / updating a problem (supports multiple test cases)
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     difficulty: "easy",
     tags: "",
-    visibleTestCases: [
-      { input: "", output: "", explanation: "" },
-    ],
-    hiddenTestCases: [
-      { input: "", output: "" },
-    ],
+    visibleTestCases: [{ input: "", output: "", explanation: "" }],
+    hiddenTestCases: [{ input: "", output: "" }],
     refLanguage: "python",
     refCode: "",
   });
 
-  // Ensure problems are loaded
   useEffect(() => {
     dispatch(getAllProblems());
   }, [dispatch]);
 
-  // Security guard: If user is not authenticated or not an admin
+  // Security guard
   if (!isAuthenticated || user?.role !== "admin") {
     return (
-      <div className="max-w-xl mx-auto my-16 p-8 bg-base-100 rounded-2xl shadow-xl border border-error/20 text-center">
-        <div className="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto mb-4">
-          <AlertTriangle className="w-8 h-8" />
+      <div className="max-w-md mx-auto my-20 p-8 bg-[#262626] rounded-xl border border-[#333333] text-center space-y-4">
+        <div className="w-12 h-12 bg-rose-500/10 text-[#ff375f] rounded-full flex items-center justify-center mx-auto">
+          <AlertTriangle className="w-6 h-6" />
         </div>
-        <h2 className="text-2xl font-bold text-base-content mb-2">
-          Access Denied
-        </h2>
-        <p className="text-base-content/70 mb-6 text-sm">
-          You do not have administrative privileges to access this area. Only
-          authenticated users with the <strong>admin</strong> role can access
-          the Admin Panel.
-        </p>
+        <div>
+          <h2 className="text-base font-bold text-white">Access Denied</h2>
+          <p className="text-xs text-gray-400 mt-1">
+            Only users with administrative privileges can access the Admin Dashboard.
+          </p>
+        </div>
         <button
           type="button"
           onClick={onNavigateToHome}
-          className="btn btn-primary"
+          className="px-4 py-2 rounded-md bg-[#ffa116] text-[#1a1a1a] text-xs font-semibold hover:bg-[#e68a00] transition-colors"
         >
-          Return to Home
+          Return to Problems
         </button>
       </div>
     );
   }
 
-  // Calculate catalog stats
+  // Calculate statistics
   const stats = useMemo(() => {
     const total = problems.length;
     const easy = problems.filter((p) => p.difficulty?.toLowerCase() === "easy").length;
@@ -114,7 +102,7 @@ export default function AdminPanel({
     return { total, easy, medium, hard };
   }, [problems]);
 
-  // Filtered problems list for Admin view
+  // Filtered problems list
   const filteredProblems = useMemo(() => {
     return problems.filter((prob) => {
       if (
@@ -135,7 +123,7 @@ export default function AdminPanel({
     });
   }, [problems, searchTerm, difficultyFilter]);
 
-  // --- Visible Test Cases Handlers ---
+  // Visible Test Cases Handlers
   const handleVisibleChange = (index, field, value) => {
     const updated = [...formData.visibleTestCases];
     updated[index] = { ...updated[index], [field]: value };
@@ -158,7 +146,7 @@ export default function AdminPanel({
     setFormData({ ...formData, visibleTestCases: updated });
   };
 
-  // --- Hidden Test Cases Handlers ---
+  // Hidden Test Cases Handlers
   const handleHiddenChange = (index, field, value) => {
     const updated = [...formData.hiddenTestCases];
     updated[index] = { ...updated[index], [field]: value };
@@ -181,7 +169,7 @@ export default function AdminPanel({
     setFormData({ ...formData, hiddenTestCases: updated });
   };
 
-  // 1. OPEN CREATE MODAL
+  // Open Create Modal
   const handleOpenCreateModal = () => {
     setModalMode("create");
     setEditingProblemId(null);
@@ -205,7 +193,7 @@ export default function AdminPanel({
     setIsModalOpen(true);
   };
 
-  // 2. OPEN UPDATE MODAL (Pre-fills ALL existing problem values, including multiple test cases)
+  // Open Update Modal
   const handleOpenUpdateModal = async (prob) => {
     setModalMode("update");
     setEditingProblemId(prob._id);
@@ -234,7 +222,6 @@ export default function AdminPanel({
             { input: "", output: "" },
           ];
 
-    // Immediately prefill form with existing problem values
     setFormData({
       title: prob.title || "",
       description: prob.description || "",
@@ -254,7 +241,6 @@ export default function AdminPanel({
 
     setIsModalOpen(true);
 
-    // Fetch full problem details by ID in background to capture hidden test cases & ref code
     try {
       const fullProblem = await fetchProblemById(prob._id);
       if (fullProblem) {
@@ -297,15 +283,13 @@ export default function AdminPanel({
             prev.refCode,
         }));
       }
-    } catch (_) {
-      // Keep initial pre-filled data
-    }
+    } catch (_) {}
   };
 
-  // 3. DELETE PROBLEM HANDLER
+  // Delete Problem
   const handleDeleteProblem = async (problemId, problemTitle) => {
     const confirmDelete = window.confirm(
-      `Are you sure you want to permanently delete "${problemTitle}"? This cannot be undone.`
+      `Are you sure you want to delete "${problemTitle}"? This cannot be undone.`
     );
     if (!confirmDelete) return;
 
@@ -321,14 +305,13 @@ export default function AdminPanel({
     }
   };
 
-  // SUBMIT FORM (Handles either CREATE or UPDATE based on modalMode)
+  // Submit Form
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setAdminError(null);
     setAdminSuccess(null);
 
-    // Parse comma-separated tags
     const tagsArray = formData.tags
       .split(",")
       .map((t) => t.trim().toLowerCase())
@@ -375,7 +358,7 @@ export default function AdminPanel({
       setIsSubmitting(false);
 
       if (createProblem.fulfilled.match(result)) {
-        setAdminSuccess("Problem verified and created successfully!");
+        setAdminSuccess("Problem created successfully!");
         setIsModalOpen(false);
         setTimeout(() => setAdminSuccess(null), 4000);
       } else {
@@ -386,7 +369,6 @@ export default function AdminPanel({
         );
       }
     } else {
-      // UPDATE PROBLEM
       const payload = {
         title: formData.title.trim(),
         description: formData.description.trim(),
@@ -431,60 +413,69 @@ export default function AdminPanel({
     }
   };
 
+  const renderDifficulty = (difficulty) => {
+    const diff = difficulty?.toLowerCase();
+    if (diff === "easy") {
+      return <span className="text-[#00b8a3] font-medium text-xs">Easy</span>;
+    }
+    if (diff === "medium") {
+      return <span className="text-[#ffc01e] font-medium text-xs">Medium</span>;
+    }
+    return <span className="text-[#ff375f] font-medium text-xs">Hard</span>;
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-6">
       {/* Top Admin Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-base-300">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-[#333333]">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="badge badge-warning font-semibold gap-1.5 py-3 px-3">
-              <ShieldCheck className="w-4 h-4" />
-              Admin Panel
+            <span className="text-xs font-semibold px-2 py-0.5 rounded bg-[#ffa116]/10 text-[#ffa116] border border-[#ffa116]/30 flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              Admin
             </span>
-            <span className="text-xs text-base-content/60 font-mono">
-              Signed in as {user?.emailId || user?.email}
+            <span className="text-xs text-gray-400">
+              {user?.emailId || user?.email}
             </span>
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-base-content">
+          <h1 className="text-2xl font-bold tracking-tight text-white">
             Problem Management
           </h1>
-          <p className="text-sm text-base-content/70 mt-1">
-            Create new challenges, update existing problem details, or delete
-            outdated records.
+          <p className="text-xs text-gray-400 mt-0.5">
+            Create new challenges, edit problem definitions, or manage solution videos.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 text-xs">
           <button
             type="button"
             onClick={onNavigateToHome}
-            className="btn btn-outline btn-sm"
+            className="px-3 py-1.5 rounded-md border border-[#333333] bg-[#1e1e1e] hover:bg-[#2d2d2d] text-gray-300 transition-colors"
           >
             View Public Catalog
           </button>
-          {/* Button 1: CREATE PROBLEM (Navigates to /problem/create route) */}
           <button
             type="button"
             onClick={onNavigateToCreateProblem || handleOpenCreateModal}
-            className="btn btn-primary btn-sm gap-2"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-[#ffa116] hover:bg-[#e68a00] text-[#1a1a1a] font-semibold transition-colors shadow-xs"
           >
-            <Plus className="w-4 h-4" />
-            Create Problem
+            <Plus className="w-3.5 h-3.5" />
+            <span>New Problem</span>
           </button>
         </div>
       </div>
 
-      {/* Alert Notifications */}
+      {/* Notifications */}
       {adminSuccess && (
-        <div className="alert alert-success shadow-sm flex items-center justify-between">
+        <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-[#2cbb5d] text-xs flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5" />
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
             <span>{adminSuccess}</span>
           </div>
           <button
             type="button"
             onClick={() => setAdminSuccess(null)}
-            className="btn btn-ghost btn-xs btn-circle"
+            className="text-gray-400 hover:text-white"
           >
             <X className="w-4 h-4" />
           </button>
@@ -492,81 +483,69 @@ export default function AdminPanel({
       )}
 
       {adminError && (
-        <div className="alert alert-error shadow-sm flex items-center justify-between">
+        <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/25 text-[#ff375f] text-xs flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-5 h-5" />
+            <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{adminError}</span>
           </div>
           <button
             type="button"
             onClick={() => setAdminError(null)}
-            className="btn btn-ghost btn-xs btn-circle"
+            className="text-gray-400 hover:text-white"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="stat bg-base-100 rounded-xl shadow-sm border border-base-300 p-4">
-          <div className="stat-figure text-primary">
-            <Code2 className="w-6 h-6" />
-          </div>
-          <div className="stat-title text-xs">Total Challenges</div>
-          <div className="stat-value text-2xl text-primary">{stats.total}</div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="bg-[#262626] p-4 rounded-xl border border-[#333333] space-y-1">
+          <div className="text-xs text-gray-400">Total Problems</div>
+          <div className="text-2xl font-bold text-white">{stats.total}</div>
         </div>
 
-        <div className="stat bg-base-100 rounded-xl shadow-sm border border-base-300 p-4">
-          <div className="stat-figure text-emerald-500">
-            <Sparkles className="w-6 h-6" />
-          </div>
-          <div className="stat-title text-xs">Easy Problems</div>
-          <div className="stat-value text-2xl text-emerald-500">{stats.easy}</div>
+        <div className="bg-[#262626] p-4 rounded-xl border border-[#333333] space-y-1">
+          <div className="text-xs text-[#00b8a3]">Easy</div>
+          <div className="text-2xl font-bold text-[#00b8a3]">{stats.easy}</div>
         </div>
 
-        <div className="stat bg-base-100 rounded-xl shadow-sm border border-base-300 p-4">
-          <div className="stat-figure text-amber-500">
-            <Layers className="w-6 h-6" />
-          </div>
-          <div className="stat-title text-xs">Medium Problems</div>
-          <div className="stat-value text-2xl text-amber-500">{stats.medium}</div>
+        <div className="bg-[#262626] p-4 rounded-xl border border-[#333333] space-y-1">
+          <div className="text-xs text-[#ffc01e]">Medium</div>
+          <div className="text-2xl font-bold text-[#ffc01e]">{stats.medium}</div>
         </div>
 
-        <div className="stat bg-base-100 rounded-xl shadow-sm border border-base-300 p-4">
-          <div className="stat-figure text-rose-500">
-            <AlertTriangle className="w-6 h-6" />
-          </div>
-          <div className="stat-title text-xs">Hard Problems</div>
-          <div className="stat-value text-2xl text-rose-500">{stats.hard}</div>
+        <div className="bg-[#262626] p-4 rounded-xl border border-[#333333] space-y-1">
+          <div className="text-xs text-[#ff375f]">Hard</div>
+          <div className="text-2xl font-bold text-[#ff375f]">{stats.hard}</div>
         </div>
       </div>
 
-      {/* Search & Difficulty Filter */}
-      <div className="bg-base-100 p-4 rounded-xl shadow-sm border border-base-300 flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full md:w-96">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-base-content/50" />
+      {/* Search & Filter Bar */}
+      <div className="bg-[#262626] p-3.5 rounded-xl border border-[#333333] flex flex-col md:flex-row gap-3 items-center justify-between">
+        <div className="relative w-full md:w-80">
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search problems by title or tags..."
+            placeholder="Search problems..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="input input-sm input-bordered w-full pl-9"
+            className="w-full h-8 pl-8 pr-3 text-xs bg-[#1e1e1e] border border-[#333333] rounded-md text-white placeholder:text-gray-500 focus:outline-none focus:border-[#ffa116] transition-colors"
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto justify-end">
-          <span className="text-xs text-base-content/60 font-medium">
-            Difficulty:
-          </span>
-          <div className="join">
+        <div className="flex items-center gap-1.5 w-full md:w-auto justify-end text-xs">
+          <span className="text-gray-400 mr-1">Difficulty:</span>
+          <div className="flex items-center bg-[#1e1e1e] p-0.5 rounded-lg border border-[#333333]">
             {["all", "easy", "medium", "hard"].map((diff) => (
               <button
                 key={diff}
                 type="button"
                 onClick={() => setDifficultyFilter(diff)}
-                className={`join-item btn btn-xs capitalize ${
-                  difficultyFilter === diff ? "btn-primary" : "btn-ghost"
+                className={`px-2.5 py-1 rounded text-xs capitalize transition-colors ${
+                  difficultyFilter === diff
+                    ? "bg-[#2d2d2d] text-white font-medium"
+                    : "text-gray-400 hover:text-white"
                 }`}
               >
                 {diff}
@@ -576,52 +555,38 @@ export default function AdminPanel({
         </div>
       </div>
 
-      {/* Problems Management Table */}
-      <div className="bg-base-100 rounded-xl shadow-sm border border-base-300 overflow-hidden">
+      {/* Problems Table */}
+      <div className="bg-[#262626] rounded-xl border border-[#333333] overflow-hidden shadow-xs">
         {isLoading && problems.length === 0 ? (
-          <div className="p-12 text-center">
-            <span className="loading loading-spinner loading-md text-primary"></span>
-            <p className="text-xs text-base-content/60 mt-2">
-              Loading problems...
-            </p>
+          <div className="p-16 text-center text-xs text-gray-400 flex flex-col items-center gap-2">
+            <div className="w-6 h-6 rounded-full border-2 border-[#ffa116] border-t-transparent animate-spin"></div>
+            <span>Loading problems...</span>
           </div>
         ) : filteredProblems.length === 0 ? (
-          <div className="p-12 text-center space-y-2">
-            <Code2 className="w-10 h-10 mx-auto text-base-content/30" />
-            <h3 className="font-semibold text-base-content">
-              No problems found
-            </h3>
-            <p className="text-xs text-base-content/60">
-              Try adjusting your search criteria or create a new problem.
-            </p>
+          <div className="p-12 text-center space-y-2 text-xs text-gray-400">
+            <p className="font-semibold text-white">No problems found</p>
+            <p>Try modifying your search or create a new problem.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="table w-full">
+            <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-base-200/60 text-xs text-base-content/70">
-                  <th className="w-16">#</th>
-                  <th>Title</th>
-                  <th>Difficulty</th>
-                  <th>Tags</th>
-                  <th className="text-right">Actions</th>
+                <tr className="border-b border-[#333333] bg-[#222222] text-[11px] font-medium text-gray-400 uppercase tracking-wider">
+                  <th className="py-3 px-4 w-12">#</th>
+                  <th className="py-3 px-4">Title</th>
+                  <th className="py-3 px-4 w-28">Difficulty</th>
+                  <th className="py-3 px-4 hidden md:table-cell">Tags</th>
+                  <th className="py-3 px-4 w-56 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-[#333333]">
                 {filteredProblems.map((prob, index) => {
-                  const diffColor =
-                    prob.difficulty?.toLowerCase() === "easy"
-                      ? "badge-success text-success-content"
-                      : prob.difficulty?.toLowerCase() === "medium"
-                      ? "badge-warning text-warning-content"
-                      : "badge-error text-error-content";
-
                   return (
-                    <tr key={prob._id || index} className="hover:bg-base-200/40">
-                      <td className="text-xs font-mono text-base-content/50">
+                    <tr key={prob._id || index} className="hover:bg-[#2e2e2e]/50 transition-colors">
+                      <td className="py-3 px-4 text-gray-500 font-mono text-[11px]">
                         {index + 1}
                       </td>
-                      <td>
+                      <td className="py-3 px-4">
                         <div
                           role="button"
                           tabIndex={0}
@@ -635,83 +600,72 @@ export default function AdminPanel({
                                 onSelectProblem(prob._id || prob.id);
                             }
                           }}
-                          className="font-medium text-sm text-base-content hover:text-primary transition-colors cursor-pointer"
-                          title="Click to view problem details and code editor"
+                          className="font-medium text-sm text-[#eff1f6] hover:text-[#ffa116] transition-colors cursor-pointer"
                         >
                           {prob.title}
                         </div>
-                        <div className="text-xs text-base-content/50 line-clamp-1 max-w-md mt-0.5">
+                        <div className="text-[11px] text-gray-400 line-clamp-1 max-w-md mt-0.5">
                           {prob.description}
                         </div>
                       </td>
-                      <td>
-                        <span
-                          className={`badge badge-sm font-semibold capitalize ${diffColor}`}
-                        >
-                          {prob.difficulty}
-                        </span>
+                      <td className="py-3 px-4">
+                        {renderDifficulty(prob.difficulty)}
                       </td>
-                      <td>
+                      <td className="py-3 px-4 hidden md:table-cell">
                         <div className="flex flex-wrap gap-1">
                           {prob.tags?.map((tag, tIdx) => (
                             <span
                               key={tIdx}
-                              className="badge badge-ghost badge-xs text-base-content/70"
+                              className="px-2 py-0.5 rounded-full text-[10px] bg-[#1e1e1e] border border-[#333333] text-gray-400"
                             >
                               {tag}
                             </span>
                           ))}
                         </div>
                       </td>
-                      <td className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {/* Button: SOLVE / VIEW PROBLEM */}
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5 text-xs">
                           <button
                             type="button"
                             onClick={() =>
                               onSelectProblem &&
                               onSelectProblem(prob._id || prob.id)
                             }
-                            className="btn btn-outline btn-primary btn-xs gap-1"
-                            title="View Problem & Code Editor"
+                            className="px-2.5 py-1 rounded bg-[#1e1e1e] hover:bg-[#333333] text-gray-300 hover:text-white border border-[#383838] transition-colors"
+                            title="Open Problem"
                           >
-                            <Play className="w-3.5 h-3.5 fill-primary" />
                             Solve
                           </button>
 
-                          {/* Button 2: UPDATE PROBLEM */}
                           <button
                             type="button"
                             onClick={() => handleOpenUpdateModal(prob)}
-                            className="btn btn-outline btn-info btn-xs gap-1"
-                            title="Update Problem"
+                            className="px-2.5 py-1 rounded bg-[#1e1e1e] hover:bg-[#333333] text-gray-300 hover:text-white border border-[#383838] transition-colors flex items-center gap-1"
+                            title="Edit Problem"
                           >
-                            <Edit3 className="w-3.5 h-3.5" />
-                            Update Problem
+                            <Edit3 className="w-3 h-3" />
+                            <span>Edit</span>
                           </button>
 
-                          {/* Button: SOLUTION VIDEO */}
                           <button
                             type="button"
                             onClick={() => handleOpenVideoModal(prob)}
-                            className="btn btn-outline btn-secondary btn-xs gap-1"
-                            title="Manage Solution Video (Upload / Delete)"
+                            className="px-2.5 py-1 rounded bg-[#1e1e1e] hover:bg-[#333333] text-gray-300 hover:text-white border border-[#383838] transition-colors flex items-center gap-1"
+                            title="Manage Video"
                           >
-                            <Video className="w-3.5 h-3.5" />
-                            Video
+                            <Video className="w-3 h-3" />
+                            <span>Video</span>
                           </button>
 
-                          {/* Button 3: DELETE PROBLEM */}
                           <button
                             type="button"
                             onClick={() =>
                               handleDeleteProblem(prob._id, prob.title)
                             }
-                            className="btn btn-outline btn-error btn-xs gap-1"
+                            className="px-2 py-1 rounded bg-[#1e1e1e] hover:bg-rose-500/10 text-gray-400 hover:text-[#ff375f] border border-[#383838] transition-colors"
                             title="Delete Problem"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
-                            Delete Problem
                           </button>
                         </div>
                       </td>
@@ -724,35 +678,18 @@ export default function AdminPanel({
         )}
       </div>
 
-      {/* Modal for UPDATE PROBLEM (supports multiple test cases) */}
+      {/* Edit / Update Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-base-100 rounded-2xl shadow-2xl border border-base-300 w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden">
-            <div className="p-5 border-b border-base-300 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {modalMode === "update" ? (
-                  <FileEdit className="w-5 h-5 text-info" />
-                ) : (
-                  <Code2 className="w-5 h-5 text-primary" />
-                )}
-                <div>
-                  <h3 className="font-bold text-lg text-base-content">
-                    {modalMode === "update"
-                      ? "Update Problem"
-                      : "Create New Problem"}
-                  </h3>
-                  {modalMode === "update" && (
-                    <p className="text-xs text-base-content/60">
-                      Existing values and test cases are pre-filled below. Modify
-                      any fields and click Update Problem to save changes.
-                    </p>
-                  )}
-                </div>
-              </div>
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-[#262626] rounded-xl border border-[#333333] w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden shadow-2xl">
+            <div className="p-4 border-b border-[#333333] flex items-center justify-between bg-[#222222]">
+              <span className="font-bold text-sm text-white">
+                {modalMode === "update" ? "Edit Problem" : "Create Problem"}
+              </span>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="btn btn-ghost btn-sm btn-circle"
+                className="text-gray-400 hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -760,20 +697,18 @@ export default function AdminPanel({
 
             <form
               onSubmit={handleFormSubmit}
-              className="p-6 space-y-5 overflow-y-auto flex-1"
+              className="p-5 space-y-4 overflow-y-auto flex-1 text-xs"
             >
               {adminError && (
-                <div className="alert alert-error text-xs py-2">
-                  <AlertCircle className="w-4 h-4" />
+                <div className="p-3 rounded bg-rose-500/10 border border-rose-500/25 text-[#ff375f] flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{adminError}</span>
                 </div>
               )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-2 space-y-1">
-                  <label className="text-xs font-semibold text-base-content/80">
-                    Title *
-                  </label>
+                  <label className="text-gray-300 font-medium">Title *</label>
                   <input
                     type="text"
                     required
@@ -782,20 +717,18 @@ export default function AdminPanel({
                     onChange={(e) =>
                       setFormData({ ...formData, title: e.target.value })
                     }
-                    className="input input-sm input-bordered w-full"
+                    className="w-full h-8 px-3 bg-[#1e1e1e] border border-[#333333] rounded text-white focus:outline-none focus:border-[#ffa116]"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-base-content/80">
-                    Difficulty *
-                  </label>
+                  <label className="text-gray-300 font-medium">Difficulty *</label>
                   <select
                     value={formData.difficulty}
                     onChange={(e) =>
                       setFormData({ ...formData, difficulty: e.target.value })
                     }
-                    className="select select-sm select-bordered w-full capitalize"
+                    className="w-full h-8 px-2 bg-[#1e1e1e] border border-[#333333] rounded text-white focus:outline-none focus:border-[#ffa116] capitalize cursor-pointer"
                   >
                     <option value="easy">Easy</option>
                     <option value="medium">Medium</option>
@@ -805,252 +738,189 @@ export default function AdminPanel({
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-base-content/80">
-                  Description *
-                </label>
+                <label className="text-gray-300 font-medium">Description *</label>
                 <textarea
                   required
                   rows={4}
-                  placeholder="Problem description, constraints, and instructions..."
                   value={formData.description}
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
-                  className="textarea textarea-bordered textarea-sm w-full leading-relaxed"
+                  className="w-full p-2.5 bg-[#1e1e1e] border border-[#333333] rounded text-white leading-relaxed focus:outline-none focus:border-[#ffa116]"
                 ></textarea>
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-base-content/80">
-                  Tags (comma separated)
-                </label>
+                <label className="text-gray-300 font-medium">Tags (comma-separated)</label>
                 <input
                   type="text"
-                  placeholder="e.g. stack, string"
+                  placeholder="e.g. stack, string, hash-table"
                   value={formData.tags}
                   onChange={(e) =>
                     setFormData({ ...formData, tags: e.target.value })
                   }
-                  className="input input-sm input-bordered w-full"
+                  className="w-full h-8 px-3 bg-[#1e1e1e] border border-[#333333] rounded text-white focus:outline-none focus:border-[#ffa116]"
                 />
               </div>
 
               {/* Visible Test Cases */}
-              <div className="space-y-3 pt-2 border-t border-base-300">
+              <div className="space-y-3 pt-3 border-t border-[#333333]">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold text-base-content flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-warning" />
-                      Visible Test Cases ({formData.visibleTestCases.length})
-                    </span>
-                    <p className="text-[11px] text-warning font-semibold">
-                      You have to upload two test cases.
-                    </p>
-                  </div>
+                  <span className="font-semibold text-white">
+                    Visible Test Cases ({formData.visibleTestCases.length})
+                  </span>
                   <button
                     type="button"
                     onClick={addVisibleTestCase}
-                    className="btn btn-outline btn-xs gap-1"
+                    className="px-2 py-1 rounded bg-[#1e1e1e] hover:bg-[#333333] border border-[#333333] text-gray-200 text-xs flex items-center gap-1"
                   >
                     <Plus className="w-3 h-3" />
-                    Add Visible Case
+                    <span>Add Case</span>
                   </button>
                 </div>
 
-                <div className="space-y-3">
-                  {formData.visibleTestCases.map((tc, index) => (
-                    <div
-                      key={index}
-                      className="border border-base-300 rounded-lg p-3 bg-base-200/30 space-y-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="badge badge-warning badge-xs font-semibold">
-                          Case #{index + 1}
-                        </span>
-                        {formData.visibleTestCases.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeVisibleTestCase(index)}
-                            className="btn btn-ghost btn-xs text-error gap-1 hover:bg-error/10"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                            Remove
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <label className="text-[11px] font-semibold text-base-content/70">
-                            Input *
-                          </label>
-                          <textarea
-                            rows={2}
-                            value={tc.input}
-                            onChange={(e) =>
-                              handleVisibleChange(index, "input", e.target.value)
-                            }
-                            className="textarea textarea-bordered textarea-xs w-full font-mono"
-                          ></textarea>
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[11px] font-semibold text-base-content/70">
-                            Expected Output *
-                          </label>
-                          <textarea
-                            rows={2}
-                            value={tc.output}
-                            onChange={(e) =>
-                              handleVisibleChange(index, "output", e.target.value)
-                            }
-                            className="textarea textarea-bordered textarea-xs w-full font-mono"
-                          ></textarea>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-base-content/70">
-                          Explanation (Optional)
-                        </label>
-                        <input
-                          type="text"
-                          value={tc.explanation}
-                          onChange={(e) =>
-                            handleVisibleChange(index, "explanation", e.target.value)
-                          }
-                          className="input input-bordered input-xs w-full"
-                        />
-                      </div>
+                {formData.visibleTestCases.map((tc, vIdx) => (
+                  <div
+                    key={vIdx}
+                    className="p-3 rounded bg-[#1e1e1e] border border-[#333333] space-y-2 text-xs"
+                  >
+                    <div className="flex items-center justify-between text-gray-400">
+                      <span>Case #{vIdx + 1}</span>
+                      {formData.visibleTestCases.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeVisibleTestCase(vIdx)}
+                          className="text-[#ff375f] hover:underline"
+                        >
+                          Remove
+                        </button>
+                      )}
                     </div>
-                  ))}
-                </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <textarea
+                        rows={2}
+                        placeholder="Input..."
+                        value={tc.input}
+                        onChange={(e) =>
+                          handleVisibleChange(vIdx, "input", e.target.value)
+                        }
+                        className="p-2 bg-[#262626] border border-[#333333] rounded font-mono text-xs text-white"
+                      ></textarea>
+                      <textarea
+                        rows={2}
+                        placeholder="Expected Output..."
+                        value={tc.output}
+                        onChange={(e) =>
+                          handleVisibleChange(vIdx, "output", e.target.value)
+                        }
+                        className="p-2 bg-[#262626] border border-[#333333] rounded font-mono text-xs text-[#00b8a3]"
+                      ></textarea>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Hidden Test Cases */}
-              <div className="space-y-3 pt-2 border-t border-base-300">
+              <div className="space-y-3 pt-3 border-t border-[#333333]">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold text-base-content flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-secondary" />
-                      Hidden Test Cases ({formData.hiddenTestCases.length})
-                    </span>
-                    <p className="text-[11px] text-warning font-semibold">
-                      You have to upload two test cases.
-                    </p>
-                  </div>
+                  <span className="font-semibold text-white">
+                    Hidden Test Cases ({formData.hiddenTestCases.length})
+                  </span>
                   <button
                     type="button"
                     onClick={addHiddenTestCase}
-                    className="btn btn-outline btn-xs gap-1"
+                    className="px-2 py-1 rounded bg-[#1e1e1e] hover:bg-[#333333] border border-[#333333] text-gray-200 text-xs flex items-center gap-1"
                   >
                     <Plus className="w-3 h-3" />
-                    Add Hidden Case
+                    <span>Add Secret Case</span>
                   </button>
                 </div>
 
-                <div className="space-y-3">
-                  {formData.hiddenTestCases.map((tc, index) => (
-                    <div
-                      key={index}
-                      className="border border-base-300 rounded-lg p-3 bg-base-200/30 space-y-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="badge badge-secondary badge-xs font-semibold">
-                          Hidden Case #{index + 1}
-                        </span>
-                        {formData.hiddenTestCases.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeHiddenTestCase(index)}
-                            className="btn btn-ghost btn-xs text-error gap-1 hover:bg-error/10"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                            Remove
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <label className="text-[11px] font-semibold text-base-content/70">
-                            Hidden Input *
-                          </label>
-                          <textarea
-                            rows={2}
-                            value={tc.input}
-                            onChange={(e) =>
-                              handleHiddenChange(index, "input", e.target.value)
-                            }
-                            className="textarea textarea-bordered textarea-xs w-full font-mono"
-                          ></textarea>
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[11px] font-semibold text-base-content/70">
-                            Hidden Expected Output *
-                          </label>
-                          <textarea
-                            rows={2}
-                            value={tc.output}
-                            onChange={(e) =>
-                              handleHiddenChange(index, "output", e.target.value)
-                            }
-                            className="textarea textarea-bordered textarea-xs w-full font-mono"
-                          ></textarea>
-                        </div>
-                      </div>
+                {formData.hiddenTestCases.map((tc, hIdx) => (
+                  <div
+                    key={hIdx}
+                    className="p-3 rounded bg-[#1e1e1e] border border-[#333333] space-y-2 text-xs"
+                  >
+                    <div className="flex items-center justify-between text-gray-400">
+                      <span>Secret Case #{hIdx + 1}</span>
+                      {formData.hiddenTestCases.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeHiddenTestCase(hIdx)}
+                          className="text-[#ff375f] hover:underline"
+                        >
+                          Remove
+                        </button>
+                      )}
                     </div>
-                  ))}
-                </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <textarea
+                        rows={2}
+                        placeholder="Hidden Input..."
+                        value={tc.input}
+                        onChange={(e) =>
+                          handleHiddenChange(hIdx, "input", e.target.value)
+                        }
+                        className="p-2 bg-[#262626] border border-[#333333] rounded font-mono text-xs text-white"
+                      ></textarea>
+                      <textarea
+                        rows={2}
+                        placeholder="Hidden Output..."
+                        value={tc.output}
+                        onChange={(e) =>
+                          handleHiddenChange(hIdx, "output", e.target.value)
+                        }
+                        className="p-2 bg-[#262626] border border-[#333333] rounded font-mono text-xs text-[#00b8a3]"
+                      ></textarea>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Reference Solution Code */}
-              <div className="space-y-1.5 pt-2 border-t border-base-300">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-base-content/80">
-                    Reference Solution Code
-                  </label>
+              <div className="space-y-2 pt-3 border-t border-[#333333]">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-white">Reference Solution</span>
                   <select
                     value={formData.refLanguage}
                     onChange={(e) =>
                       setFormData({ ...formData, refLanguage: e.target.value })
                     }
-                    className="select select-xs select-bordered"
+                    className="h-7 px-2 bg-[#1e1e1e] border border-[#333333] rounded text-xs text-white"
                   >
                     <option value="python">Python</option>
                     <option value="cpp">C++</option>
                   </select>
                 </div>
                 <textarea
-                  rows={5}
-                  placeholder="# Complete working reference solution"
+                  rows={6}
+                  placeholder="Complete reference code..."
                   value={formData.refCode}
                   onChange={(e) =>
                     setFormData({ ...formData, refCode: e.target.value })
                   }
-                  className="textarea textarea-bordered textarea-sm w-full font-mono text-xs"
+                  className="w-full p-2.5 bg-[#1a1a1a] border border-[#333333] rounded font-mono text-xs text-gray-200 leading-relaxed focus:outline-none focus:border-[#ffa116]"
                 ></textarea>
               </div>
 
-              <div className="pt-4 border-t border-base-300 flex justify-end gap-3">
+              {/* Modal Actions */}
+              <div className="pt-4 border-t border-[#333333] flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="btn btn-ghost btn-sm"
-                  disabled={isSubmitting}
+                  className="px-3.5 py-1.5 rounded border border-[#333333] bg-[#1e1e1e] hover:bg-[#333333] text-gray-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`btn btn-sm gap-2 ${
-                    modalMode === "update" ? "btn-info" : "btn-primary"
-                  }`}
+                  className="px-4 py-1.5 rounded bg-[#ffa116] hover:bg-[#e68a00] text-[#1a1a1a] font-semibold flex items-center gap-1.5"
                 >
-                  {isSubmitting && (
-                    <span className="loading loading-spinner loading-xs"></span>
-                  )}
-                  {modalMode === "update" ? "Update Problem" : "Create Problem"}
+                  {isSubmitting ? (
+                    <div className="w-3 h-3 rounded-full border border-black border-t-transparent animate-spin"></div>
+                  ) : null}
+                  <span>{modalMode === "update" ? "Save Changes" : "Create Problem"}</span>
                 </button>
               </div>
             </form>
@@ -1058,17 +928,12 @@ export default function AdminPanel({
         </div>
       )}
 
-      {/* Modal for Solution Video Upload & Management (Cloudinary direct upload) */}
+      {/* Video Solution Modal */}
       <VideoUploadModal
-        problem={videoModalProblem}
         isOpen={isVideoModalOpen}
-        onClose={() => {
-          setIsVideoModalOpen(false);
-          setVideoModalProblem(null);
-        }}
-        onVideoUpdated={() => {
-          dispatch(getAllProblems());
-        }}
+        problem={videoModalProblem}
+        onClose={() => setIsVideoModalOpen(false)}
+        onVideoUpdated={() => dispatch(getAllProblems())}
       />
     </div>
   );

@@ -8,15 +8,14 @@ import {
   Sparkles,
   Lightbulb,
   Lock,
-  Code2,
   Copy,
   Check,
+  X,
 } from "lucide-react";
 import { sendChatMessageApi } from "../lib/api";
 import {
   addChatMessage,
   setChatMessages,
-  clearChatConversation,
 } from "../store/chatSlice";
 import { copyToClipboard } from "../lib/clipboard";
 import FormattedMessage from "./FormattedMessage";
@@ -31,28 +30,25 @@ export default function ChatInterface({
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
-  // Channel ID for conversation persistence: problem-specific or global
+  // Channel ID for conversation persistence
   const channelId = problem?._id || problem?.id || "global";
   const rawChannelMessages = useSelector(
     (state) => state.chat.conversations[channelId]
   );
 
-  // Track copied message state for full message copy button
   const [copiedMessageId, setCopiedMessageId] = useState(null);
 
-  // Initial greeting tailored to authentication status and active problem context
   const getInitialMessage = () => {
     if (!isAuthenticated) {
-      return "Halt! You are not signed in. The DSA Teacher only speaks to registered, authenticated students with valid accounts. Please log in before asking questions.";
+      return "Hello! Please sign in to consult with the DSA Tutor on algorithmic concepts and code evaluations.";
     }
-    const studentName = user?.firstName ? user.firstName : "student";
+    const studentName = user?.firstName ? user.firstName : "there";
     if (problem?.title) {
-      return `Listen up, ${studentName}! I am your DSA Teacher. I see you're working on "${problem.title}". Ask me about the optimal algorithm, time complexity, or your code. Don't waste my time with sloppy thinking or brute-force garbage!`;
+      return `Hi ${studentName}! I'm your DSA Tutor. Working on "${problem.title}"? Feel free to ask about the optimal algorithm, time/space complexity, or debugging your solution!`;
     }
-    return `Listen up, ${studentName}! I am your DSA Teacher. Ask me any question on Data Structures, Algorithms, or your code. Don't waste my time with lazy questions!`;
+    return `Hi ${studentName}! I'm your DSA Tutor. Ask me any question about Data Structures, Algorithms, or your code.`;
   };
 
-  // If this channel has no messages yet in Redux, initialize it
   useEffect(() => {
     if (!rawChannelMessages || rawChannelMessages.length === 0) {
       dispatch(
@@ -86,24 +82,19 @@ export default function ChatInterface({
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
 
-  // Requirement: useRef hook for latest chat
-  // This ref is attached to an anchor at the bottom of the chat stream to auto-scroll down smoothly
   const latestChatRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Auto-scroll to the latest message whenever messages change or typing begins
   useEffect(() => {
     latestChatRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  // Focus the input field on mount if authenticated
   useEffect(() => {
     if (isAuthenticated) {
       inputRef.current?.focus();
     }
   }, [isAuthenticated]);
 
-  // Handle one-click copy of the entire message text
   const handleCopyMessage = async (msgId, text) => {
     const success = await copyToClipboard(text);
     if (success) {
@@ -112,20 +103,18 @@ export default function ChatInterface({
     }
   };
 
-  // Context-aware quick suggestion chips
   const quickPrompts = problem?.title
     ? [
-        "What is the optimal time complexity for this?",
-        "Can you review my current code?",
-        "Give me an algorithmic hint without full solution",
-        "What edge cases should I test for this problem?",
+        "Optimal time complexity?",
+        "Can you review my code?",
+        "Algorithmic hint",
+        "Edge cases to test?",
       ]
     : [
-        "Explain time complexity and Big-O",
-        "How does binary search work?",
-        "Difference between Stack and Queue",
-        "Dynamic programming intuition",
+        "Explain Big-O notation",
+        "Binary search intuition",
         "Two Pointers pattern",
+        "Dynamic programming tips",
       ];
 
   const handleSendMessage = async (customText = null) => {
@@ -136,7 +125,7 @@ export default function ChatInterface({
       const authNotice = {
         id: `auth-notice-${Date.now()}`,
         role: "teacher",
-        text: "You are not authenticated! Please log in to your account to use the AI chatbot.",
+        text: "Please sign in to your account to chat with the DSA Tutor.",
         timestamp: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
@@ -161,7 +150,6 @@ export default function ChatInterface({
     setIsTyping(true);
 
     try {
-      // Send chat message with active problem context & Monaco editor code
       const apiResponse = await sendChatMessageApi({
         message: textToSend,
         history: messages.map((m) => ({
@@ -178,7 +166,7 @@ export default function ChatInterface({
       const replyText =
         apiResponse?.reply ||
         apiResponse?.message ||
-        "No response from DSA teacher.";
+        "No response from DSA Tutor.";
 
       const teacherMsg = {
         id: `teacher-${Date.now()}`,
@@ -193,10 +181,10 @@ export default function ChatInterface({
       dispatch(addChatMessage({ channelId, message: teacherMsg }));
     } catch (err) {
       const status = err.response?.status;
-      let errorText = "Could not send message. Please check your network and try again.";
+      let errorText = "Could not send message. Please verify network connectivity.";
 
       if (status === 401) {
-        errorText = "Authentication required (401). You must be signed in with a valid account to use the AI chatbot.";
+        errorText = "Please sign in to chat with the DSA Tutor.";
       } else if (err.response?.data?.message) {
         errorText = `Error: ${err.response.data.message}`;
       }
@@ -233,162 +221,128 @@ export default function ChatInterface({
   };
 
   return (
-    <div className="flex flex-col h-full bg-base-100 text-base-content overflow-hidden select-text">
-      {/* Top Header Bar */}
-      <div className="h-11 bg-base-200/70 border-b border-base-300 px-3 flex items-center justify-between shrink-0">
+    <div className="flex flex-col h-full bg-[#262626] text-[#eff1f6] overflow-hidden select-text">
+      {/* Header Bar */}
+      <div className="h-11 bg-[#222222] border-b border-[#333333] px-3 flex items-center justify-between shrink-0 text-xs">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="w-6 h-6 rounded-lg bg-primary/20 text-primary flex items-center justify-center font-bold text-xs border border-primary/30 shrink-0">
+          <div className="w-5 h-5 rounded-full bg-[#ffa116]/10 text-[#ffa116] flex items-center justify-center shrink-0">
             <Bot className="w-3.5 h-3.5" />
           </div>
-          <div className="min-w-0">
-            <div className="text-xs font-bold flex items-center gap-1.5 leading-tight">
-              <span>DSA Teacher</span>
-              <span
-                className={`badge badge-xs py-0.5 px-1 text-[9px] font-semibold ${
-                  isAuthenticated
-                    ? "badge-success text-success-content"
-                    : "badge-warning text-warning-content"
-                }`}
-              >
-                {isAuthenticated ? "Online" : "Sign In Required"}
-              </span>
-            </div>
-            <div className="text-[10px] text-base-content/60 leading-tight truncate">
-              {problem?.title ? `Problem: ${problem.title}` : "Data Structures & Algorithms"}
-            </div>
+          <div className="flex items-center gap-2 truncate">
+            <span className="font-semibold text-white truncate">
+              DSA Tutor
+            </span>
+            <span
+              className={`text-[9px] font-medium px-1.5 py-0.2 rounded ${
+                isAuthenticated
+                  ? "bg-emerald-500/10 text-[#2cbb5d]"
+                  : "bg-amber-500/10 text-[#ffc01e]"
+              }`}
+            >
+              {isAuthenticated ? "Online" : "Sign in required"}
+            </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             type="button"
             onClick={handleResetChat}
-            className="btn btn-ghost btn-xs text-base-content/60 hover:text-base-content gap-1"
-            title="Clear Chat Conversation"
+            className="flex items-center gap-1 px-2 py-0.5 rounded text-[11px] text-gray-400 hover:text-white hover:bg-[#333333] transition-colors"
+            title="Clear Chat"
           >
             <RotateCcw className="w-3 h-3" />
-            <span className="hidden sm:inline text-[11px]">Clear</span>
+            <span className="hidden sm:inline">Clear</span>
           </button>
           {onClose && (
             <button
               type="button"
               onClick={onClose}
-              className="btn btn-ghost btn-xs btn-square text-base-content/60 hover:text-base-content"
-              title="Close Chat"
+              className="p-1 rounded text-gray-400 hover:text-white hover:bg-[#333333] transition-colors"
+              title="Close"
             >
-              ✕
+              <X className="w-4 h-4" />
             </button>
           )}
         </div>
       </div>
 
-      {/* Messages Scroll Area using daisyUI Chat Layout */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+      {/* Messages Stream */}
+      <div className="flex-1 overflow-y-auto p-3.5 space-y-3.5 text-xs">
         {messages.map((msg) => {
           const isTeacher = msg.role === "teacher";
 
           return (
             <div
               key={msg.id}
-              className={`chat ${isTeacher ? "chat-start" : "chat-end"}`}
+              className={`flex flex-col space-y-1 ${
+                isTeacher ? "items-start" : "items-end"
+              }`}
             >
-              {/* Chat Avatar */}
-              <div className="chat-image avatar">
-                <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shadow-sm ${
-                    isTeacher
-                      ? "bg-primary text-primary-content"
-                      : "bg-secondary text-secondary-content"
-                  }`}
-                >
-                  {isTeacher ? (
-                    <Bot className="w-4 h-4" />
-                  ) : (
-                    <User className="w-4 h-4" />
-                  )}
-                </div>
-              </div>
-
-              {/* Chat Header with One-Click Copy */}
-              <div className="chat-header text-[11px] text-base-content/70 mb-1 flex items-center gap-2">
-                <span className="font-semibold text-base-content">
-                  {isTeacher ? "DSA Teacher" : "You"}
+              {/* Message Meta */}
+              <div className="flex items-center gap-1.5 text-[10px] text-gray-400 px-1">
+                <span className="font-medium text-gray-300">
+                  {isTeacher ? "DSA Tutor" : "You"}
                 </span>
-                <time className="text-[10px] opacity-60">{msg.timestamp}</time>
+                <span>•</span>
+                <span>{msg.timestamp}</span>
 
                 <button
                   type="button"
                   onClick={() => handleCopyMessage(msg.id, msg.text)}
-                  className="btn btn-ghost btn-xs h-5 px-1 text-[10px] gap-1 opacity-60 hover:opacity-100 transition-opacity ml-1"
-                  title="Copy entire message text"
+                  className="opacity-50 hover:opacity-100 transition-opacity ml-1 p-0.5 rounded hover:bg-[#333333]"
+                  title="Copy message"
                 >
                   {copiedMessageId === msg.id ? (
-                    <>
-                      <Check className="w-3 h-3 text-success" />
-                      <span className="text-success text-[10px]">Copied</span>
-                    </>
+                    <Check className="w-3 h-3 text-[#2cbb5d]" />
                   ) : (
-                    <>
-                      <Copy className="w-3 h-3" />
-                      <span className="text-[10px]">Copy</span>
-                    </>
+                    <Copy className="w-3 h-3" />
                   )}
                 </button>
               </div>
 
-              {/* DaisyUI Chat Bubble with Rich Formatted Code & Quotes */}
+              {/* Message Bubble */}
               <div
-                className={`chat-bubble text-xs sm:text-[13px] leading-relaxed shadow-sm w-fit ${
+                className={`p-3 rounded-lg text-xs leading-relaxed max-w-[92%] sm:max-w-[85%] ${
                   isTeacher
-                    ? "bg-base-200 border border-base-300 text-base-content max-w-[95%] sm:max-w-[90%]"
-                    : "chat-bubble-neutral text-neutral-content max-w-[85%]"
+                    ? "bg-[#1e1e1e] border border-[#333333] text-gray-200 shadow-xs"
+                    : "bg-[#ffa116]/15 border border-[#ffa116]/30 text-white"
                 }`}
               >
                 <FormattedMessage text={msg.text} />
-              </div>
-
-              {/* Chat Footer */}
-              <div className="chat-footer opacity-50 text-[10px] mt-0.5">
-                {isTeacher ? "Delivered" : "Sent"}
               </div>
             </div>
           );
         })}
 
-        {/* DaisyUI Typing Indicator */}
+        {/* Typing indicator */}
         {isTyping && (
-          <div className="chat chat-start">
-            <div className="chat-image avatar">
-              <div className="w-7 h-7 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-xs shadow-sm">
-                <Bot className="w-4 h-4" />
-              </div>
+          <div className="flex flex-col items-start space-y-1">
+            <div className="text-[10px] text-gray-400 px-1">
+              DSA Tutor • Thinking...
             </div>
-            <div className="chat-header text-[11px] text-base-content/70 mb-1">
-              <span className="font-semibold text-base-content">DSA Teacher</span>
-            </div>
-            <div className="chat-bubble bg-base-200 border border-base-300 flex items-center gap-1.5 py-2 px-3 text-base-content">
-              <span className="loading loading-dots loading-xs text-primary"></span>
-              <span className="text-[11px] opacity-80">DSA Teacher is judging your question...</span>
+            <div className="p-2.5 rounded-lg bg-[#1e1e1e] border border-[#333333] text-xs text-gray-300 flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-[#ffa116] animate-ping"></div>
+              <span>Thinking about your question...</span>
             </div>
           </div>
         )}
 
-        {/* Target anchor using useRef hook for auto-scrolling to latest chat */}
         <div ref={latestChatRef} />
       </div>
 
-      {/* Unauthenticated Alert Banner */}
+      {/* Unauthenticated Alert */}
       {!isAuthenticated && (
-        <div className="px-3 py-2 bg-warning/15 border-t border-warning/30 flex items-center justify-between text-xs text-warning-content shrink-0">
-          <div className="flex items-center gap-1.5 text-[11px] font-medium text-warning">
+        <div className="px-3 py-2 bg-amber-500/10 border-t border-amber-500/25 flex items-center justify-between text-xs text-[#ffc01e] shrink-0">
+          <div className="flex items-center gap-1.5 text-[11px]">
             <Lock className="w-3.5 h-3.5 shrink-0" />
-            <span>Sign in to chat with your DSA Teacher</span>
+            <span>Sign in to ask questions to the DSA Tutor</span>
           </div>
           {onNavigateToLogin && (
             <button
               type="button"
               onClick={onNavigateToLogin}
-              className="btn btn-warning btn-xs text-[10px] h-6 min-h-0"
+              className="px-2 py-0.5 rounded bg-[#ffa116] text-[#1a1a1a] text-[10px] font-semibold hover:bg-[#e68a00] transition-colors"
             >
               Sign In
             </button>
@@ -396,10 +350,10 @@ export default function ChatInterface({
         </div>
       )}
 
-      {/* Quick Prompts Chips */}
-      <div className="px-3 py-1.5 bg-base-200/50 border-t border-base-300 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
-        <span className="text-[10px] text-base-content/50 uppercase font-semibold shrink-0 flex items-center gap-1">
-          <Lightbulb className="w-3 h-3 text-warning" />
+      {/* Quick Suggestions Chips */}
+      <div className="px-3 py-1.5 bg-[#1f1f1f] border-t border-[#333333] flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 text-[11px]">
+        <span className="text-gray-400 shrink-0 flex items-center gap-1">
+          <Lightbulb className="w-3 h-3 text-[#ffa116]" />
           Suggestions:
         </span>
         {quickPrompts.map((promptText, idx) => (
@@ -408,22 +362,22 @@ export default function ChatInterface({
             type="button"
             onClick={() => handleSendMessage(promptText)}
             disabled={isTyping || !isAuthenticated}
-            className="badge badge-sm badge-outline hover:badge-primary cursor-pointer text-[10px] whitespace-nowrap transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-2.5 py-0.5 rounded-full bg-[#262626] hover:bg-[#333333] border border-[#383838] text-gray-300 hover:text-white whitespace-nowrap transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {promptText}
           </button>
         ))}
       </div>
 
-      {/* DaisyUI Chat Input Bar */}
-      <div className="p-2.5 bg-base-100 border-t border-base-300 flex items-center gap-2 shrink-0">
+      {/* Input Bar */}
+      <div className="p-2.5 bg-[#222222] border-t border-[#333333] flex items-center gap-2 shrink-0">
         <input
           ref={inputRef}
           type="text"
           placeholder={
             isAuthenticated
-              ? "Ask your DSA teacher a question or ask for a critique on your code..."
-              : "Please sign in to chat with the DSA Teacher..."
+              ? "Ask a question about the algorithm or code..."
+              : "Please sign in to chat with the DSA Tutor..."
           }
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -434,18 +388,18 @@ export default function ChatInterface({
             }
           }}
           disabled={isTyping || !isAuthenticated}
-          className="input input-sm input-bordered flex-1 text-xs focus:outline-primary disabled:opacity-60"
+          className="w-full h-8 px-3 bg-[#1e1e1e] border border-[#333333] rounded text-xs text-white placeholder:text-gray-500 focus:outline-none focus:border-[#ffa116] disabled:opacity-50 transition-colors"
         />
 
         <button
           type="button"
           onClick={() => handleSendMessage()}
           disabled={!input.trim() || isTyping || !isAuthenticated}
-          className="btn btn-sm btn-primary gap-1 px-3 disabled:opacity-50"
-          title="Send message"
+          className="h-8 px-3 rounded bg-[#ffa116] hover:bg-[#e68a00] text-[#1a1a1a] text-xs font-semibold flex items-center gap-1 disabled:opacity-40 transition-colors shadow-xs cursor-pointer"
+          title="Send"
         >
           <Send className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline text-xs">Send</span>
+          <span className="hidden sm:inline">Send</span>
         </button>
       </div>
     </div>
