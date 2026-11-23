@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { createProblem } from "../store/problemSlice";
 import {
   ChevronLeft,
@@ -292,17 +293,18 @@ export default function CreateProblem({ onNavigateToAdmin, onNavigateToHome }) {
     setIsSubmitting(false);
 
     if (createProblem.fulfilled.match(result)) {
-      const msg = "Problem was created successfully!";
+      const msg = "Problem created and verified successfully!";
       setSuccessMessage(msg);
-      alert(msg);
+      toast.success(msg);
 
       handleGoAdmin();
     } else {
-      setErrorMessage(
+      const errMsg =
         typeof result.payload === "string"
           ? result.payload
-          : "Failed to create problem. Verify reference solution passes all test cases."
-      );
+          : "Failed to create problem. Verify reference solution passes all test cases.";
+      setErrorMessage(errMsg);
+      toast.error(errMsg);
     }
   };
 

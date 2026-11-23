@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import Editor from "@monaco-editor/react";
+import ConfirmModal from "./ConfirmModal";
 import {
   fetchProblemById,
   runCodeApi,
@@ -50,6 +52,7 @@ export default function ProblemDetail({
   const [problemError, setProblemError] = useState(null);
   const [solutionVideo, setSolutionVideo] = useState(null);
   const [isLoadingVideo, setIsLoadingVideo] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
   // Helper to format video duration
   const formatDuration = (seconds) => {
@@ -252,11 +255,11 @@ export default function ProblemDetail({
 
   const handleResetCode = () => {
     if (!problem) return;
-    const confirmReset = window.confirm(
-      `Reset your ${selectedLanguage.toUpperCase()} code to the default starter template? Current edits in ${selectedLanguage.toUpperCase()} will be discarded.`
-    );
-    if (!confirmReset) return;
+    setIsResetModalOpen(true);
+  };
 
+  const executeResetCode = () => {
+    if (!problem) return;
     const starter = getStarterCodeForLang(problem, selectedLanguage);
     setCode(starter);
     setCodeByLanguage((prev) => ({
@@ -266,16 +269,18 @@ export default function ProblemDetail({
     try {
       localStorage.removeItem(`code_${problemId}_${selectedLanguage}`);
     } catch (_) {}
+    setIsResetModalOpen(false);
+    toast.info(`Reset ${selectedLanguage.toUpperCase()} code to starter template.`);
   };
 
   const handleRunCode = async () => {
     if (!isAuthenticated) {
-      alert("Please sign in to run code.");
+      toast.error("Please sign in to run code.");
       return;
     }
 
     if (!code.trim()) {
-      alert("Please write some code before running.");
+      toast.warning("Please write some code before running.");
       return;
     }
 
@@ -306,12 +311,12 @@ export default function ProblemDetail({
 
   const handleSubmitCode = async () => {
     if (!isAuthenticated) {
-      alert("Please sign in to submit your solution.");
+      toast.error("Please sign in to submit your solution.");
       return;
     }
 
     if (!code.trim()) {
-      alert("Please write some code before submitting.");
+      toast.warning("Please write some code before submitting.");
       return;
     }
 
@@ -1112,6 +1117,18 @@ export default function ProblemDetail({
           </div>
         </div>
       </div>
+
+      {/* Accessible Reset Code Confirmation Dialog */}
+      <ConfirmModal
+        isOpen={isResetModalOpen}
+        title="Reset Code Template"
+        message={`Are you sure you want to reset your ${selectedLanguage.toUpperCase()} code to the starter template? All of your unsaved edits in ${selectedLanguage.toUpperCase()} will be permanently lost.`}
+        confirmText="Reset to Starter"
+        cancelText="Cancel"
+        variant="warning"
+        onConfirm={executeResetCode}
+        onCancel={() => setIsResetModalOpen(false)}
+      />
     </div>
   );
 }

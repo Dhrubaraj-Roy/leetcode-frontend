@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Toaster } from "sonner";
 import {
   Routes,
   Route,
@@ -306,6 +307,9 @@ export default function App() {
           )}
         </div>
       )}
+
+      {/* Accessible Non-Blocking Toast Container */}
+      <Toaster theme="dark" position="top-center" richColors closeButton />
     </div>
   );
 }

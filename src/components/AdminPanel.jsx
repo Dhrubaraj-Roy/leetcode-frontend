@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import ConfirmModal from "./ConfirmModal";
 import {
   getAllProblems,
   deleteProblem,
@@ -50,6 +52,14 @@ export default function AdminPanel({
   // Video Solution Modal state
   const [videoModalProblem, setVideoModalProblem] = useState(null);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+
+  // Delete Confirmation Modal state
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    problemId: null,
+    problemTitle: "",
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleOpenVideoModal = (problem) => {
     setVideoModalProblem(problem);
@@ -292,23 +302,42 @@ export default function AdminPanel({
     } catch (_) {}
   };
 
-  // Delete Problem
-  const handleDeleteProblem = async (problemId, problemTitle) => {
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete "${problemTitle}"? This cannot be undone.`
-    );
-    if (!confirmDelete) return;
+  // Open Accessible Delete Modal
+  const handleDeleteProblem = (problemId, problemTitle) => {
+    setDeleteModal({
+      isOpen: true,
+      problemId,
+      problemTitle,
+    });
+  };
 
+  // Execute Problem Deletion
+  const executeDeleteProblem = async () => {
+    if (!deleteModal.problemId) return;
+
+    setIsDeleting(true);
     setAdminError(null);
     setAdminSuccess(null);
 
-    const result = await dispatch(deleteProblem(problemId));
+    const result = await dispatch(deleteProblem(deleteModal.problemId));
+    setIsDeleting(false);
+
     if (deleteProblem.fulfilled.match(result)) {
-      setAdminSuccess(`Problem "${problemTitle}" deleted successfully.`);
+      const msg = `Problem "${deleteModal.problemTitle}" deleted successfully.`;
+      setAdminSuccess(msg);
+      toast.success(msg);
       setTimeout(() => setAdminSuccess(null), 4000);
     } else {
-      setAdminError(result.payload || "Failed to delete problem.");
+      const errMsg = result.payload || "Failed to delete problem.";
+      setAdminError(errMsg);
+      toast.error(errMsg);
     }
+
+    setDeleteModal({
+      isOpen: false,
+      problemId: null,
+      problemTitle: "",
+    });
   };
 
   // Submit Form
@@ -940,6 +969,30 @@ export default function AdminPanel({
         problem={videoModalProblem}
         onClose={() => setIsVideoModalOpen(false)}
         onVideoUpdated={() => dispatch(getAllProblems())}
+      />
+
+      {/* Accessible Delete Problem Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        title="Delete Problem"
+        message={
+          <>
+            Are you sure you want to delete{" "}
+            <span className="font-semibold text-white">
+              "{deleteModal.problemTitle}"
+            </span>
+            ? This action is permanent and cannot be undone. All user submissions and video solutions for this problem will also be affected.
+          </>
+        }
+        confirmText="Delete Problem"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+        onConfirm={executeDeleteProblem}
+        onCancel={() =>
+          !isDeleting &&
+          setDeleteModal({ isOpen: false, problemId: null, problemTitle: "" })
+        }
       />
     </div>
   );
