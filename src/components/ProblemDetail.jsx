@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import {
   fetchProblemById,
   runCodeApi,
   submitCodeApi,
+  waitForSubmissionResultApi,
   fetchProblemSubmissionsApi,
   fetchVideoByProblemId,
 } from "../lib/api";
@@ -110,6 +111,16 @@ export default function ProblemDetail({
   // Submissions list state
   const [submissionsList, setSubmissionsList] = useState([]);
   const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(false);
+  const [submissionsRefreshKey, setSubmissionsRefreshKey] = useState(0);
+  const submitAbortRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (submitAbortRef.current) {
+        submitAbortRef.current.abort();
+      }
+    };
+  }, [problemId]);
 
   // Fetch problem details on mount or problemId change with AbortController to prevent race conditions
   useEffect(() => {
@@ -242,7 +253,7 @@ export default function ProblemDetail({
         controller.abort();
       };
     }
-  }, [leftTab, isAuthenticated, problemId]);
+  }, [leftTab, isAuthenticated, problemId, submissionsRefreshKey]);
 
   const handleCodeChange = (newVal) => {
     const val = newVal ?? "";
@@ -355,6 +366,12 @@ export default function ProblemDetail({
       return;
     }
 
+    if (submitAbortRef.current) {
+      submitAbortRef.current.abort();
+    }
+    const controller = new AbortController();
+    submitAbortRef.current = controller;
+
     setIsSubmitting(true);
     setActionError(null);
     setSubmissionResult(null);
@@ -362,29 +379,61 @@ export default function ProblemDetail({
     setConsoleTab("result");
 
     try {
-      const data = await submitCodeApi({
-        problemId,
-        language: selectedLanguage,
-        code,
-      });
+      const data = await submitCodeApi(
+        {
+          problemId,
+          language: selectedLanguage,
+          code,
+        },
+        { signal: controller.signal }
+      );
 
-      setSubmissionResult(data.submission || data);
+      let finalResult = data.submission || data;
+      const initialStatus = finalResult?.status || data.status;
+      const submissionId =
+        data.submissionId || finalResult?.id || finalResult?._id;
 
+      // Backend returns 202 Accepted with Pending/Queued while BullMQ evaluates in background
       if (
-        data.submission?.status === "Accepted" ||
-        data.status === "Accepted"
+        submissionId &&
+        (initialStatus === "Pending" || initialStatus === "Queued")
       ) {
+        finalResult = await waitForSubmissionResultApi(submissionId, {
+          signal: controller.signal,
+        });
+      }
+
+      if (controller.signal.aborted) return;
+
+      setSubmissionResult(finalResult);
+      setSubmissionsRefreshKey((prev) => prev + 1);
+
+      if (finalResult?.status === "Accepted") {
         dispatch(getSolvedProblems());
       }
     } catch (err) {
+      if (
+        controller.signal.aborted ||
+        err.name === "AbortError" ||
+        err.name === "CanceledError" ||
+        err.code === "ERR_CANCELED"
+      ) {
+        return;
+      }
       setActionError(
-        err.response?.data?.message ||
+        err.userMessage ||
+          err.response?.data?.message ||
           err.response?.data?.error ||
           err.message ||
           "Failed to submit code."
       );
     } finally {
-      setIsSubmitting(false);
+      if (submitAbortRef.current === controller) {
+        submitAbortRef.current = null;
+      }
+      if (!controller.signal.aborted) {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -1096,13 +1145,19 @@ export default function ProblemDetail({
                             className={`text-base font-bold ${
                               submissionResult.status === "Accepted"
                                 ? "text-easy"
-                                : "text-hard"
+                                : submissionResult.status === "Pending" ||
+                                    submissionResult.status === "Queued"
+                                  ? "text-medium"
+                                  : "text-hard"
                             }`}
                           >
                             {submissionResult.status}
                           </span>
                           {submissionResult.status === "Accepted" ? (
                             <CheckCircle2 className="w-4 h-4 text-easy" />
+                          ) : submissionResult.status === "Pending" ||
+                            submissionResult.status === "Queued" ? (
+                            <div className="w-4 h-4 rounded-full border-2 border-brand border-t-transparent animate-spin" />
                           ) : (
                             <XCircle className="w-4 h-4 text-hard" />
                           )}
@@ -1132,9 +1187,11 @@ export default function ProblemDetail({
                         </strong>
                       </div>
 
-                      {submissionResult.errorMessage && (
+                      {(submissionResult.errorMessage ||
+                        submissionResult.compileOutput) && (
                         <div className="bg-rose-500/10 text-hard border border-rose-500/25 p-2.5 rounded text-xs whitespace-pre-wrap font-mono">
-                          {submissionResult.errorMessage}
+                          {submissionResult.errorMessage ||
+                            submissionResult.compileOutput}
                         </div>
                       )}
                     </div>

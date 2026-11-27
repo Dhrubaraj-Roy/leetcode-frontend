@@ -4,7 +4,7 @@
 [![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-764ABC?style=for-the-badge&logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![daisyUI](https://img.shields.io/badge/daisyUI_5-5A0EF8?style=for-the-badge&logo=daisyui&logoColor=white)](https://daisyui.com/)
+[![React Router](https://img.shields.io/badge/React_Router_7-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white)](https://reactrouter.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![React Hook Form](https://img.shields.io/badge/React_Hook_Form-EC5990?style=for-the-badge&logo=reacthookform&logoColor=white)](https://react-hook-form.com/)
 [![Zod](https://img.shields.io/badge/Zod-3E67B1?style=for-the-badge&logo=zod&logoColor=white)](https://zod.dev/)
@@ -13,7 +13,7 @@
 [![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)](https://cloudinary.com/)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ESM-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 
-This is the frontend for the full-stack LeetCode Clone project, built step by step using **React**, **Vite**, **daisyUI**, **Tailwind CSS**, and **React Hook Form with Zod**. It connects seamlessly with the LeetCode clone backend for authentication, coding problem solving, and real-time code evaluation.
+This is the frontend for the full-stack LeetCode Clone project, built step by step using **React 19**, **Vite**, **React Router 7**, **Tailwind CSS 4**, **Redux Toolkit**, and **React Hook Form with Zod**. It connects seamlessly with the LeetCode clone backend for authentication, coding problem solving, and real-time code evaluation.
 
 Architecture Diagram:
 TLDraw - https://www.tldraw.com/f/-1wZ1l0c492YWuhoW7-cT?d=v23.-15.1420.962.page
@@ -242,6 +242,29 @@ I am documenting my progress with dates as I build each part of the frontend ste
      - Added direct "Open in New Tab" external link for full-screen viewing.
   5. Verified production build with `npm run build` with 0 errors.
 
+### Milestone 14: Production Routing, Code Splitting, Theme Tokens, Markdown/KaTeX & Zod Forms
+- Date: November 23, 2026
+- What I completed:
+  1. **Custom Semantic Theme Tokens (`src/index.css`)**: Replaced daisyUI with Tailwind CSS 4 `@theme` design tokens (`canvas`, `panel`, `brand`, `easy`/`medium`/`hard`, `border`, and light-mode variables) and consistent dark scrollbars.
+  2. **React Router 7, Guards & Error Boundary (`src/App.jsx`, `src/main.jsx`, `src/components/ErrorBoundary.jsx`, `src/components/NotFound.jsx`)**: Replaced hand-rolled History API navigation with `BrowserRouter`, `Routes`, `AdminRoute`, `GuestRoute`, `ErrorBoundary`, and a catch-all `NotFound` (`*`) route.
+  3. **Code Splitting (`src/App.jsx`, `vite.config.js`)**: Lazy-loaded heavy routes and components (`ProblemDetail`, `AdminPanel`, `CreateProblem`, `Login`, `Signup`, `ChatInterface`) via `React.lazy` + `Suspense`, paired with a `vendor-react` manual chunk in `vite.config.js` so Monaco Editor only downloads on demand.
+  4. **Non-Blocking Toasts & Modals (`src/components/ConfirmModal.jsx`, `sonner`)**: Replaced native browser `alert()` / `confirm()` calls with `sonner` toast notifications and a reusable `ConfirmModal`.
+  5. **Network Race Protection & Request Cancellation (`src/lib/api.js`, `src/store/problemSlice.js`, `src/components/Home.jsx`, `src/components/ProblemDetail.jsx`)**: Unified Axios configuration (`10s` timeout, normalized `userMessage`, silent cancel passthrough) and added `AbortController` signal support to prevent stale responses from overwriting active views.
+  6. **Rich Problem Descriptions (`src/components/ProblemDetail.jsx`)**: Added `react-markdown`, `remark-gfm`, `remark-math`, `rehype-katex`, and `katex` for formatted Markdown and mathematical formulas.
+  7. **Structured Problem Creation Form (`src/components/CreateProblem.jsx`, `src/schemas/problemSchema.js`)**: Migrated problem creation to `react-hook-form` (`useFieldArray`) validated by `createProblemSchema` in Zod.
+
+### Milestone 15: Real-Time Async Submission Evaluation (SSE + Polling Fallback)
+- Date: November 27, 2026
+- What I completed:
+  1. **SSE & Status Polling Helpers (`src/lib/api.js`)**:
+     - Added `fetchSubmissionStatusApi(submissionId)` (`GET /problem/solve/status/:submissionId`).
+     - Added `waitForSubmissionResultApi(submissionId, { signal, timeoutMs, pollIntervalMs })` to listen on `EventSource` (`GET /problem/solve/events/:submissionId` with `withCredentials: true`) and automatically fall back to 1-second status polling if the stream drops or fails, with `AbortSignal` cleanup and a 45-second timeout cap.
+  2. **Async `202 Accepted` Submission Flow (`src/components/ProblemDetail.jsx`)**:
+     - Updated `handleSubmitCode` so `202 Accepted` (`Pending`/`Queued`) responses keep `isSubmitting` active while awaiting `waitForSubmissionResultApi(...)` instead of prematurely displaying `Pending` as a failed result.
+     - Automatically refreshes `submissionsList` (`submissionsRefreshKey`) and dispatches `getSolvedProblems()` once the final verdict is `"Accepted"`.
+     - Added `submitAbortRef` cleanup on unmount, problem change, or re-submission.
+     - Updated the Test Result panel to show a spinner for `"Pending"`/`"Queued"` states and display `compileOutput` alongside `errorMessage`.
+
 ---
 
 ## What I Built So Far
@@ -276,7 +299,7 @@ Global state management handling all user authentication operations:
 Centralized Axios instance pre-configured for backend communication:
 - **`withCredentials: true`**: Automatically sends and receives HTTP-only cookies (`token`) issued by the backend JWT authentication system.
 - **`baseURL`**: Points to `/api` (proxied by Vite to `http://localhost:3000` in development) or `VITE_API_URL` in production.
-- Exported helper functions for standalone API operations.
+- **Resilience**: 10-second request timeout, `AbortSignal` cancellation support, normalized `userMessage` error formatting, plus `fetchSubmissionStatusApi` and `waitForSubmissionResultApi` (SSE stream with automatic polling fallback).
 
 ### 4. Signup Component (`src/components/Signup.jsx`)
 A clean, minimal, production-grade signup card built with daisyUI, React Hook Form, and Redux:
@@ -348,16 +371,16 @@ The main problem exploration dashboard featuring:
 - **Solved Stats Progress Bar**: Radial progress indicator displaying `solvedCount / totalCount` with percentage.
 - **Problems Table**: Responsive table showing status icons (green `CheckCircle2` for solved vs gray `Circle` for unsolved), difficulty badges, tag badges, and "Solve" action buttons. Clicking on any problem title or the Solve button opens the `/problem/:id` code editor.
 
-### 10. Application Shell & Role-Based Routing (`src/App.jsx`)
+### 10. Application Shell, Routing & Error Boundary (`src/App.jsx` & `src/components/ErrorBoundary.jsx`)
 The main application container featuring:
-- **Role-Based Routing**:
-  - If authenticated user has `role === "admin"`, automatically routes to the **Admin Panel** (`currentView = "admin"`) on login or initial boot.
-  - Allows administrators to freely navigate between the Admin Panel, the public Problems catalog, and any `/problem/:id` code workspace without route bouncing.
-  - Standard users and guests route to the **Home page** (`currentView = "home"`).
-- **History API URL Synchronization**: Custom synchronization connecting `pushState` and `popstate` to views (`/`, `/admin`, `/problem/create`, `/problem/:id`, `/login`, `/signup`).
+- **React Router 7 & Role-Based Guards**:
+  - `AdminRoute` protects `/admin` and `/problem/create` (redirecting unauthenticated users to `/login` and non-admin users to `/`).
+  - `GuestRoute` redirects logged-in users away from `/login` and `/signup` to `/admin` (for admins) or `/` (for regular users).
+  - Catch-all `*` route renders `NotFound.jsx`.
+- **Lazy Code Splitting**: Heavy views (`ProblemDetail`, `AdminPanel`, `CreateProblem`, `Login`, `Signup`, `ChatInterface`) load on demand via `React.lazy` and `Suspense`.
+- **Error Boundaries (`ErrorBoundary.jsx`)**: Root and route-level crash recovery with `Try Again` and `Reload` actions, plus `sonner` `<Toaster />` and `ConfirmModal.jsx` for non-blocking notifications and confirmations.
 - **Initial Auth Check**: Dispatches `checkAuth()` on mount to restore user session from HTTP-only cookies without throwing console errors.
-- **Navigation Bar**: Sticky brand header with logo, title, user info, admin badge, and responsive switcher for Admin Panel / Problems / Sign In / Sign Up. Automatically hides on `/problem/:id` to give full viewport space to the code editor.
-- **Secure View Switcher**: Smoothly handles authenticated and public states with zero unauthorized leaks.
+- **Navigation Bar**: Sticky header with logo, title, user info, admin badge, and responsive navigation links. Automatically hides on `/problem/:id` to give full viewport space to the code editor.
 
 ### 11. Problem Detail & Monaco Code Workspace (`src/components/ProblemDetail.jsx`)
 Full-screen split workspace replicating the LeetCode IDE interface:
@@ -393,10 +416,9 @@ Dedicated interactive chat interface for algorithmic guidance and code critique:
 - **Context Injection**: Transmits problem title, description, and the user's Monaco editor code to the backend so the AI can analyze and critique student code directly.
 - **Strict Authentication Guard**: Visual badge displays "Online" vs "Sign In Required", locking input with warnings if unauthenticated.
 
-### 13. Styling & Theme Configuration (`src/index.css` & index.html)
-- Configured daisyUI 5 with Tailwind CSS 4 using direct CSS imports (`@import "tailwindcss";` and `@plugin "daisyui";`).
-- Applied dark theme (`data-theme="dark"`) out of the box for a sleek LeetCode aesthetic.
-- Embedded SVG favicon to eliminate 404 console errors.
+### 13. Styling & Theme Configuration (`src/index.css` & `index.html`)
+- Configured Tailwind CSS 4 (`@import "tailwindcss";`) with custom `@theme` semantic color tokens (`canvas`, `panel`, `brand`, `easy`, `medium`, `hard`, `border`, and light-mode `[data-theme="light"]` overrides) and custom dark scrollbars.
+- Embedded SVG favicon in `index.html` to eliminate 404 console errors.
 
 ### 14. Solution Video Upload Modal (`src/components/VideoUploadModal.jsx`)
 Full-featured solution video management system for administrators:
@@ -423,27 +445,31 @@ leetcode-frontend/
 ├── src/
 │   ├── components/
 │   │   ├── AdminPanel.jsx        # Admin dashboard for problem management & catalog stats
-│   │   ├── ChatInterface.jsx     # DSA Teacher chat interface using daisyUI & useRef
-│   │   ├── CreateProblem.jsx     # Dedicated page for /problem/create with quick JSON import
+│   │   ├── ChatInterface.jsx     # DSA Teacher chat interface with auto-scroll & context sync
+│   │   ├── ConfirmModal.jsx      # Reusable confirmation dialog replacing native confirm()
+│   │   ├── CreateProblem.jsx     # Dedicated /problem/create form (react-hook-form + Zod)
+│   │   ├── ErrorBoundary.jsx     # React error boundary for graceful crash recovery
 │   │   ├── FormattedMessage.jsx  # Markdown parser with one-click code/quote copy buttons
 │   │   ├── Home.jsx              # Homepage with 3 filters, stats, and problem table
 │   │   ├── Login.jsx             # Login form component with validation & Redux dispatch
-│   │   ├── ProblemDetail.jsx     # Monaco Editor split workspace with multi-language persistence
+│   │   ├── NotFound.jsx          # 404 fallback page for unmatched routes
+│   │   ├── ProblemDetail.jsx     # Monaco Editor split workspace with SSE async submission flow
 │   │   ├── Signup.jsx            # 3-input signup form component with auto-redirect
 │   │   └── VideoUploadModal.jsx  # 4-step direct Cloudinary video upload modal (100MB limit)
 │   ├── lib/
-│   │   ├── api.js                # Axios client configured with credentials & base URL
+│   │   ├── api.js                # Axios client, SSE/polling submission helper & AbortSignal support
 │   │   └── clipboard.js          # Cross-browser clipboard copy utility with fallback
 │   ├── schemas/
-│   │   └── authSchema.js         # Zod validation schemas for signup & login
+│   │   ├── authSchema.js         # Zod validation schemas for signup & login
+│   │   └── problemSchema.js      # Zod validation schema for problem creation & test cases
 │   ├── store/
 │   │   ├── authSlice.js          # Redux slice with Axios thunks (register, login, check, logout)
 │   │   ├── chatSlice.js          # Redux slice for persistent AI chat conversations
 │   │   ├── problemSlice.js       # Redux slice with problem fetching, admin actions & filters
 │   │   └── index.js              # Redux store configuration combining all reducers
-│   ├── App.jsx                   # Navigation bar & role-based view router
-│   ├── index.css                 # Tailwind CSS & daisyUI 5 imports
-│   └── main.jsx                  # React DOM mounting entrypoint with Redux Provider
+│   ├── App.jsx                   # React Router shell, lazy routes, role guards & floating tutor
+│   ├── index.css                 # Tailwind CSS 4 & semantic @theme color tokens
+│   └── main.jsx                  # React DOM mounting entrypoint with ErrorBoundary, Redux & Router
 ├── .env.example                  # Example environment variable file
 ├── .gitignore                    # Production git ignore configuration
 ├── index.html                    # HTML entrypoint with dark theme & SVG favicon
@@ -481,7 +507,7 @@ The frontend is specifically tailored to interact with the [LeetCode Clone Backe
 | **Delete Problem** | `dispatch(deleteProblem(id))` | `DELETE /problem/delete/:id` | None | `Cookie: token=...` | Deletes problem from database (Admin only) |
 | **Get Problem by ID** | `fetchProblemById(id)` | `GET /problem/get/:id` | None | Optional `Cookie: token=...` | Fetches full challenge details, starter code, and test cases |
 | **Run Code** | `runCodeApi({ problemId, language, code })` | `POST /problem/run/:problemId` | `{ language, code }` | `Cookie: token=...` | Runs code against visible example test cases via Judge0 |
-| **Submit Code** | `submitCodeApi({ problemId, language, code })` | `POST /problem/solve/:problemId` | `{ language, code }` | `Cookie: token=...` | Evaluates code against visible + hidden test cases via Judge0 |
+| **Submit Code** | `submitCodeApi()` + `waitForSubmissionResultApi()` | `POST /problem/solve/:problemId`, `GET /problem/solve/events/:submissionId`, `GET /problem/solve/status/:submissionId` | `{ language, code }` | `Cookie: token=...` | Queues BullMQ job (`202`), streams verdict via SSE with polling fallback |
 | **Get Submissions** | `fetchProblemSubmissionsApi(problemId)` | `GET /submit/:problemId` | None | `Cookie: token=...` | Fetches user's past submission history for problem |
 | **DSA Teacher Chat** | `sendChatMessageApi({ message, history, problemId, problemTitle, problemDescription, currentCode, language })` | `POST /chat` | `{ message, history, problemId, problemTitle, problemDescription, currentCode, language }` | `Cookie: token=...` (Authenticated) | Evaluates query with dynamic system prompt containing problem context & Monaco editor code |
 | **Profile** | `getProfile()` | `GET /profile` | None | `Cookie: token=...` | Fetches full authenticated user profile data |
