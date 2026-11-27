@@ -140,7 +140,7 @@ export default function VideoUploadModal({
       formData.append("api_key", signatureData.apiKey);
       formData.append("timestamp", signatureData.timestamp);
       formData.append("signature", signatureData.signature);
-      formData.append("folder", signatureData.folder || "leetcode/videos");
+      formData.append("folder", signatureData.folder || "algomentor/videos");
       if (signatureData.publicId) {
         formData.append("public_id", signatureData.publicId);
       }

@@ -1,6 +1,6 @@
-# LeetCode Clone - Frontend
+# AlgoMentor - Frontend
 
-[![LeetCode](https://img.shields.io/badge/LeetCode-FFA116?style=for-the-badge&logo=LeetCode&logoColor=black)](https://leetcode.com/)
+[![AlgoMentor](https://img.shields.io/badge/AlgoMentor-FFA116?style=for-the-badge&logoColor=black)](https://github.com/Dhrubaraj-Roy/algomentor-frontend)
 [![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-764ABC?style=for-the-badge&logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
@@ -13,13 +13,13 @@
 [![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)](https://cloudinary.com/)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ESM-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 
-This is the frontend for the full-stack LeetCode Clone project, built step by step using **React 19**, **Vite**, **React Router 7**, **Tailwind CSS 4**, **Redux Toolkit**, and **React Hook Form with Zod**. It connects seamlessly with the LeetCode clone backend for authentication, coding problem solving, and real-time code evaluation.
+This is the frontend for the full-stack AlgoMentor platform, built step by step using **React 19**, **Vite**, **React Router 7**, **Tailwind CSS 4**, **Redux Toolkit**, and **React Hook Form with Zod**. It connects seamlessly with the AlgoMentor backend for authentication, coding problem solving, and real-time code evaluation.
 
 Architecture Diagram:
 TLDraw - https://www.tldraw.com/f/-1wZ1l0c492YWuhoW7-cT?d=v23.-15.1420.962.page
 
 Backend Repository:
-GitHub - https://github.com/Dhrubaraj-Roy/leetcode-clone
+GitHub - https://github.com/Dhrubaraj-Roy/algomentor-backend
 
 ---
 
@@ -129,7 +129,7 @@ I am documenting my progress with dates as I build each part of the frontend ste
   1. Integrated `@monaco-editor/react` (v4.7.0) with dark theme (`vs-dark`), syntax highlighting, automatic responsive layout, custom tab sizing, and line numbering.
   2. Implemented dedicated problem route at `/problem/:id` in `src/App.jsx` with History API URL synchronization (`pushState` / `popstate`) so clicking any problem from the problem list routes straight to the code editor.
   3. Built the Problem Detail and Code Workspace component (`src/components/ProblemDetail.jsx`):
-     - **Top Action Header**: Unified sleek bar with LeetCode logo, `< Problem List` back link, `Run` button, and green `Submit` button (strictly no extraneous settings or notification buttons).
+     - **Top Action Header**: Unified sleek bar with AlgoMentor logo, `< Problem List` back link, `Run` button, and green `Submit` button (strictly no extraneous settings or notification buttons).
      - **Split Workspace Layout**: Full-height responsive layout with independent scrolling for description and code execution.
      - **Left Panel (Problem Information)**:
        - **Description Tab**: Renders challenge title, difficulty badge, tags, problem description, and formatted example test cases with Input, Output, and Explanation.
@@ -179,11 +179,11 @@ I am documenting my progress with dates as I build each part of the frontend ste
 - Date: November 12, 2026
 - What I completed:
   1. **Strict User Authentication on Backend (`/chat`)**:
-     - Protected `POST /chat` with `userAuth` middleware in `leetcode-clone/routes/chat.js`.
+     - Protected `POST /chat` with `userAuth` middleware in `algomentor-backend/routes/chat.js`.
      - Rejects unauthenticated requests with `401 Unauthorized` (`Authentication required. Please login.`).
      - Only authenticated users with active database accounts and valid JWT sessions can communicate with the AI.
   2. **Dynamic Context-Aware System Prompt**:
-     - Implemented `buildSystemPrompt` in `leetcode-clone/controllers/chat.controller.js`.
+     - Implemented `buildSystemPrompt` in `algomentor-backend/controllers/chat.controller.js`.
      - Injects active problem context: `problemTitle`, `problemDescription`, and student's current code (`currentCode`) directly from the Monaco Editor.
      - Enforces the **Rude DSA Teacher** persona: sarcastic, demanding, uncompromising, calling out lazy thinking or unoptimized $O(N^2)$ approaches, while delivering 100% technically accurate Big-O analysis and algorithmic instruction.
      - Addresses student by name (`user.firstName`) from database records.
@@ -383,8 +383,8 @@ The main application container featuring:
 - **Navigation Bar**: Sticky header with logo, title, user info, admin badge, and responsive navigation links. Automatically hides on `/problem/:id` to give full viewport space to the code editor.
 
 ### 11. Problem Detail & Monaco Code Workspace (`src/components/ProblemDetail.jsx`)
-Full-screen split workspace replicating the LeetCode IDE interface:
-- **Top Header Bar**: Clean bar with LeetCode logo, `< Problem List` back link, `Run` button, green `Submit` button, and user authentication badge (strictly zero extraneous settings or notification buttons).
+Full-screen split workspace with the AlgoMentor IDE interface:
+- **Top Header Bar**: Clean bar with AlgoMentor logo, `< Problem List` back link, `Run` button, green `Submit` button, and user authentication badge (strictly zero extraneous settings or notification buttons).
 - **Left Panel (Problem Information & Chat)**:
   - **Description Tab**: Challenge title, difficulty badge, tags, problem statement, and formatted example test cases with input, output, and explanation.
   - **Editorial Tab & Video Walkthrough**:
@@ -441,7 +441,7 @@ In-depth video explanation embedded seamlessly within the problem interface:
 ## Folder Structure
 
 ```
-leetcode-frontend/
+Algo Mentor frontend/
 ├── src/
 │   ├── components/
 │   │   ├── AdminPanel.jsx        # Admin dashboard for problem management & catalog stats
@@ -493,7 +493,7 @@ VITE_API_URL=/api
 
 ## How It Connects to the Backend
 
-The frontend is specifically tailored to interact with the [LeetCode Clone Backend](https://github.com/Dhrubaraj-Roy/leetcode-clone):
+The frontend is specifically tailored to interact with the [AlgoMentor Backend](https://github.com/Dhrubaraj-Roy/algomentor-backend):
 
 | Action | Frontend Trigger | Backend Endpoint | Request Body | Headers / Cookies | Result |
 | :--- | :--- | :--- | :--- | :--- | :--- |

@@ -40,7 +40,7 @@ export default function Signup({ onSwitchToLogin }) {
       const result = await dispatch(registerUser(data));
 
       if (registerUser.fulfilled.match(result)) {
-        setSuccessMessage("Account created successfully! Welcome to LeetCode.");
+        setSuccessMessage("Account created successfully! Welcome to AlgoMentor.");
         reset();
         navigate("/");
       } else {
@@ -66,7 +66,7 @@ export default function Signup({ onSwitchToLogin }) {
             Create an Account
           </h1>
           <p className="text-xs text-gray-400">
-            Join LeetCode to solve coding challenges and benchmark performance.
+            Join AlgoMentor to solve coding challenges and benchmark performance.
           </p>
         </div>
 

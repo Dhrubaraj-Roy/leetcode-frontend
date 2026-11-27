@@ -11,7 +11,7 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ErrorBoundary
       title="Application Error"
-      message="An unexpected error occurred in the LeetCode frontend. You can retry or reload the page."
+      message="An unexpected error occurred in the AlgoMentor frontend. You can retry or reload the page."
     >
       <Provider store={store}>
         <BrowserRouter>

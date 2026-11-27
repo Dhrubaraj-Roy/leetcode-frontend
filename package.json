@@ -1,7 +1,7 @@
 {
-  "name": "leetcode-frontend",
+  "name": "algomentor-frontend",
   "version": "1.0.0",
-  "description": "",
+  "description": "AlgoMentor — Frontend for Real-Time Code Evaluation & AI-Guided DSA Platform",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -11,15 +11,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Dhrubaraj-Roy/leetcode-frontend.git"
+    "url": "git+https://github.com/Dhrubaraj-Roy/algomentor-frontend.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Dhrubaraj-Roy/leetcode-frontend/issues"
+    "url": "https://github.com/Dhrubaraj-Roy/algomentor-frontend/issues"
   },
-  "homepage": "https://github.com/Dhrubaraj-Roy/leetcode-frontend#readme",
+  "homepage": "https://github.com/Dhrubaraj-Roy/algomentor-frontend#readme",
   "dependencies": {
     "@hookform/resolvers": "^7.0.1",
     "@monaco-editor/react": "^4.7.0",
